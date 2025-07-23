@@ -22,6 +22,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { citizenAPI } from '../services/api';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import CallHistoryCard from '../components/dashboard/CallHistoryCard';
+import CallNotificationWidget from '../components/dashboard/CallNotificationWidget';
 
 const CitizenDashboard = () => {
   const [stats, setStats] = useState(null);
@@ -372,10 +374,14 @@ const CitizenDashboard = () => {
           {/* Quick Stats */}
           <div className="space-y-6">
             <QuickStatsCard stats={stats} />
+            <CallHistoryCard limit={5} />
             <RecentConnectionsCard />
           </div>
         </div>
       </div>
+
+      {/* Call Notification Widget */}
+      <CallNotificationWidget />
     </div>
   );
 };

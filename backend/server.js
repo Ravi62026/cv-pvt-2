@@ -20,6 +20,8 @@ import queryRoutes from "./routes/query.js";
 import disputeRoutes from "./routes/dispute.js";
 import chatRoutes from "./routes/chat.js";
 import documentRoutes from "./routes/document.js";
+import consultationRoutes from "./routes/consultation.js";
+import callRoutes from "./routes/call.js";
 
 // Load environment variables
 dotenv.config();
@@ -74,6 +76,8 @@ app.use("/api/queries", queryRoutes);
 app.use("/api/disputes", disputeRoutes);
 app.use("/api/chats", chatRoutes);
 app.use("/api/documents", documentRoutes);
+app.use("/api/consultations", consultationRoutes);
+app.use("/api/calls", callRoutes);
 
 // Health check route
 app.get("/api/health", (req, res) => {

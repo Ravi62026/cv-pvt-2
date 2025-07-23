@@ -507,6 +507,8 @@ const ChatPage = () => {
         isSending={isSending}
         isUploading={isUploading}
         placeholder="Type a message..."
+        otherParticipant={chatInfo?.data?.chat?.otherUser ? { user: chatInfo.data.chat.otherUser } : null}
+        chatId={chatId}
       />
     </div>
   );

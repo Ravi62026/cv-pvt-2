@@ -642,6 +642,113 @@ export const initializeSocket = (server) => {
             console.log(`   📡 Broadcasted offline status`);
         });
 
+        // WebRTC Signaling Handlers
+
+        // Handle call offer
+        socket.on("webrtc_offer", (data) => {
+            const { callId, targetUserId, callType, chatId, offer } = data;
+            console.log(`📞 Call offer from ${socket.userId} to ${targetUserId} (${callType})`);
+
+            socket.to(`user_${targetUserId}`).emit("webrtc_offer", {
+                callId,
+                callType,
+                chatId,
+                offer,
+                fromUserId: socket.userId,
+                fromUserName: socket.userName,
+                fromUserRole: socket.userRole
+            });
+        });
+
+        // Handle call answer
+        socket.on("webrtc_answer", (data) => {
+            const { callId, targetUserId, answer } = data;
+            console.log(`📞 Call answered by ${socket.userId} for call ${callId}`);
+
+            socket.to(`user_${targetUserId}`).emit("webrtc_answer", {
+                callId,
+                answer,
+                fromUserId: socket.userId
+            });
+        });
+
+        // Handle call acceptance
+        socket.on("webrtc_call_accept", (data) => {
+            const { callId, targetUserId, acceptType } = data;
+            console.log(`📞 Call accepted by ${socket.userId} for call ${callId} as ${acceptType}`);
+
+            socket.to(`user_${targetUserId}`).emit("webrtc_call_accepted", {
+                callId,
+                acceptType,
+                fromUserId: socket.userId
+            });
+        });
+
+        // Handle call rejection
+        socket.on("webrtc_call_reject", (data) => {
+            const { callId, targetUserId } = data;
+            console.log(`📞 Call rejected by ${socket.userId} for call ${callId}`);
+
+            socket.to(`user_${targetUserId}`).emit("webrtc_call_rejected", {
+                callId,
+                fromUserId: socket.userId
+            });
+        });
+
+        // Handle call end
+        socket.on("webrtc_call_end", (data) => {
+            const { callId } = data;
+            console.log(`📞 Call ended by ${socket.userId} for call ${callId}`);
+
+            // Broadcast to all users in the call (could be multiple in future)
+            socket.broadcast.emit("webrtc_call_end", {
+                callId,
+                fromUserId: socket.userId
+            });
+        });
+
+        // Handle WebRTC signaling (offer, answer, ICE candidates)
+        socket.on("webrtc_signal", (data) => {
+            const { callId, signal, targetUserId } = data;
+            console.log(`📞 WebRTC signal for call ${callId}`);
+
+            if (targetUserId) {
+                socket.to(`user_${targetUserId}`).emit("webrtc_signal", {
+                    callId,
+                    signal,
+                    fromUserId: socket.userId
+                });
+            } else {
+                // Broadcast to all users except sender (for group calls in future)
+                socket.broadcast.emit("webrtc_signal", {
+                    callId,
+                    signal,
+                    fromUserId: socket.userId
+                });
+            }
+        });
+
+        // Handle ICE candidates
+        socket.on("webrtc_ice_candidate", (data) => {
+            const { callId, candidate, targetUserId } = data;
+            console.log(`📞 ICE candidate for call ${callId} to ${targetUserId}`);
+
+            if (targetUserId) {
+                socket.to(`user_${targetUserId}`).emit("webrtc_ice_candidate", {
+                    callId,
+                    candidate,
+                    fromUserId: socket.userId
+                });
+            } else {
+                // Broadcast to all users except sender (for group calls in future)
+                socket.broadcast.emit("webrtc_ice_candidate", {
+                    callId,
+                    candidate,
+                    fromUserId: socket.userId
+                });
+            }
+        });
+
         // Handle connection errors
         socket.on("error", (error) => {
             console.error("Socket error:", error);

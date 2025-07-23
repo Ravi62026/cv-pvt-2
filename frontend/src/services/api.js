@@ -1135,5 +1135,228 @@ export const chatAPI = {
   },
 };
 
+// Consultation API services
+export const consultationAPI = {
+  // Create consultation request
+  async createRequest(consultationData) {
+    try {
+      const response = await apiClient.post('/consultations/request', consultationData);
+      return {
+        success: true,
+        data: response.data,
+        message: response.message,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
+
+  // Get user's consultations
+  async getConsultations(params = {}) {
+    try {
+      const queryString = new URLSearchParams(params).toString();
+      const response = await apiClient.get(`/consultations?${queryString}`);
+      return {
+        success: true,
+        data: response.data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
+
+  // Get consultation by ID
+  async getConsultationById(consultationId) {
+    try {
+      const response = await apiClient.get(`/consultations/${consultationId}`);
+      return {
+        success: true,
+        data: response.data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
+
+  // Update consultation status (lawyers only)
+  async updateStatus(consultationId, statusData) {
+    try {
+      const response = await apiClient.patch(`/consultations/${consultationId}/status`, statusData);
+      return {
+        success: true,
+        data: response.data,
+        message: response.message,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
+
+  // Cancel consultation
+  async cancel(consultationId, reason) {
+    try {
+      const response = await apiClient.patch(`/consultations/${consultationId}/cancel`, { reason });
+      return {
+        success: true,
+        data: response.data,
+        message: response.message,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  }
+};
+
+// Call API services
+export const callAPI = {
+  // Initiate a call
+  async initiateCall(callData) {
+    try {
+      const response = await apiClient.post('/calls/initiate', callData);
+      return {
+        success: true,
+        data: response.data,
+        message: response.message,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
+
+  // Answer a call
+  async answerCall(callId) {
+    try {
+      const response = await apiClient.patch(`/calls/${callId}/answer`);
+      return {
+        success: true,
+        data: response.data,
+        message: response.message,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
+
+  // End a call
+  async endCall(callId, reason = 'completed') {
+    try {
+      const response = await apiClient.patch(`/calls/${callId}/end`, { reason });
+      return {
+        success: true,
+        data: response.data,
+        message: response.message,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
+
+  // Reject a call
+  async rejectCall(callId, reason = 'rejected') {
+    try {
+      const response = await apiClient.patch(`/calls/${callId}/reject`, { reason });
+      return {
+        success: true,
+        data: response.data,
+        message: response.message,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
+
+  // Get call history
+  async getCallHistory(params = {}) {
+    try {
+      const queryString = new URLSearchParams(params).toString();
+      const response = await apiClient.get(`/calls/history?${queryString}`);
+      return {
+        success: true,
+        data: response.data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
+
+  // Get active calls
+  async getActiveCalls() {
+    try {
+      const response = await apiClient.get('/calls/active');
+      return {
+        success: true,
+        data: response.data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
+
+  // Get call statistics
+  async getCallStats(timeframe = 'month') {
+    try {
+      const response = await apiClient.get(`/calls/stats?timeframe=${timeframe}`);
+      return {
+        success: true,
+        data: response.data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
+
+  // Get call by ID
+  async getCallById(callId) {
+    try {
+      const response = await apiClient.get(`/calls/${callId}`);
+      return {
+        success: true,
+        data: response.data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  }
+};
+
 // Export API client for other services
 export default apiClient;

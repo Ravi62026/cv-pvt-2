@@ -32,6 +32,26 @@ const MessageBubble = ({ message, isOwn, showAvatar }) => {
     return <Check className="h-3 w-3 text-gray-400" />;
   };
 
+  // Handle system messages separately
+  if (message.messageType === 'system') {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+        className="flex justify-center mb-4"
+      >
+        <div className={`text-center text-xs px-4 py-2 rounded-lg max-w-md ${
+          message.callType
+            ? 'bg-blue-50 text-blue-600 border border-blue-200'
+            : 'bg-gray-100 text-gray-500'
+        }`}>
+          {message.content}
+        </div>
+      </motion.div>
+    );
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -100,12 +120,7 @@ const MessageBubble = ({ message, isOwn, showAvatar }) => {
             />
           </div>
 
-          {/* System Messages */}
-          {message.messageType === 'system' && (
-            <div className="text-center text-xs text-gray-500 my-2 px-4 py-2 bg-gray-100 rounded-lg">
-              {message.content}
-            </div>
-          )}
+
         </div>
       </div>
     </motion.div>

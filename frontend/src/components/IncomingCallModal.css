@@ -1,0 +1,264 @@
+/* Incoming Call Modal Styles */
+.incoming-call-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.incoming-call-modal {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 24px;
+  padding: 40px 30px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  max-width: 400px;
+  width: 90%;
+  position: relative;
+  z-index: 10;
+}
+
+/* Caller Info */
+.caller-info {
+  margin-bottom: 40px;
+}
+
+.caller-avatar {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 4px solid #fff;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+}
+
+.avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.default-avatar {
+  color: white;
+}
+
+.caller-details h2 {
+  font-size: 28px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 8px 0;
+}
+
+.call-type {
+  font-size: 16px;
+  color: #666;
+  margin: 0 0 4px 0;
+  font-weight: 500;
+}
+
+.call-status {
+  font-size: 14px;
+  color: #888;
+  margin: 0;
+  animation: pulse 2s infinite;
+}
+
+/* Call Actions */
+.call-actions {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin-bottom: 30px;
+}
+
+.call-button {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.call-button:hover {
+  transform: scale(1.1);
+}
+
+.call-button:active {
+  transform: scale(0.95);
+}
+
+.reject-button {
+  background: linear-gradient(135deg, #ff4757, #ff3838);
+  color: white;
+}
+
+.reject-button:hover {
+  background: linear-gradient(135deg, #ff3838, #ff2f2f);
+}
+
+.accept-button {
+  background: linear-gradient(135deg, #2ed573, #1dd1a1);
+  color: white;
+}
+
+.accept-button:hover {
+  background: linear-gradient(135deg, #1dd1a1, #10ac84);
+}
+
+.video-accept {
+  background: linear-gradient(135deg, #3742fa, #2f3542);
+}
+
+.video-accept:hover {
+  background: linear-gradient(135deg, #2f3542, #2c2c54);
+}
+
+/* Call Options */
+.call-options {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.option-button {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 20px;
+  padding: 8px 16px;
+  color: #333;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.option-button:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+/* Special styling for accept call button */
+.option-button:last-child {
+  background: linear-gradient(135deg, #2ed573, #1dd1a1);
+  color: white;
+  border: none;
+  font-weight: 600;
+  padding: 10px 20px;
+  box-shadow: 0 4px 12px rgba(46, 213, 115, 0.3);
+}
+
+.option-button:last-child:hover {
+  background: linear-gradient(135deg, #1dd1a1, #10ac84);
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 6px 16px rgba(46, 213, 115, 0.4);
+}
+
+/* Ripple Animation */
+.ripple-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.ripple {
+  position: absolute;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  animation: ripple 2s infinite;
+}
+
+.ripple:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.ripple:nth-child(2) {
+  animation-delay: 0.7s;
+}
+
+.ripple:nth-child(3) {
+  animation-delay: 1.4s;
+}
+
+.ringing .ripple {
+  animation-play-state: running;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+@keyframes ripple {
+  0% {
+    width: 0;
+    height: 0;
+    opacity: 1;
+  }
+  100% {
+    width: 300px;
+    height: 300px;
+    opacity: 0;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+  .incoming-call-modal {
+    padding: 30px 20px;
+    margin: 20px;
+  }
+  
+  .caller-avatar {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .caller-details h2 {
+    font-size: 24px;
+  }
+  
+  .call-button {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .call-actions {
+    gap: 20px;
+  }
+}

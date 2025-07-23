@@ -22,6 +22,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { lawyerAPI } from '../services/api';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import CallHistoryCard from '../components/dashboard/CallHistoryCard';
+import CallNotificationWidget from '../components/dashboard/CallNotificationWidget';
 
 const LawyerDashboard = () => {
   const [stats, setStats] = useState(null);
@@ -149,10 +151,14 @@ const LawyerDashboard = () => {
           {/* Quick Stats */}
           <div className="space-y-6">
             <QuickStatsCard stats={stats} />
+            <CallHistoryCard limit={5} />
             <RecentClientsCard />
           </div>
         </div>
       </div>
+
+      {/* Call Notification Widget */}
+      <CallNotificationWidget />
     </div>
   );
 };

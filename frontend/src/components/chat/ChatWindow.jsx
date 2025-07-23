@@ -307,10 +307,11 @@ const ChatWindow = ({
     <div className={`flex flex-col h-full bg-gray-50 ${className}`}>
       {/* Chat Header */}
       {showHeader && (
-        <ChatHeader 
+        <ChatHeader
           otherParticipant={otherParticipant}
           isOnline={isUserOnline(otherParticipant?.user._id)}
           onBack={onBack}
+          chatId={chatId}
         />
       )}
 
@@ -357,6 +358,8 @@ const ChatWindow = ({
         onKeyDown={handleKeyPress}
         onSend={sendMessage}
         isSending={isSending}
+        otherParticipant={otherParticipant}
+        chatId={chatId}
       />
     </div>
   );
