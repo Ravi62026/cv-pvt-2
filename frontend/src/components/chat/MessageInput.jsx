@@ -1,8 +1,6 @@
-import React, { useRef } from 'react';
-import { Send, Paperclip, Smile, Image, FileText, Phone, Video } from 'lucide-react';
-import { useCall } from '../../contexts/CallContext';
-import { useToast } from '../../contexts/ToastContext';
-import { useSocket } from '../../hooks/useSocket';
+import React, { useRef, useState } from 'react';
+import { Send, Paperclip, Smile } from 'lucide-react';
+import EmojiPicker from './EmojiPicker';
 
 const MessageInput = ({
   value,
@@ -19,9 +17,7 @@ const MessageInput = ({
   chatId = null
 }) => {
   const fileInputRef = useRef(null);
-  const { startCall } = useCall();
-  const { success, error } = useToast();
-  const { socket, isConnected } = useSocket();
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
   const handleFileSelect = (event) => {
     const file = event.target.files[0];
@@ -32,92 +28,29 @@ const MessageInput = ({
     event.target.value = '';
   };
 
-  // Handle voice call initiation
-  const handleVoiceCall = async () => {
-    console.log('🎤 Voice call button clicked in chat!');
-    console.log('📋 Debug info:', {
-      otherParticipant,
-      chatId,
-      startCall: typeof startCall,
-      success: typeof success,
-      error: typeof error,
-      socket: !!socket,
-      isConnected
-    });
-
-    // Check socket connection first
-    if (!socket || !isConnected) {
-      console.log('❌ Socket not connected');
-      if (error) error('Connection not available. Please check your internet connection.');
-      return;
-    }
-
-    if (!otherParticipant?.user?._id) {
-      console.log('❌ No user ID available for voice call');
-      if (error) error('Cannot start call: User information not available');
-      return;
-    }
-
-    try {
-      console.log('📞 Starting voice call with:', otherParticipant.user.name, 'ID:', otherParticipant.user._id);
-      const result = await startCall(otherParticipant.user._id, 'voice', chatId);
-      console.log('✅ Voice call started successfully:', result);
-      if (success) success(`Voice call started with ${otherParticipant.user.name}`);
-    } catch (err) {
-      console.error('❌ Failed to start voice call:', err);
-      if (error) error('Failed to start voice call: ' + err.message);
-    }
-  };
-
-  // Handle video call initiation
-  const handleVideoCall = async () => {
-    console.log('📹 Video call button clicked in chat!');
-    console.log('📋 Debug info:', {
-      otherParticipant,
-      chatId,
-      startCall: typeof startCall,
-      success: typeof success,
-      error: typeof error,
-      socket: !!socket,
-      isConnected
-    });
-
-    // Check socket connection first
-    if (!socket || !isConnected) {
-      console.log('❌ Socket not connected');
-      if (error) error('Connection not available. Please check your internet connection.');
-      return;
-    }
-
-    if (!otherParticipant?.user?._id) {
-      console.log('❌ No user ID available for video call');
-      if (error) error('Cannot start call: User information not available');
-      return;
-    }
-
-    try {
-      console.log('📹 Starting video call with:', otherParticipant.user.name, 'ID:', otherParticipant.user._id);
-      const result = await startCall(otherParticipant.user._id, 'video', chatId);
-      console.log('✅ Video call started successfully:', result);
-      if (success) success(`Video call started with ${otherParticipant.user.name}`);
-    } catch (err) {
-      console.error('❌ Failed to start video call:', err);
-      if (error) error('Failed to start video call: ' + err.message);
-    }
+  const handleEmojiSelect = (emoji) => {
+    // Create a synthetic event to update the message input
+    const syntheticEvent = {
+      target: {
+        value: value + emoji
+      }
+    };
+    onChange(syntheticEvent);
+    setShowEmojiPicker(false);
   };
   return (
-    <div className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm border-t border-white/20 p-4">
-      <div className="flex items-end space-x-3">
+    <div className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm border-t border-white/20 p-3 sm:p-4">
+      <div className="flex items-end space-x-2 sm:space-x-3">
         {/* Attachment Button */}
         {showAttachments && (
           <div className="relative">
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploading}
-              className="p-2 hover:bg-white/10 rounded-full transition-colors disabled:opacity-50"
+              className="p-2 sm:p-3 hover:bg-white/10 rounded-full transition-colors disabled:opacity-50 border border-white/20"
               title="Attach file"
             >
-              <Paperclip className="h-5 w-5 text-gray-300" />
+              <Paperclip className="h-4 w-4 sm:h-5 sm:w-5 text-gray-300" />
             </button>
             <input
               ref={fileInputRef}
@@ -137,7 +70,7 @@ const MessageInput = ({
             onKeyDown={onKeyDown}
             placeholder={placeholder}
             rows={1}
-            className="w-full p-3 bg-white/10 border border-white/20 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-400 resize-none text-white placeholder-gray-400"
+            className="w-full p-3 sm:p-4 bg-white/10 border border-white/20 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-cyan-400 resize-none text-white placeholder-gray-400 backdrop-blur-sm text-sm sm:text-base"
             style={{
               minHeight: '44px',
               maxHeight: '120px',
@@ -147,60 +80,31 @@ const MessageInput = ({
 
         {/* Emoji Button */}
         {showEmoji && (
-          <button className="p-2 hover:bg-white/10 rounded-full transition-colors">
-            <Smile className="h-5 w-5 text-gray-300" />
-          </button>
+          <div className="relative">
+            <button
+              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+              className="p-2 sm:p-3 hover:bg-white/10 rounded-full transition-colors border border-white/20"
+              title="Add emoji"
+            >
+              <Smile className="h-4 w-4 sm:h-5 sm:w-5 text-gray-300" />
+            </button>
+
+            <EmojiPicker
+              isOpen={showEmojiPicker}
+              onClose={() => setShowEmojiPicker(false)}
+              onEmojiSelect={handleEmojiSelect}
+              position="bottom"
+            />
+          </div>
         )}
-
-        {/* Call Buttons - Functional WebRTC calls */}
-        <button
-          onClick={handleVoiceCall}
-          disabled={!otherParticipant?.user?._id || !socket || !isConnected}
-          className={`p-2 hover:bg-blue-500/20 rounded-full transition-colors border border-blue-400 ${
-            (!otherParticipant?.user?._id || !socket || !isConnected) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
-          }`}
-          title={
-            !socket || !isConnected ? 'Connection not available' :
-            !otherParticipant?.user?._id ? 'Voice call not available' :
-            `Start voice call with ${otherParticipant.user.name}`
-          }
-        >
-          <Phone className="h-5 w-5 text-blue-400" />
-        </button>
-
-        <button
-          onClick={handleVideoCall}
-          disabled={!otherParticipant?.user?._id || !socket || !isConnected}
-          className={`p-2 hover:bg-purple-500/20 rounded-full transition-colors border border-purple-400 ${
-            (!otherParticipant?.user?._id || !socket || !isConnected) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
-          }`}
-          title={
-            !socket || !isConnected ? 'Connection not available' :
-            !otherParticipant?.user?._id ? 'Video call not available' :
-            `Start video call with ${otherParticipant.user.name}`
-          }
-        >
-          <Video className="h-5 w-5 text-purple-400" />
-        </button>
-
-        <button
-          onClick={() => {
-            console.log('TEST BUTTON CLICKED IN CHAT!');
-            alert('Test button clicked in chat!');
-          }}
-          className="p-2 hover:bg-green-500/20 rounded-full transition-colors border border-green-400"
-          title="Test Button (Chat)"
-        >
-          <span className="text-xs font-bold text-green-400">T</span>
-        </button>
 
         {/* Send Button */}
         <button
           onClick={onSend}
           disabled={(!value.trim() && !isUploading) || isSending}
-          className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white p-2 rounded-full transition-colors"
+          className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 disabled:opacity-50 disabled:cursor-not-allowed text-white p-2 sm:p-3 rounded-full transition-all duration-300 shadow-lg hover:shadow-green-500/25 hover:scale-105 active:scale-95"
         >
-          <Send className="h-5 w-5" />
+          <Send className="h-4 w-4 sm:h-5 sm:w-5" />
         </button>
       </div>
 

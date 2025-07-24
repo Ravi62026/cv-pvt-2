@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useSocket, useSocketEvent } from '../hooks/useSocket';
+import { useCall } from '../contexts/CallContext';
+import { useToast } from '../contexts/ToastContext';
 import { Send, ArrowLeft, Phone, Video, MoreVertical } from 'lucide-react';
 import MessageInput from '../components/chat/MessageInput';
 import MessageBubble from '../components/chat/MessageBubble';
@@ -11,6 +13,8 @@ const ChatPage = () => {
   const navigate = useNavigate();
   const { user, getToken } = useAuth();
   const { socket, isConnected } = useSocket();
+  const { startCall } = useCall();
+  const { success, error } = useToast();
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [chatInfo, setChatInfo] = useState(null);
@@ -393,123 +397,180 @@ const ChatPage = () => {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
-      {/* Chat Header */}
-      <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <button
-            onClick={() => navigate(-1)}
-            className="p-2 hover:bg-gray-100 rounded-full"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-          
+    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-800 relative overflow-hidden">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-blue-500/8 to-gray-500/12 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-blue-500/8 to-cyan-500/12 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-br from-blue-500/4 to-gray-500/8 rounded-full blur-3xl animate-spin-slow"></div>
+      </div>
+
+      <div className="relative z-10 flex flex-col h-screen pt-0">
+        {/* Chat Header */}
+        <div className="bg-gradient-to-r from-white/10 to-white/5 backdrop-blur-sm border-b border-white/20 p-4 flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
-              <span className="text-white font-semibold">
-                {chatInfo?.data?.chat?.otherUser?.name?.charAt(0) || 'U'}
-              </span>
-            </div>
-            <div>
-              <h3 className="font-semibold text-gray-900">
-                {chatInfo?.data?.chat?.otherUser?.name || 'User'}
-              </h3>
-              <p className="text-sm text-gray-500">
-                {chatInfo?.data?.chat?.otherUser?.role === 'lawyer' ? 'Lawyer' : 'Citizen'}
-                {!isConnected && (
-                  <span className="ml-2 text-red-500">• Disconnected</span>
-                )}
-                {isConnected && (
-                  <span className="ml-2 text-green-500">• Online</span>
-                )}
-              </p>
+            <button
+              onClick={() => navigate(-1)}
+              className="p-2 hover:bg-white/10 rounded-full transition-colors"
+            >
+              <ArrowLeft className="h-5 w-5 text-white" />
+            </button>
+
+            <div className="flex items-center space-x-3">
+              <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center shadow-lg">
+                <span className="text-white font-semibold text-lg">
+                  {chatInfo?.data?.chat?.otherUser?.name?.charAt(0) || 'U'}
+                </span>
+              </div>
+              <div>
+                <h3 className="font-semibold text-white text-lg">
+                  {chatInfo?.data?.chat?.otherUser?.name || 'User'}
+                </h3>
+                <p className="text-sm text-gray-300 flex items-center">
+                  <span className="capitalize">
+                    {chatInfo?.data?.chat?.otherUser?.role === 'lawyer' ? '⚖️ Lawyer' : '👤 Citizen'}
+                  </span>
+                  {!isConnected && (
+                    <span className="ml-2 text-red-400 flex items-center">
+                      <span className="w-2 h-2 bg-red-400 rounded-full mr-1"></span>
+                      Offline
+                    </span>
+                  )}
+                  {isConnected && (
+                    <span className="ml-2 text-green-400 flex items-center">
+                      <span className="w-2 h-2 bg-green-400 rounded-full mr-1 animate-pulse"></span>
+                      Online
+                    </span>
+                  )}
+                </p>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="flex items-center space-x-2">
-          {process.env.NODE_ENV === 'development' && (
+          <div className="flex items-center space-x-2">
+            {/* Voice Call Button */}
             <button
-              onClick={() => {
-                if (socket) {
-                  console.log('🧪 Testing socket connection...');
-                  socket.emit('test_connection', { chatId, timestamp: new Date() });
+              onClick={async () => {
+                if (!chatInfo?.data?.chat?.otherUser?._id) {
+                  console.log('❌ No user ID available for voice call');
+                  if (error) error('Cannot start call: User information not available');
+                  return;
+                }
+                try {
+                  console.log('📞 Starting voice call from header...');
+                  const result = await startCall(chatInfo.data.chat.otherUser._id, 'voice', chatId);
+                  console.log('✅ Voice call started successfully:', result);
+                  if (success) success(`Voice call started with ${chatInfo.data.chat.otherUser.name}`);
+                } catch (err) {
+                  console.error('❌ Failed to start voice call:', err);
+                  if (error) error('Failed to start voice call: ' + err.message);
                 }
               }}
-              className="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded"
-            >
-              Test Socket
-            </button>
-          )}
-          <button className="p-2 hover:bg-gray-100 rounded-full">
-            <Phone className="h-5 w-5 text-gray-600" />
-          </button>
-          <button className="p-2 hover:bg-gray-100 rounded-full">
-            <Video className="h-5 w-5 text-gray-600" />
-          </button>
-          <button className="p-2 hover:bg-gray-100 rounded-full">
-            <MoreVertical className="h-5 w-5 text-gray-600" />
-          </button>
-        </div>
-      </div>
-
-      {/* Debug Info */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-2 text-xs text-black">
-          <p><strong>Debug Info:</strong></p>
-          <p>Chat ID: {chatId}</p>
-          <p>Socket Connected: {isConnected ? '✅' : '❌'}</p>
-          <p>User ID: {user?.id || user?._id}</p>
-          <p>User Name: {user?.name}</p>
-          <p>Token: {getToken() ? '✅ Present' : '❌ Missing'}</p>
-          <p>Messages Count: {messages.length}</p>
-          <p>Is Sending: {isSending ? '⏳' : '✅'}</p>
-        </div>
-      )}
-
-      {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.length === 0 ? (
-          <div className="text-center text-gray-500 mt-8">
-            <p>No messages yet. Start the conversation!</p>
-            <p className="text-sm mt-2">
-              Socket: {isConnected ? '🟢 Connected' : '🔴 Disconnected'}
-            </p>
-          </div>
-        ) : (
-          messages.map((message, index) => (
-            <MessageBubble
-              key={message._id || message.tempId}
-              message={message}
-              isOwn={(message.sender._id || message.sender.id) === (user.id || user._id)}
-              showAvatar={
-                index === 0 ||
-                messages[index - 1]?.sender._id !== message.sender._id
+              disabled={!chatInfo?.data?.chat?.otherUser?._id || !socket || !isConnected}
+              className={`p-3 hover:bg-blue-500/20 rounded-full transition-colors border border-blue-400/50 backdrop-blur-sm ${
+                (!chatInfo?.data?.chat?.otherUser?._id || !socket || !isConnected) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+              }`}
+              title={
+                !socket || !isConnected ? 'Connection not available' :
+                !chatInfo?.data?.chat?.otherUser?._id ? 'Voice call not available' :
+                `Start voice call with ${chatInfo.data.chat.otherUser.name}`
               }
-            />
-          ))
-        )}
-        <div ref={messagesEndRef} />
-      </div>
+            >
+              <Phone className="h-5 w-5 text-blue-400" />
+            </button>
 
-      {/* Message Input */}
-      <MessageInput
-        value={newMessage}
-        onChange={(e) => setNewMessage(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage(e);
-          }
-        }}
-        onSend={sendMessage}
-        onFileUpload={handleFileUpload}
-        isSending={isSending}
-        isUploading={isUploading}
-        placeholder="Type a message..."
-        otherParticipant={chatInfo?.data?.chat?.otherUser ? { user: chatInfo.data.chat.otherUser } : null}
-        chatId={chatId}
-      />
+            {/* Video Call Button */}
+            <button
+              onClick={async () => {
+                if (!chatInfo?.data?.chat?.otherUser?._id) {
+                  console.log('❌ No user ID available for video call');
+                  if (error) error('Cannot start call: User information not available');
+                  return;
+                }
+                try {
+                  console.log('📹 Starting video call from header...');
+                  const result = await startCall(chatInfo.data.chat.otherUser._id, 'video', chatId);
+                  console.log('✅ Video call started successfully:', result);
+                  if (success) success(`Video call started with ${chatInfo.data.chat.otherUser.name}`);
+                } catch (err) {
+                  console.error('❌ Failed to start video call:', err);
+                  if (error) error('Failed to start video call: ' + err.message);
+                }
+              }}
+              disabled={!chatInfo?.data?.chat?.otherUser?._id || !socket || !isConnected}
+              className={`p-3 hover:bg-purple-500/20 rounded-full transition-colors border border-purple-400/50 backdrop-blur-sm ${
+                (!chatInfo?.data?.chat?.otherUser?._id || !socket || !isConnected) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+              }`}
+              title={
+                !socket || !isConnected ? 'Connection not available' :
+                !chatInfo?.data?.chat?.otherUser?._id ? 'Video call not available' :
+                `Start video call with ${chatInfo.data.chat.otherUser.name}`
+              }
+            >
+              <Video className="h-5 w-5 text-purple-400" />
+            </button>
+
+            {/* More Options */}
+            <button className="p-3 hover:bg-white/10 rounded-full transition-colors border border-white/20 backdrop-blur-sm">
+              <MoreVertical className="h-5 w-5 text-gray-300" />
+            </button>
+          </div>
+        </div>
+
+        {/* Minimal Debug Info - Only Connection Status */}
+        {process.env.NODE_ENV === 'development' && !isConnected && (
+          <div className="bg-red-500/10 border border-red-500/20 backdrop-blur-sm p-2 text-xs text-red-300 mx-4 mt-2 rounded-lg">
+            <p>⚠️ Socket Disconnected - Reconnecting...</p>
+          </div>
+        )}
+
+        {/* Messages Area */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 chat-messages">
+          {messages.length === 0 ? (
+            <div className="text-center text-gray-400 mt-16">
+              <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10 max-w-md mx-auto">
+                <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl">💬</span>
+                </div>
+                <h3 className="text-lg font-semibold text-white mb-2">Start the conversation!</h3>
+                <p className="text-gray-400">Send a message to begin chatting with {chatInfo?.data?.chat?.otherUser?.name || 'this user'}.</p>
+              </div>
+            </div>
+          ) : (
+            messages.map((message, index) => (
+              <MessageBubble
+                key={message._id || message.tempId}
+                message={message}
+                isOwn={(message.sender._id || message.sender.id) === (user.id || user._id)}
+                showAvatar={
+                  index === 0 ||
+                  messages[index - 1]?.sender._id !== message.sender._id
+                }
+              />
+            ))
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+
+        {/* Message Input */}
+        <MessageInput
+          value={newMessage}
+          onChange={(e) => setNewMessage(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              sendMessage(e);
+            }
+          }}
+          onSend={sendMessage}
+          onFileUpload={handleFileUpload}
+          isSending={isSending}
+          isUploading={isUploading}
+          placeholder="Type a message..."
+          otherParticipant={chatInfo?.data?.chat?.otherUser ? { user: chatInfo.data.chat.otherUser } : null}
+          chatId={chatId}
+        />
+      </div>
     </div>
   );
 };

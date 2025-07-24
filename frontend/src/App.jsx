@@ -48,11 +48,15 @@ import ProtectedRoute from './components/ProtectedRoute';
 import HowItWorksPage from './pages/HowItWorksPage';
 import OurVisionPage from './pages/OurVisionPage';
 import ScrollToTop from './components/ScrollToTop';
+import PWAInstallPrompt from './components/PWAInstallPrompt';
+import { usePWA } from './hooks/usePWA';
 import IncomingCallModal from './components/IncomingCallModal';
 import ActiveCallInterface from './components/ActiveCallInterface';
 import OutgoingCallInterface from './components/OutgoingCallInterface';
 import CallTestComponent from './components/calls/CallTestComponent';
 import CallTestPage from './pages/CallTestPage';
+import TestChatPage from './pages/TestChatPage';
+import CallPage from './pages/CallPage';
 
 
 
@@ -133,6 +137,8 @@ const CallManagerComponent = () => {
 };
 
 function App() {
+  const { updateAvailable, updateApp } = usePWA();
+
   return (
     <AuthProvider>
       <ToastProvider>
@@ -142,6 +148,20 @@ function App() {
             <Router>
               <ScrollToTop />
               <CallManagerComponent />
+              <PWAInstallPrompt />
+              {updateAvailable && (
+                <div className="fixed top-4 right-4 z-50">
+                  <div className="bg-blue-600 text-white p-4 rounded-lg shadow-lg">
+                    <p className="mb-2">New version available!</p>
+                    <button
+                      onClick={updateApp}
+                      className="bg-white text-blue-600 px-4 py-2 rounded font-medium"
+                    >
+                      Update Now
+                    </button>
+                  </div>
+                </div>
+              )}
               <div className="min-h-screen">
               <Routes>
                 {/* Public Routes */}
@@ -165,7 +185,7 @@ function App() {
                 <Route path="/profile" element={<Layout><ProfilePage /></Layout>} />
 
                 {/* Citizen Routes */}
-                <Route path="/citizen/dashboard" element={<Layout><CitizenDashboard /></Layout>} />
+                <Route path="/citizen/dashboard" element={<Layout showNotificationSystem={false} showFooter={false}><CitizenDashboard /></Layout>} />
                 <Route path="/citizen/find-lawyers" element={<Layout><FindLawyers /></Layout>} />
                 <Route path="/citizen/connected-lawyers" element={<Layout><ConnectedLawyers /></Layout>} />
 
@@ -181,7 +201,7 @@ function App() {
                 <Route path="/citizen/my-case-offers" element={<Layout><MyCaseOffers /></Layout>} />
 
                 {/* Lawyer Routes */}
-                <Route path="/lawyer/dashboard" element={<Layout><LawyerDashboard /></Layout>} />
+                <Route path="/lawyer/dashboard" element={<Layout showFooter={false} showNavbar={true} showNotificationSystem={false} ><LawyerDashboard /></Layout>} />
                 <Route path="/lawyer/available-cases" element={<Layout><AvailableCases /></Layout>} />
                 <Route path="/lawyer/my-case-requests" element={<Layout><LawyerMyCaseRequests /></Layout>} />
                 <Route path="/lawyer/pending-case-requests" element={<Layout><PendingCaseRequests /></Layout>} />
@@ -192,11 +212,15 @@ function App() {
                 <Route path="/lawyer/connected-clients" element={<Layout><ConnectedClients /></Layout>} />
 
                 {/* Chat Routes */}
-                <Route path="/chat/:chatId" element={<Layout><ChatPage /></Layout>} />
+                <Route path="/chat/:chatId" element={<Layout showNavbar={false} showFooter={false} showNotificationSystem={false}><ChatPage /></Layout>} />
+
+                {/* Call Routes */}
+                <Route path="/call/:callId" element={<CallPage />} />
 
                 {/* Test Routes */}
                 <Route path="/test/calls" element={<Layout><CallTestComponent /></Layout>} />
                 <Route path="/test/call-system" element={<Layout><CallTestPage /></Layout>} />
+                <Route path="/test/chat" element={<TestChatPage />} />
 
                 {/* Document Routes */}
                 <Route path="/documents" element={<Layout><DocumentRepository /></Layout>} />

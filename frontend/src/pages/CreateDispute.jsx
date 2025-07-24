@@ -163,25 +163,25 @@ const CreateDispute = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center text-gray-600 hover:text-gray-900 mb-4"
+            className="flex items-center text-gray-300 hover:text-white mb-4 transition-colors duration-200"
           >
             <ArrowLeft className="h-5 w-5 mr-2" />
             Back
           </button>
-          
+
           <div className="flex items-center mb-4">
-            <div className="bg-red-100 p-3 rounded-full mr-4">
-              <Scale className="h-8 w-8 text-red-600" />
+            <div className="bg-red-500/20 p-3 rounded-full mr-4 backdrop-blur-sm border border-red-400/30">
+              <Scale className="h-8 w-8 text-red-400" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">File Dispute</h1>
-              <p className="text-gray-600 mt-1">
+              <h1 className="text-3xl font-bold text-white">File Dispute</h1>
+              <p className="text-gray-300 mt-1">
                 Get legal assistance for your dispute resolution
               </p>
             </div>
@@ -192,11 +192,11 @@ const CreateDispute = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-lg shadow-sm border border-gray-200"
+          className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-xl border border-white/20"
         >
-          <div className="p-6 border-b border-gray-200">
-            <h2 className="text-xl font-semibold text-gray-900">Dispute Details</h2>
-            <p className="text-sm text-gray-600 mt-1">
+          <div className="p-6 border-b border-white/20">
+            <h2 className="text-xl font-semibold text-white">Dispute Details</h2>
+            <p className="text-sm text-gray-300 mt-1">
               Provide comprehensive information about your dispute
             </p>
           </div>
@@ -204,7 +204,7 @@ const CreateDispute = () => {
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
             {/* Title */}
             <div>
-              <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="title" className="block text-sm font-medium text-gray-300 mb-2">
                 Dispute Title *
               </label>
               <input
@@ -214,18 +214,18 @@ const CreateDispute = () => {
                 value={formData.title}
                 onChange={handleInputChange}
                 placeholder="Brief summary of your dispute"
-                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
-                  errors.title ? 'border-red-300' : 'border-gray-300'
+                className={`w-full px-3 py-2 bg-white/10 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400 text-white placeholder-gray-400 backdrop-blur-sm ${
+                  errors.title ? 'border-red-400' : 'border-white/20'
                 }`}
                 maxLength={100}
               />
               {errors.title && (
-                <p className="mt-1 text-sm text-red-600 flex items-center">
+                <p className="mt-1 text-sm text-red-400 flex items-center">
                   <AlertCircle className="h-4 w-4 mr-1" />
                   {errors.title}
                 </p>
               )}
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-1 text-sm text-gray-400">
                 {formData.title.length}/100 characters
               </p>
             </div>
@@ -233,7 +233,7 @@ const CreateDispute = () => {
             {/* Dispute Type and Category */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label htmlFor="disputeType" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="disputeType" className="block text-sm font-medium text-gray-300 mb-2">
                   Dispute Type *
                 </label>
                 <select
@@ -241,19 +241,19 @@ const CreateDispute = () => {
                   name="disputeType"
                   value={formData.disputeType}
                   onChange={handleInputChange}
-                  className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
-                    errors.disputeType ? 'border-red-300' : 'border-gray-300'
+                  className={`w-full px-3 py-2 bg-white/10 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400 text-white backdrop-blur-sm ${
+                    errors.disputeType ? 'border-red-400' : 'border-white/20'
                   }`}
                 >
-                  <option value="">Select dispute type</option>
+                  <option value="" className="bg-slate-800 text-white">Select dispute type</option>
                   {disputeTypes.map(type => (
-                    <option key={type.value} value={type.value}>
+                    <option key={type.value} value={type.value} className="bg-slate-800 text-white">
                       {type.label}
                     </option>
                   ))}
                 </select>
                 {errors.disputeType && (
-                  <p className="mt-1 text-sm text-red-600 flex items-center">
+                  <p className="mt-1 text-sm text-red-400 flex items-center">
                     <AlertCircle className="h-4 w-4 mr-1" />
                     {errors.disputeType}
                   </p>
@@ -261,7 +261,7 @@ const CreateDispute = () => {
               </div>
 
               <div>
-                <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="category" className="block text-sm font-medium text-gray-300 mb-2">
                   Legal Category *
                 </label>
                 <select
@@ -269,19 +269,19 @@ const CreateDispute = () => {
                   name="category"
                   value={formData.category}
                   onChange={handleInputChange}
-                  className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
-                    errors.category ? 'border-red-300' : 'border-gray-300'
+                  className={`w-full px-3 py-2 bg-white/10 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400 text-white backdrop-blur-sm ${
+                    errors.category ? 'border-red-400' : 'border-white/20'
                   }`}
                 >
-                  <option value="">Select category</option>
+                  <option value="" className="bg-slate-800 text-white">Select category</option>
                   {categories.map(cat => (
-                    <option key={cat.value} value={cat.value}>
+                    <option key={cat.value} value={cat.value} className="bg-slate-800 text-white">
                       {cat.label}
                     </option>
                   ))}
                 </select>
                 {errors.category && (
-                  <p className="mt-1 text-sm text-red-600 flex items-center">
+                  <p className="mt-1 text-sm text-red-400 flex items-center">
                     <AlertCircle className="h-4 w-4 mr-1" />
                     {errors.category}
                   </p>
@@ -291,17 +291,17 @@ const CreateDispute = () => {
 
             {/* Priority */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-300 mb-2">
                 Priority Level
               </label>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {priorities.map(priority => (
                   <label
                     key={priority.value}
-                    className={`relative flex items-center justify-center p-3 border rounded-lg cursor-pointer transition-colors ${
+                    className={`relative flex items-center justify-center p-3 border rounded-lg cursor-pointer transition-all duration-200 backdrop-blur-sm ${
                       formData.priority === priority.value
-                        ? 'border-red-500 bg-red-50'
-                        : 'border-gray-300 hover:border-gray-400'
+                        ? 'border-red-400 bg-red-500/20'
+                        : 'border-white/20 hover:border-white/40 bg-white/5'
                     }`}
                   >
                     <input
@@ -312,7 +312,7 @@ const CreateDispute = () => {
                       onChange={handleInputChange}
                       className="sr-only"
                     />
-                    <span className={`text-sm font-medium px-2 py-1 rounded ${priority.color}`}>
+                    <span className={`text-sm font-medium px-2 py-1 rounded ${priority.color.replace('text-', 'text-').replace('bg-', 'bg-').replace('100', '500/20')}`}>
                       {priority.label}
                     </span>
                   </label>
@@ -322,7 +322,7 @@ const CreateDispute = () => {
 
             {/* Dispute Value */}
             <div>
-              <label htmlFor="disputeValue" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="disputeValue" className="block text-sm font-medium text-gray-300 mb-2">
                 Dispute Value (Optional)
               </label>
               <div className="relative">
@@ -338,31 +338,31 @@ const CreateDispute = () => {
                   placeholder="0.00"
                   min="0"
                   step="0.01"
-                  className={`w-full pl-10 pr-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
-                    errors.disputeValue ? 'border-red-300' : 'border-gray-300'
+                  className={`w-full pl-10 pr-3 py-2 bg-white/10 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400 text-white placeholder-gray-400 backdrop-blur-sm ${
+                    errors.disputeValue ? 'border-red-400' : 'border-white/20'
                   }`}
                 />
               </div>
               {errors.disputeValue && (
-                <p className="mt-1 text-sm text-red-600 flex items-center">
+                <p className="mt-1 text-sm text-red-400 flex items-center">
                   <AlertCircle className="h-4 w-4 mr-1" />
                   {errors.disputeValue}
                 </p>
               )}
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-1 text-sm text-gray-400">
                 Estimated monetary value involved in the dispute
               </p>
             </div>
 
             {/* Opposing Party Information */}
-            <div className="border-t border-gray-200 pt-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
-                <User className="h-5 w-5 mr-2 text-gray-600" />
+            <div className="border-t border-white/20 pt-6">
+              <h3 className="text-lg font-medium text-white mb-4 flex items-center">
+                <User className="h-5 w-5 mr-2 text-gray-300" />
                 Opposing Party Information (Optional)
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label htmlFor="opposingParty.name" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="opposingParty.name" className="block text-sm font-medium text-gray-300 mb-2">
                     Name
                   </label>
                   <input
@@ -372,11 +372,11 @@ const CreateDispute = () => {
                     value={formData.opposingParty.name}
                     onChange={handleInputChange}
                     placeholder="Name of the opposing party"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400 text-white placeholder-gray-400 backdrop-blur-sm"
                   />
                 </div>
                 <div>
-                  <label htmlFor="opposingParty.contact" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="opposingParty.contact" className="block text-sm font-medium text-gray-300 mb-2">
                     Contact Information
                   </label>
                   <input
@@ -386,12 +386,12 @@ const CreateDispute = () => {
                     value={formData.opposingParty.contact}
                     onChange={handleInputChange}
                     placeholder="Phone number or email"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400 text-white placeholder-gray-400 backdrop-blur-sm"
                   />
                 </div>
               </div>
               <div className="mt-4">
-                <label htmlFor="opposingParty.address" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="opposingParty.address" className="block text-sm font-medium text-gray-300 mb-2">
                   Address
                 </label>
                 <textarea
@@ -401,14 +401,14 @@ const CreateDispute = () => {
                   onChange={handleInputChange}
                   rows={2}
                   placeholder="Address of the opposing party"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400 text-white placeholder-gray-400 backdrop-blur-sm"
                 />
               </div>
             </div>
 
             {/* Description */}
             <div>
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="description" className="block text-sm font-medium text-gray-300 mb-2">
                 Detailed Description *
               </label>
               <textarea
@@ -418,35 +418,35 @@ const CreateDispute = () => {
                 onChange={handleInputChange}
                 rows={6}
                 placeholder="Provide a comprehensive description of your dispute, including timeline of events, parties involved, attempts at resolution, and desired outcome..."
-                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
-                  errors.description ? 'border-red-300' : 'border-gray-300'
+                className={`w-full px-3 py-2 bg-white/10 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400 text-white placeholder-gray-400 backdrop-blur-sm ${
+                  errors.description ? 'border-red-400' : 'border-white/20'
                 }`}
                 maxLength={2000}
               />
               {errors.description && (
-                <p className="mt-1 text-sm text-red-600 flex items-center">
+                <p className="mt-1 text-sm text-red-400 flex items-center">
                   <AlertCircle className="h-4 w-4 mr-1" />
                   {errors.description}
                 </p>
               )}
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-1 text-sm text-gray-400">
                 {formData.description.length}/2000 characters
               </p>
             </div>
 
             {/* Submit Button */}
-            <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+            <div className="flex justify-end space-x-4 pt-6 border-t border-white/20">
               <button
                 type="button"
                 onClick={() => navigate(-1)}
-                className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500"
+                className="px-6 py-2 border border-white/20 rounded-md text-gray-300 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-red-400 transition-all duration-200 backdrop-blur-sm"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                className="px-6 py-2 bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-red-400 disabled:opacity-50 disabled:cursor-not-allowed flex items-center transition-all duration-200 shadow-lg hover:shadow-red-500/25"
               >
                 {isSubmitting ? (
                   <>

@@ -158,6 +158,10 @@ export const CallProvider = ({ children }) => {
         type: CALL_ACTIONS.SET_ACTIVE_CALL,
         payload: { callData, participantInfo }
       });
+
+      // Navigate to call page for the caller
+      const callUrl = `/call/${callData.callId}?type=${callData.acceptType || callData.callType || 'voice'}`;
+      window.history.pushState(null, '', callUrl);
     };
 
     // Handle call rejected
@@ -272,6 +276,10 @@ export const CallProvider = ({ children }) => {
           participantInfo
         }
       });
+
+      // Navigate to call page
+      const callUrl = `/call/${callData.callId}?type=${acceptType}`;
+      window.history.pushState(null, '', callUrl);
     } catch (error) {
       console.error('Failed to accept call:', error);
       dispatch({ type: CALL_ACTIONS.CLEAR_CALL });

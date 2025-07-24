@@ -120,25 +120,25 @@ const CreateQuery = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center text-gray-600 hover:text-gray-900 mb-4"
+            className="flex items-center text-gray-300 hover:text-white mb-4 transition-colors duration-200"
           >
             <ArrowLeft className="h-5 w-5 mr-2" />
             Back
           </button>
-          
+
           <div className="flex items-center mb-4">
-            <div className="bg-blue-100 p-3 rounded-full mr-4">
-              <FileText className="h-8 w-8 text-blue-600" />
+            <div className="bg-blue-500/20 p-3 rounded-full mr-4 backdrop-blur-sm border border-blue-400/30">
+              <FileText className="h-8 w-8 text-blue-400" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Submit Legal Query</h1>
-              <p className="text-gray-600 mt-1">
+              <h1 className="text-3xl font-bold text-white">Submit Legal Query</h1>
+              <p className="text-gray-300 mt-1">
                 Get expert legal advice from verified lawyers
               </p>
             </div>
@@ -149,11 +149,11 @@ const CreateQuery = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-lg shadow-sm border border-gray-200"
+          className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-xl border border-white/20"
         >
-          <div className="p-6 border-b border-gray-200">
-            <h2 className="text-xl font-semibold text-gray-900">Query Details</h2>
-            <p className="text-sm text-gray-600 mt-1">
+          <div className="p-6 border-b border-white/20">
+            <h2 className="text-xl font-semibold text-white">Query Details</h2>
+            <p className="text-sm text-gray-300 mt-1">
               Provide clear and detailed information about your legal question
             </p>
           </div>
@@ -161,7 +161,7 @@ const CreateQuery = () => {
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
             {/* Title */}
             <div>
-              <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="title" className="block text-sm font-medium text-gray-300 mb-2">
                 Query Title *
               </label>
               <input
@@ -171,25 +171,25 @@ const CreateQuery = () => {
                 value={formData.title}
                 onChange={handleInputChange}
                 placeholder="Brief summary of your legal question"
-                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                  errors.title ? 'border-red-300' : 'border-gray-300'
+                className={`w-full px-3 py-2 bg-white/10 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 text-white placeholder-gray-400 backdrop-blur-sm ${
+                  errors.title ? 'border-red-400' : 'border-white/20'
                 }`}
                 maxLength={100}
               />
               {errors.title && (
-                <p className="mt-1 text-sm text-red-600 flex items-center">
+                <p className="mt-1 text-sm text-red-400 flex items-center">
                   <AlertCircle className="h-4 w-4 mr-1" />
                   {errors.title}
                 </p>
               )}
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-1 text-sm text-gray-400">
                 {formData.title.length}/100 characters
               </p>
             </div>
 
             {/* Category */}
             <div>
-              <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="category" className="block text-sm font-medium text-gray-300 mb-2">
                 Legal Category *
               </label>
               <select
@@ -197,19 +197,19 @@ const CreateQuery = () => {
                 name="category"
                 value={formData.category}
                 onChange={handleInputChange}
-                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                  errors.category ? 'border-red-300' : 'border-gray-300'
+                className={`w-full px-3 py-2 bg-white/10 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 text-white backdrop-blur-sm ${
+                  errors.category ? 'border-red-400' : 'border-white/20'
                 }`}
               >
-                <option value="">Select a category</option>
+                <option value="" className="bg-slate-800 text-white">Select a category</option>
                 {categories.map(cat => (
-                  <option key={cat.value} value={cat.value}>
+                  <option key={cat.value} value={cat.value} className="bg-slate-800 text-white">
                     {cat.label}
                   </option>
                 ))}
               </select>
               {errors.category && (
-                <p className="mt-1 text-sm text-red-600 flex items-center">
+                <p className="mt-1 text-sm text-red-400 flex items-center">
                   <AlertCircle className="h-4 w-4 mr-1" />
                   {errors.category}
                 </p>
@@ -218,17 +218,17 @@ const CreateQuery = () => {
 
             {/* Priority */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-300 mb-2">
                 Priority Level
               </label>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {priorities.map(priority => (
                   <label
                     key={priority.value}
-                    className={`relative flex items-center justify-center p-3 border rounded-lg cursor-pointer transition-colors ${
+                    className={`relative flex items-center justify-center p-3 border rounded-lg cursor-pointer transition-all duration-200 backdrop-blur-sm ${
                       formData.priority === priority.value
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-300 hover:border-gray-400'
+                        ? 'border-blue-400 bg-blue-500/20'
+                        : 'border-white/20 hover:border-white/40 bg-white/5'
                     }`}
                   >
                     <input
@@ -239,7 +239,7 @@ const CreateQuery = () => {
                       onChange={handleInputChange}
                       className="sr-only"
                     />
-                    <span className={`text-sm font-medium px-2 py-1 rounded ${priority.color}`}>
+                    <span className={`text-sm font-medium px-2 py-1 rounded ${priority.color.replace('text-', 'text-').replace('bg-', 'bg-').replace('100', '500/20')}`}>
                       {priority.label}
                     </span>
                   </label>
@@ -249,7 +249,7 @@ const CreateQuery = () => {
 
             {/* Description */}
             <div>
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="description" className="block text-sm font-medium text-gray-300 mb-2">
                 Detailed Description *
               </label>
               <textarea
@@ -259,35 +259,35 @@ const CreateQuery = () => {
                 onChange={handleInputChange}
                 rows={6}
                 placeholder="Provide a detailed description of your legal question, including relevant facts, circumstances, and what kind of advice you're seeking..."
-                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                  errors.description ? 'border-red-300' : 'border-gray-300'
+                className={`w-full px-3 py-2 bg-white/10 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 text-white placeholder-gray-400 backdrop-blur-sm ${
+                  errors.description ? 'border-red-400' : 'border-white/20'
                 }`}
                 maxLength={2000}
               />
               {errors.description && (
-                <p className="mt-1 text-sm text-red-600 flex items-center">
+                <p className="mt-1 text-sm text-red-400 flex items-center">
                   <AlertCircle className="h-4 w-4 mr-1" />
                   {errors.description}
                 </p>
               )}
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-1 text-sm text-gray-400">
                 {formData.description.length}/2000 characters
               </p>
             </div>
 
             {/* Submit Button */}
-            <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+            <div className="flex justify-end space-x-4 pt-6 border-t border-white/20">
               <button
                 type="button"
                 onClick={() => navigate(-1)}
-                className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="px-6 py-2 border border-white/20 rounded-md text-gray-300 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-200 backdrop-blur-sm"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                className="px-6 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-50 disabled:cursor-not-allowed flex items-center transition-all duration-200 shadow-lg hover:shadow-blue-500/25"
               >
                 {isSubmitting ? (
                   <>

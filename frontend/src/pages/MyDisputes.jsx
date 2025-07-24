@@ -125,25 +125,25 @@ const MyDisputes = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <div className="bg-red-100 p-3 rounded-full mr-4">
-                <Scale className="h-8 w-8 text-red-600" />
+              <div className="bg-red-500/20 p-3 rounded-full mr-4 backdrop-blur-sm border border-red-400/30">
+                <Scale className="h-8 w-8 text-red-400" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">My Disputes</h1>
-                <p className="text-gray-600 mt-1">
+                <h1 className="text-3xl font-bold text-white">My Disputes</h1>
+                <p className="text-gray-300 mt-1">
                   Manage and track your legal disputes
                 </p>
               </div>
             </div>
             <button
               onClick={() => navigate('/citizen/create-dispute')}
-              className="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 flex items-center"
+              className="bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white px-6 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-400 flex items-center transition-all duration-200 shadow-lg hover:shadow-red-500/25"
             >
               <Plus className="h-5 w-5 mr-2" />
               File Dispute

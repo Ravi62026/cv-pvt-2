@@ -304,7 +304,7 @@ const ChatWindow = ({
   }
 
   return (
-    <div className={`flex flex-col h-full bg-gray-50 ${className}`}>
+    <div className={`flex flex-col h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 ${className}`}>
       {/* Chat Header */}
       {showHeader && (
         <ChatHeader
@@ -316,7 +316,7 @@ const ChatWindow = ({
       )}
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4">
         <AnimatePresence>
           {messages.map((message, index) => (
             <MessageBubble

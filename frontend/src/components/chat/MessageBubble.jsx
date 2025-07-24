@@ -27,9 +27,9 @@ const MessageBubble = ({ message, isOwn, showAvatar }) => {
       return <Clock className="h-3 w-3 text-gray-400" />;
     }
     if (message.isRead && message.isRead.length > 0) {
-      return <CheckCheck className="h-3 w-3 text-blue-500" />;
+      return <CheckCheck className="h-3 w-3 text-blue-400" />;
     }
-    return <Check className="h-3 w-3 text-gray-400" />;
+    return <Check className="h-3 w-3 text-gray-500" />;
   };
 
   // Handle system messages separately
@@ -41,10 +41,10 @@ const MessageBubble = ({ message, isOwn, showAvatar }) => {
         exit={{ opacity: 0, y: -20 }}
         className="flex justify-center mb-4"
       >
-        <div className={`text-center text-xs px-4 py-2 rounded-lg max-w-md ${
+        <div className={`text-center text-xs px-4 py-2 rounded-lg max-w-md backdrop-blur-sm ${
           message.callType
-            ? 'bg-blue-50 text-blue-600 border border-blue-200'
-            : 'bg-gray-100 text-gray-500'
+            ? 'bg-blue-500/20 text-blue-300 border border-blue-400/30'
+            : 'bg-white/10 text-gray-300 border border-white/20'
         }`}>
           {message.content}
         </div>
@@ -57,25 +57,25 @@ const MessageBubble = ({ message, isOwn, showAvatar }) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className={`flex ${isOwn ? 'justify-end' : 'justify-start'} mb-4`}
+      className={`flex ${isOwn ? 'justify-end' : 'justify-start'} mb-3`}
     >
-      <div className={`flex ${isOwn ? 'flex-row-reverse' : 'flex-row'} items-end space-x-2 max-w-xs lg:max-w-md`}>
+      <div className={`flex ${isOwn ? 'flex-row-reverse' : 'flex-row'} items-end gap-2 max-w-[85%] sm:max-w-[75%] lg:max-w-[65%]`}>
         {/* Avatar */}
         {showAvatar && !isOwn && (
-          <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center flex-shrink-0">
+          <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center flex-shrink-0 shadow-lg">
             {message.sender.role === 'lawyer' ? (
-              <Shield className="h-4 w-4 text-gray-600" />
+              <Shield className="h-4 w-4 text-white" />
             ) : (
-              <User className="h-4 w-4 text-gray-600" />
+              <User className="h-4 w-4 text-white" />
             )}
           </div>
         )}
 
-        {/* Message Content */}
-        <div className={`${showAvatar && !isOwn ? 'ml-2' : ''} ${isOwn ? 'mr-2' : ''}`}>
+        {/* Message Content Container */}
+        <div className="flex flex-col min-w-0 flex-1">
           {/* Sender Name (for received messages) */}
           {!isOwn && showAvatar && (
-            <div className="text-xs text-gray-500 mb-1 px-3">
+            <div className="text-xs text-gray-300 mb-1 px-1">
               {message.sender.name}
             </div>
           )}
@@ -83,44 +83,49 @@ const MessageBubble = ({ message, isOwn, showAvatar }) => {
           {/* Message Bubble */}
           <div
             className={`
-              px-4 py-2 rounded-2xl relative
-              ${isOwn 
-                ? 'bg-blue-600 text-white' 
-                : 'bg-white border border-gray-200 text-gray-900'
-              }
-              ${message.status === 'sending' ? 'opacity-70' : ''}
+              relative inline-block max-w-full
+              ${isOwn ? 'ml-auto' : 'mr-auto'}
             `}
           >
-            {/* Message Text */}
-            <p className="text-sm whitespace-pre-wrap break-words">
-              {message.content}
-            </p>
-
-            {/* Message Time and Status */}
-            <div className={`flex items-center justify-end space-x-1 mt-1 ${isOwn ? 'text-blue-100' : 'text-gray-400'}`}>
-              <span className="text-xs">
-                {formatTime(message.timestamp)}
-              </span>
-              {isOwn && (
-                <div className="flex items-center">
-                  {getMessageStatus()}
-                </div>
-              )}
-            </div>
-
-            {/* Message Tail */}
             <div
               className={`
-                absolute top-3 w-3 h-3 transform rotate-45
-                ${isOwn 
-                  ? 'bg-blue-600 -right-1' 
-                  : 'bg-white border-r border-b border-gray-200 -left-1'
+                px-3 py-2.5 rounded-2xl backdrop-blur-sm relative
+                ${isOwn
+                  ? 'bg-gradient-to-r from-green-600/90 to-green-700/90 text-white border border-green-500/40 message-bubble-shadow-own'
+                  : 'bg-white/15 border border-white/25 text-white message-bubble-shadow'
                 }
+                ${message.status === 'sending' ? 'opacity-70' : ''}
               `}
-            />
+            >
+              {/* Message Text */}
+              <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">
+                {message.content}
+              </p>
+
+              {/* Message Time and Status */}
+              <div className={`flex items-center justify-end gap-1 mt-1.5 ${isOwn ? 'text-green-100/80' : 'text-gray-300/80'}`}>
+                <span className="text-xs font-medium">
+                  {formatTime(message.timestamp)}
+                </span>
+                {isOwn && (
+                  <div className="flex items-center ml-1">
+                    {getMessageStatus()}
+                  </div>
+                )}
+              </div>
+
+              {/* Message Tail */}
+              <div
+                className={`
+                  absolute top-3 w-2.5 h-2.5 transform rotate-45
+                  ${isOwn
+                    ? 'bg-gradient-to-br from-green-600/90 to-green-700/90 -right-1'
+                    : 'bg-white/15 border-r border-b border-white/25 -left-1'
+                  }
+                `}
+              />
+            </div>
           </div>
-
-
         </div>
       </div>
     </motion.div>

@@ -112,14 +112,14 @@ const MyCaseRequests = () => {
         {requests.length === 0 ? (
           <div className="text-center py-12">
             <Send className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No case requests sent</h3>
-            <p className="mt-1 text-sm text-gray-500">
+            <h3 className="mt-2 text-sm font-medium text-white">No case requests sent</h3>
+            <p className="mt-1 text-sm text-gray-400">
               You haven't sent any requests to lawyers for cases yet.
             </p>
             <div className="mt-6">
               <button
                 onClick={() => navigate('/citizen/my-cases')}
-                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-200"
               >
                 <FileText className="h-4 w-4 mr-2" />
                 View My Cases
@@ -131,7 +131,7 @@ const MyCaseRequests = () => {
             {requests.map((request) => (
               <div
                 key={request._id}
-                className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
+                className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-xl border border-white/20 p-6 hover:border-white/30 hover:shadow-lg transition-all duration-300"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -139,38 +139,38 @@ const MyCaseRequests = () => {
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center space-x-3">
                         <div className="flex-shrink-0">
-                          <div className="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center">
-                            <User className="h-5 w-5 text-purple-600" />
+                          <div className="h-10 w-10 rounded-full bg-purple-500/20 flex items-center justify-center backdrop-blur-sm border border-purple-400/30">
+                            <User className="h-5 w-5 text-purple-400" />
                           </div>
                         </div>
                         <div>
-                          <h3 className="text-lg font-medium text-gray-900">
+                          <h3 className="text-lg font-medium text-white">
                             {request.lawyer?.name || 'Unknown Lawyer'}
                           </h3>
-                          <p className="text-sm text-gray-500">
+                          <p className="text-sm text-gray-300">
                             {request.lawyer?.specialization || 'General Practice'}
                           </p>
                         </div>
                       </div>
-                      <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(request.status)}`}>
+                      <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border backdrop-blur-sm ${getStatusColor(request.status)}`}>
                         {getStatusIcon(request.status)}
                         <span className="ml-1 capitalize">{request.status}</span>
                       </div>
                     </div>
 
                     {/* Case Information */}
-                    <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                    <div className="bg-white/5 rounded-lg p-4 mb-4 backdrop-blur-sm border border-white/10">
                       <div className="flex items-center justify-between mb-2">
-                        <h4 className="text-sm font-medium text-gray-900">Case Details</h4>
-                        <span className="text-xs text-gray-500 capitalize">
+                        <h4 className="text-sm font-medium text-white">Case Details</h4>
+                        <span className="text-xs text-gray-400 capitalize">
                           {request.caseType} Case
                         </span>
                       </div>
-                      <p className="text-sm text-gray-700 mb-2">
-                        <strong>Title:</strong> {request.caseTitle || request.case?.title || 'N/A'}
+                      <p className="text-sm text-gray-300 mb-2">
+                        <strong className="text-white">Title:</strong> {request.caseTitle || request.case?.title || 'N/A'}
                       </p>
-                      <p className="text-sm text-gray-700">
-                        <strong>Description:</strong> {request.caseDescription || request.case?.description || 'N/A'}
+                      <p className="text-sm text-gray-300">
+                        <strong className="text-white">Description:</strong> {request.caseDescription || request.case?.description || 'N/A'}
                       </p>
                     </div>
 

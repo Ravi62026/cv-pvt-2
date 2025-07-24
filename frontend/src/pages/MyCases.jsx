@@ -174,18 +174,18 @@ const MyCases = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-4 rounded-2xl mr-6 shadow-lg">
-                <FileText className="h-10 w-10 text-white" />
+              <div className="bg-gradient-to-r from-indigo-500/20 to-purple-600/20 p-4 rounded-2xl mr-6 shadow-lg backdrop-blur-sm border border-indigo-400/30">
+                <FileText className="h-10 w-10 text-indigo-400" />
               </div>
               <div>
-                <h1 className="text-4xl font-bold text-gray-900 mb-2">My Cases</h1>
-                <p className="text-gray-600 text-lg">
+                <h1 className="text-4xl font-bold text-white mb-2">My Cases</h1>
+                <p className="text-gray-300 text-lg">
                   Manage all your legal queries and disputes in one place
                 </p>
                 {/* Temporary test button */}
@@ -231,8 +231,8 @@ const MyCases = () => {
         </div>
 
         {/* Tabs */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 mb-8">
-          <div className="border-b border-gray-200">
+        <div className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 mb-8">
+          <div className="border-b border-white/20">
             <nav className="flex space-x-8 px-8" aria-label="Tabs">
               {[
                 { id: 'all', name: 'All Cases', count: allCases.length },
@@ -244,15 +244,15 @@ const MyCases = () => {
                   onClick={() => setActiveTab(tab.id)}
                   className={`py-5 px-2 border-b-3 font-semibold text-base transition-all ${
                     activeTab === tab.id
-                      ? 'border-indigo-500 text-indigo-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      ? 'border-indigo-400 text-indigo-400'
+                      : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'
                   }`}
                 >
                   {tab.name}
                   <span className={`ml-3 py-1 px-3 rounded-full text-xs font-bold ${
                     activeTab === tab.id
-                      ? 'bg-indigo-100 text-indigo-700'
-                      : 'bg-gray-100 text-gray-600'
+                      ? 'bg-indigo-500/20 text-indigo-300'
+                      : 'bg-white/10 text-gray-400'
                   }`}>
                     {tab.count}
                   </span>
@@ -272,26 +272,26 @@ const MyCases = () => {
                     placeholder="Search cases by title, description, or category..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm shadow-sm"
+                    className="w-full pl-12 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 text-sm shadow-sm text-white placeholder-gray-400 backdrop-blur-sm"
                   />
                 </div>
               </div>
               <div className="flex items-center space-x-6">
                 <div className="flex items-center">
-                  <Filter className="h-5 w-5 text-gray-500 mr-3" />
+                  <Filter className="h-5 w-5 text-gray-400 mr-3" />
                   <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
-                    className="border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm font-medium shadow-sm"
+                    className="bg-white/10 border border-white/20 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 text-sm font-medium shadow-sm text-white backdrop-blur-sm"
                   >
-                    <option value="all">All Status</option>
-                    <option value="pending">Pending</option>
-                    <option value="assigned">Assigned</option>
-                    <option value="in-progress">In Progress</option>
-                    <option value="mediation">Mediation</option>
-                    <option value="arbitration">Arbitration</option>
-                    <option value="resolved">Resolved</option>
-                    <option value="closed">Closed</option>
+                    <option value="all" className="bg-slate-800 text-white">All Status</option>
+                    <option value="pending" className="bg-slate-800 text-white">Pending</option>
+                    <option value="assigned" className="bg-slate-800 text-white">Assigned</option>
+                    <option value="in-progress" className="bg-slate-800 text-white">In Progress</option>
+                    <option value="mediation" className="bg-slate-800 text-white">Mediation</option>
+                    <option value="arbitration" className="bg-slate-800 text-white">Arbitration</option>
+                    <option value="resolved" className="bg-slate-800 text-white">Resolved</option>
+                    <option value="closed" className="bg-slate-800 text-white">Closed</option>
                   </select>
                 </div>
               </div>
@@ -423,41 +423,42 @@ const CaseCard = ({ item, index, onViewDetails, onFindLawyer, getStatusIcon, get
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1 }}
-      className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-lg hover:border-gray-300 transition-all duration-200 group"
+      whileHover={{ y: -2, scale: 1.01 }}
+      className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-xl shadow-sm border border-white/20 p-6 hover:shadow-lg hover:border-white/30 transition-all duration-300 group"
     >
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
           <div className="flex items-center mb-3">
-            <div className={`p-2 rounded-lg mr-3 ${
-              item.type === 'query' ? 'bg-blue-50' : 'bg-red-50'
+            <div className={`p-2 rounded-lg mr-3 backdrop-blur-sm border ${
+              item.type === 'query' ? 'bg-blue-500/20 border-blue-400/30' : 'bg-red-500/20 border-red-400/30'
             }`}>
               {item.type === 'query' ? (
-                <FileText className="h-5 w-5 text-blue-600" />
+                <FileText className="h-5 w-5 text-blue-400" />
               ) : (
-                <Scale className="h-5 w-5 text-red-600" />
+                <Scale className="h-5 w-5 text-red-400" />
               )}
             </div>
             <div>
               <span className={`text-xs font-semibold px-3 py-1 rounded-full ${
-                item.type === 'query' ? 'bg-blue-100 text-blue-700' : 'bg-red-100 text-red-700'
+                item.type === 'query' ? 'bg-blue-500/20 text-blue-300' : 'bg-red-500/20 text-red-300'
               }`}>
                 {item.type === 'query' ? 'Legal Query' : 'Dispute Case'}
               </span>
             </div>
           </div>
-          <h3 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2 group-hover:text-indigo-600 transition-colors">
+          <h3 className="text-xl font-bold text-white mb-3 line-clamp-2 group-hover:text-indigo-300 transition-colors">
             {item.title}
           </h3>
           <div className="flex flex-wrap items-center gap-2 mb-4">
-            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(item.status)}`}>
+            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm ${getStatusColor(item.status)}`}>
               {getStatusIcon(item.status)}
               <span className="ml-1.5 capitalize">{item.status.replace('-', ' ')}</span>
             </span>
-            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${getPriorityColor(item.priority)}`}>
+            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold backdrop-blur-sm ${getPriorityColor(item.priority)}`}>
               {item.priority.toUpperCase()}
             </span>
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700 capitalize">
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-white/10 text-gray-300 capitalize backdrop-blur-sm">
               {item.category}
             </span>
           </div>

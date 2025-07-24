@@ -1,0 +1,74 @@
+{
+  "theme_color": "#8936FF",
+  "background_color": "#2EC6FE",
+  "icons": [
+    {
+      "purpose": "maskable",
+      "sizes": "512x512",
+      "src": "icon512_maskable.png",
+      "type": "image/png"
+    },
+    {
+      "purpose": "any",
+      "sizes": "512x512",
+      "src": "icon512_rounded.png",
+      "type": "image/png"
+    }
+  ],
+  "orientation": "any",
+  "display": "standalone",
+  "dir": "auto",
+  "lang": "en-US",
+  "name": "ChainVerdict",
+  "short_name": "CV",
+  "start_url": "http://localhost:5173/",
+  "scope": "/",
+  "description": "Expert legal advice platform connecting citizens with verified lawyers",
+  "categories": ["legal", "business", "productivity"],
+  "shortcuts": [
+    {
+      "name": "Create Query",
+      "short_name": "New Query",
+      "description": "Submit a new legal query",
+      "url": "/citizen/create-query",
+      "icons": [
+        {
+          "src": "/icons/shortcut-create.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "My Queries",
+      "short_name": "Queries",
+      "description": "View your legal queries",
+      "url": "/citizen/queries",
+      "icons": [
+        {
+          "src": "/icons/shortcut-queries.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Find Lawyers",
+      "short_name": "Lawyers",
+      "description": "Find verified lawyers",
+      "url": "/citizen/find-lawyers",
+      "icons": [
+        {
+          "src": "/icons/shortcut-lawyers.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  }
+}

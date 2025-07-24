@@ -72,20 +72,20 @@ const FileMessage = ({ fileData, isOwn, timestamp, sender }) => {
   const isImage = fileData.mimeType.startsWith('image/');
 
   return (
-    <div className={`flex ${isOwn ? 'justify-end' : 'justify-start'} mb-4`}>
-      <div className={`max-w-xs lg:max-w-md ${isOwn ? 'order-2' : 'order-1'}`}>
+    <div className={`flex ${isOwn ? 'justify-end' : 'justify-start'} mb-3`}>
+      <div className={`max-w-[85%] sm:max-w-[75%] lg:max-w-[65%] ${isOwn ? 'ml-auto' : 'mr-auto'}`}>
         {/* Sender name for received messages */}
         {!isOwn && sender && (
-          <div className="text-xs text-gray-500 mb-1 px-2">
+          <div className="text-xs text-gray-300 mb-1 px-1">
             {sender.name}
           </div>
         )}
-        
+
         <div
-          className={`rounded-2xl p-3 shadow-sm cursor-pointer hover:shadow-md transition-all duration-200 ${
+          className={`rounded-2xl p-3 cursor-pointer hover:shadow-xl transition-all duration-200 backdrop-blur-sm ${
             isOwn
-              ? 'bg-blue-600 text-white ml-auto hover:bg-blue-700'
-              : 'bg-white text-gray-900 border border-gray-200 hover:border-blue-300 hover:bg-blue-50'
+              ? 'bg-gradient-to-r from-green-600/90 to-green-700/90 text-white border border-green-500/40 hover:from-green-500/90 hover:to-green-600/90 message-bubble-shadow-own'
+              : 'bg-white/15 text-white border border-white/25 hover:border-white/40 hover:bg-white/20 message-bubble-shadow'
           }`}
           onClick={handleCardClick}
           title="Click to open file"
@@ -119,21 +119,21 @@ const FileMessage = ({ fileData, isOwn, timestamp, sender }) => {
                   </button>
                 </div>
               </div>
-              <div className={`text-xs ${isOwn ? 'text-blue-100' : 'text-gray-500'}`}>
+              <div className={`text-xs ${isOwn ? 'text-green-100/80' : 'text-gray-300/80'}`}>
                 {fileData.originalName} • {formatFileSize(fileData.size)}
               </div>
             </div>
           ) : (
             /* File Document */
             <div className="flex items-center space-x-3">
-              <div className={`p-2 rounded-lg ${isOwn ? 'bg-blue-500' : 'bg-gray-100'}`}>
+              <div className={`p-2 rounded-lg ${isOwn ? 'bg-green-500/30' : 'bg-white/20'}`}>
                 {getFileIcon(fileData.mimeType)}
               </div>
               <div className="flex-1 min-w-0">
-                <div className={`font-medium text-sm truncate ${isOwn ? 'text-white' : 'text-gray-900'}`}>
+                <div className={`font-medium text-sm truncate ${isOwn ? 'text-white' : 'text-white'}`}>
                   {fileData.originalName}
                 </div>
-                <div className={`text-xs ${isOwn ? 'text-blue-100' : 'text-gray-500'}`}>
+                <div className={`text-xs ${isOwn ? 'text-green-100/80' : 'text-gray-300/80'}`}>
                   {formatFileSize(fileData.size)} • 📎 Click to open
                 </div>
               </div>
@@ -146,8 +146,8 @@ const FileMessage = ({ fileData, isOwn, timestamp, sender }) => {
                   }}
                   className={`p-1 rounded-full transition-colors ${
                     isOwn
-                      ? 'hover:bg-blue-500 text-blue-100'
-                      : 'hover:bg-gray-100 text-gray-500'
+                      ? 'hover:bg-green-500/30 text-green-100'
+                      : 'hover:bg-white/20 text-gray-300'
                   }`}
                   title="Preview"
                 >
@@ -161,8 +161,8 @@ const FileMessage = ({ fileData, isOwn, timestamp, sender }) => {
                   }}
                   className={`p-1 rounded-full transition-colors ${
                     isOwn
-                      ? 'hover:bg-blue-500 text-blue-100'
-                      : 'hover:bg-gray-100 text-gray-500'
+                      ? 'hover:bg-green-500/30 text-green-100'
+                      : 'hover:bg-white/20 text-gray-300'
                   }`}
                   title="Download"
                 >
@@ -172,12 +172,12 @@ const FileMessage = ({ fileData, isOwn, timestamp, sender }) => {
             </div>
           )}
         </div>
-        
+
         {/* Timestamp */}
-        <div className={`text-xs text-gray-500 mt-1 px-2 ${isOwn ? 'text-right' : 'text-left'}`}>
-          {new Date(timestamp).toLocaleTimeString([], { 
-            hour: '2-digit', 
-            minute: '2-digit' 
+        <div className={`text-xs mt-1.5 px-1 ${isOwn ? 'text-right text-green-100/80' : 'text-left text-gray-300/80'}`}>
+          {new Date(timestamp).toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit'
           })}
         </div>
       </div>

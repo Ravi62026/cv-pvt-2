@@ -6,12 +6,9 @@ import {
   MessageCircle,
   FileText,
   Scale,
-  TrendingUp,
-  Clock,
   CheckCircle,
   Search,
   UserPlus,
-  MessageSquare,
   BarChart3,
   Activity,
   ArrowRight,
@@ -39,7 +36,7 @@ const CitizenDashboard = () => {
   const [stats, setStats] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
-  const { success, error } = useToast();
+  const { error } = useToast();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -139,86 +136,91 @@ const CitizenDashboard = () => {
 
         {/* Secondary Actions */}
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Quick Access</h2>
+          <h2 className="text-2xl font-bold text-white mb-6">Quick Access</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
             {/* Find Lawyers */}
             <motion.div
-              whileHover={{ y: -2 }}
-              className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300 cursor-pointer group"
+              whileHover={{ y: -2, scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/20 hover:border-green-400/50 transition-all duration-300 cursor-pointer group"
               onClick={() => navigate('/citizen/find-lawyers')}
             >
               <div className="flex items-center justify-between mb-4">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <Search className="h-5 w-5 text-green-600" />
+                <div className="p-2.5 bg-green-500/20 rounded-lg backdrop-blur-sm border border-green-400/30">
+                  <Search className="h-5 w-5 text-green-400" />
                 </div>
-                <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-green-600 group-hover:translate-x-1 transition-all duration-300" />
+                <ArrowRight className="h-4 w-4 text-white/60 group-hover:text-green-400 group-hover:translate-x-1 transition-all duration-300" />
               </div>
-              <h3 className="font-semibold text-gray-900 mb-2">Find Lawyers</h3>
-              <p className="text-sm text-gray-600">Browse verified legal professionals</p>
+              <h3 className="font-semibold text-white mb-2">Find Lawyers</h3>
+              <p className="text-sm text-gray-300">Browse verified legal professionals</p>
             </motion.div>
 
             {/* Connected Lawyers */}
             <motion.div
-              whileHover={{ y: -2 }}
-              className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300 cursor-pointer group"
+              whileHover={{ y: -2, scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/20 hover:border-purple-400/50 transition-all duration-300 cursor-pointer group"
               onClick={() => navigate('/citizen/connected-lawyers')}
             >
               <div className="flex items-center justify-between mb-4">
-                <div className="p-2 bg-purple-100 rounded-lg">
-                  <UserPlus className="h-5 w-5 text-purple-600" />
+                <div className="p-2.5 bg-purple-500/20 rounded-lg backdrop-blur-sm border border-purple-400/30">
+                  <UserPlus className="h-5 w-5 text-purple-400" />
                 </div>
-                <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-purple-600 group-hover:translate-x-1 transition-all duration-300" />
+                <ArrowRight className="h-4 w-4 text-white/60 group-hover:text-purple-400 group-hover:translate-x-1 transition-all duration-300" />
               </div>
-              <h3 className="font-semibold text-gray-900 mb-2">Connected Lawyers</h3>
-              <p className="text-sm text-gray-600">View your legal connections</p>
+              <h3 className="font-semibold text-white mb-2">Connected Lawyers</h3>
+              <p className="text-sm text-gray-300">View your legal connections</p>
             </motion.div>
 
             {/* My Case Requests */}
             <motion.div
-              whileHover={{ y: -2 }}
-              className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300 cursor-pointer group"
+              whileHover={{ y: -2, scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/20 hover:border-blue-400/50 transition-all duration-300 cursor-pointer group"
               onClick={() => navigate('/citizen/my-case-requests')}
             >
               <div className="flex items-center justify-between mb-4">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <Send className="h-5 w-5 text-blue-600" />
+                <div className="p-2.5 bg-blue-500/20 rounded-lg backdrop-blur-sm border border-blue-400/30">
+                  <Send className="h-5 w-5 text-blue-400" />
                 </div>
-                <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all duration-300" />
+                <ArrowRight className="h-4 w-4 text-white/60 group-hover:text-blue-400 group-hover:translate-x-1 transition-all duration-300" />
               </div>
-              <h3 className="font-semibold text-gray-900 mb-2">My Requests</h3>
-              <p className="text-sm text-gray-600">Requests sent to lawyers</p>
+              <h3 className="font-semibold text-white mb-2">My Requests</h3>
+              <p className="text-sm text-gray-300">Requests sent to lawyers</p>
             </motion.div>
 
             {/* My Case Offers */}
             <motion.div
-              whileHover={{ y: -2 }}
-              className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300 cursor-pointer group"
+              whileHover={{ y: -2, scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/20 hover:border-indigo-400/50 transition-all duration-300 cursor-pointer group"
               onClick={() => navigate('/citizen/my-case-offers')}
             >
               <div className="flex items-center justify-between mb-4">
-                <div className="p-2 bg-indigo-100 rounded-lg">
-                  <Gift className="h-5 w-5 text-indigo-600" />
+                <div className="p-2.5 bg-indigo-500/20 rounded-lg backdrop-blur-sm border border-indigo-400/30">
+                  <Gift className="h-5 w-5 text-indigo-400" />
                 </div>
-                <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all duration-300" />
+                <ArrowRight className="h-4 w-4 text-white/60 group-hover:text-indigo-400 group-hover:translate-x-1 transition-all duration-300" />
               </div>
-              <h3 className="font-semibold text-gray-900 mb-2">Offers Received</h3>
-              <p className="text-sm text-gray-600">Lawyers offering help</p>
+              <h3 className="font-semibold text-white mb-2">Offers Received</h3>
+              <p className="text-sm text-gray-300">Lawyers offering help</p>
             </motion.div>
 
             {/* My Queries */}
             <motion.div
-              whileHover={{ y: -2 }}
-              className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300 cursor-pointer group"
+              whileHover={{ y: -2, scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/20 hover:border-orange-400/50 transition-all duration-300 cursor-pointer group"
               onClick={() => navigate('/citizen/my-queries')}
             >
               <div className="flex items-center justify-between mb-4">
-                <div className="p-2 bg-orange-100 rounded-lg">
-                  <MessageCircle className="h-5 w-5 text-orange-600" />
+                <div className="p-2.5 bg-orange-500/20 rounded-lg backdrop-blur-sm border border-orange-400/30">
+                  <MessageCircle className="h-5 w-5 text-orange-400" />
                 </div>
-                <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-orange-600 group-hover:translate-x-1 transition-all duration-300" />
+                <ArrowRight className="h-4 w-4 text-white/60 group-hover:text-orange-400 group-hover:translate-x-1 transition-all duration-300" />
               </div>
-              <h3 className="font-semibold text-gray-900 mb-2">My Queries</h3>
-              <p className="text-sm text-gray-600">Manage legal questions</p>
+              <h3 className="font-semibold text-white mb-2">My Queries</h3>
+              <p className="text-sm text-gray-300">Manage legal questions</p>
             </motion.div>
           </div>
         </div>
@@ -286,64 +288,7 @@ const CitizenDashboard = () => {
   );
 };
 
-// Quick Action Card Component
-const QuickActionCard = ({ title, description, icon: Icon, color, onClick }) => {
-  const colorClasses = {
-    blue: 'bg-blue-500 hover:bg-blue-600',
-    green: 'bg-green-500 hover:bg-green-600',
-    purple: 'bg-purple-500 hover:bg-purple-600',
-    orange: 'bg-orange-500 hover:bg-orange-600',
-  };
 
-  return (
-    <motion.div
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-      className={`${colorClasses[color]} text-white p-6 rounded-lg shadow-lg cursor-pointer transition-colors`}
-      onClick={onClick}
-    >
-      <div className="flex items-center justify-between mb-4">
-        <Icon className="h-8 w-8" />
-        <ArrowRight className="h-5 w-5" />
-      </div>
-      <h3 className="text-lg font-semibold mb-2">{title}</h3>
-      <p className="text-sm opacity-90">{description}</p>
-    </motion.div>
-  );
-};
-
-// Stats Card Component
-const StatsCard = ({ title, value, icon: Icon, color, trend }) => {
-  const colorClasses = {
-    blue: 'text-blue-600 bg-blue-100',
-    green: 'text-green-600 bg-green-100',
-    purple: 'text-purple-600 bg-purple-100',
-    orange: 'text-orange-600 bg-orange-100',
-  };
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
-    >
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium text-gray-600">{title}</p>
-          <p className="text-2xl font-bold text-gray-900">{value}</p>
-        </div>
-        <div className={`p-3 rounded-full ${colorClasses[color]}`}>
-          <Icon className="h-6 w-6" />
-        </div>
-      </div>
-      <div className="mt-4 flex items-center">
-        <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
-        <span className="text-sm text-green-600 font-medium">{trend}</span>
-        <span className="text-sm text-gray-500 ml-1">from last month</span>
-      </div>
-    </motion.div>
-  );
-};
 
 // Recent Activity Section
 const RecentActivitySection = () => {

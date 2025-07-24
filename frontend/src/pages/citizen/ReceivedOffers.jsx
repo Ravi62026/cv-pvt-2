@@ -116,17 +116,17 @@ const ReceivedOffers = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center">
-            <div className="bg-gradient-to-r from-green-500 to-emerald-600 p-4 rounded-2xl mr-6 shadow-lg">
-              <MessageCircle className="h-10 w-10 text-white" />
+            <div className="bg-gradient-to-r from-green-500/20 to-emerald-600/20 p-4 rounded-2xl mr-6 shadow-lg backdrop-blur-sm border border-green-400/30">
+              <MessageCircle className="h-10 w-10 text-green-400" />
             </div>
             <div>
-              <h1 className="text-4xl font-bold text-gray-900 mb-2">Received Offers</h1>
-              <p className="text-gray-600 text-lg">
+              <h1 className="text-4xl font-bold text-white mb-2">Received Offers</h1>
+              <p className="text-gray-300 text-lg">
                 Lawyers who want to handle your cases
               </p>
             </div>

@@ -39,9 +39,9 @@ const Navbar = () => {
 
   const navItems = [
     { name: 'Home', path: '/', public: true },
-    { name: 'About', path: '/about', public: true },
-    { name: 'Features', path: '/features', public: true },
-    { name: 'How It Works', path: '/how-it-works', public: true },
+    // { name: 'About', path: '/about', public: true },
+    // { name: 'Features', path: '/features', public: true },
+    // { name: 'How It Works', path: '/how-it-works', public: true },
     { name: 'Our Vision', path: '/vision', public: true },
     { name: 'Contact', path: '/contact', public: true },
   ];
@@ -67,14 +67,28 @@ const Navbar = () => {
   ];
 
   return (
-    <nav className={`fixed top-2 sm:top-4 left-1/2 -translate-x-1/2 w-[95%] sm:w-[92%] max-w-7xl z-50 rounded-2xl sm:rounded-full px-3 sm:px-6 py-2 transition-all duration-300 border border-white/10 backdrop-blur-2xl shadow-lg shadow-blue-500/10 ${scrolled ? 'bg-[rgba(15,15,25,0.65)] hover:shadow-blue-500/20' : 'bg-[rgba(15,15,25,0.35)]'}`} style={{backgroundImage:'linear-gradient(135deg,rgba(30,58,138,0.15) 0%, rgba(15,23,42,0.15) 100%)'}}>
-      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
-        <div className="flex items-center justify-between h-14 sm:h-16">
-          {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2 sm:space-x-3">
-            <img src={logCv} alt="ChainVerdict Logo" className="h-10 w-10 sm:h-14 sm:w-14 lg:h-16 lg:w-16 rounded-full object-cover border-white shadow" />
-            <span className="text-white font-bold text-lg sm:text-xl hidden xs:block">ChainVerdict</span>
-          </Link>
+    <>
+      {/* Mobile Menu Overlay */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
+            onClick={() => setIsOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      <nav className={`fixed top-2 sm:top-4 left-1/2 -translate-x-1/2 w-[95%] sm:w-[92%] max-w-7xl z-50 rounded-2xl sm:rounded-full px-3 sm:px-6 py-2 transition-all duration-300 border border-white/10 backdrop-blur-2xl shadow-lg shadow-blue-500/10 ${scrolled ? 'bg-[rgba(15,15,25,0.85)] hover:shadow-blue-500/20' : 'bg-[rgba(15,15,25,0.75)]'} ${isOpen ? 'rounded-2xl' : 'sm:rounded-full'}`} style={{backgroundImage:'linear-gradient(135deg,rgba(30,58,138,0.15) 0%, rgba(15,23,42,0.15) 100%)'}}>
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
+          <div className="flex items-center justify-between h-14 sm:h-16">
+            {/* Logo */}
+            <Link to="/" className="flex items-center space-x-2 sm:space-x-3 z-50">
+              <img src={logCv} alt="ChainVerdict Logo" className="h-10 w-10 sm:h-14 sm:w-14 lg:h-16 lg:w-16 rounded-full object-cover border-white shadow" />
+              <span className="text-white font-bold text-lg sm:text-xl hidden xs:block">ChainVerdict</span>
+            </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden lg:block">
@@ -202,10 +216,17 @@ const Navbar = () => {
           </div>
 
           {/* Mobile menu button */}
-          <div className="lg:hidden">
+          <div className="lg:hidden flex items-center space-x-2">
+            {/* Notification System for mobile */}
+            {isAuthenticated && (
+              <div className="mr-2">
+                <NotificationSystem />
+              </div>
+            )}
+
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-white/10 transition-colors duration-200"
+              className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-white/10 transition-colors duration-200 z-50 relative"
             >
               {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
@@ -213,118 +234,119 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile Navigation Menu */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="lg:hidden bg-[rgba(15,15,25,0.65)] backdrop-blur-md border-t border-white/10 rounded-b-2xl px-4 pb-4"
-          >
-            <div className="px-2 pt-2 pb-3 space-y-1">
-              {navItems.map((item) => (
-                <Link
-                  key={item.name}
-                  to={item.path}
-                  onClick={() => setIsOpen(false)}
-                  className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
-                    isActive(item.path)
-                      ? 'text-white bg-white/20'
-                      : 'text-gray-300 hover:text-white hover:bg-white/10'
-                  }`}
-                >
-                  {item.name}
-                </Link>
-              ))}
-              
-              {isAuthenticated && authenticatedNavItems.map((item) => (
-                <Link
-                  key={item.name}
-                  to={item.path}
-                  onClick={() => setIsOpen(false)}
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
-                    isActive(item.path)
-                      ? 'text-white bg-white/20'
-                      : 'text-gray-300 hover:text-white hover:bg-white/10'
-                  }`}
-                >
-                  <item.icon className="h-4 w-4" />
-                  <span>{item.name}</span>
-                </Link>
-              ))}
-            </div>
+        {/* Mobile Navigation Menu */}
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="lg:hidden absolute right-0  bg-[rgba(15,15,25,0.95)] backdrop-blur-md border-t border-white/10 rounded-b-2xl px-4 pb-4 overflow-hidden"
+            >
+              <div className="px-2 pt-2 pb-3 space-y-1 max-h-[60vh] overflow-y-auto">
+                {navItems.map((item) => (
+                  <Link
+                    key={item.name}
+                    to={item.path}
+                    onClick={() => setIsOpen(false)}
+                    className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
+                      isActive(item.path)
+                        ? 'text-white bg-white/20'
+                        : 'text-gray-300 hover:text-white hover:bg-white/10'
+                    }`}
+                  >
+                    {item.name}
+                  </Link>
+                ))}
 
-            {/* Mobile Auth Section */}
-            <div className="pt-4 pb-3 border-t border-white/10">
-              {isAuthenticated ? (
-                <div className="px-2 space-y-1">
-                  <div className="flex items-center px-3 py-2">
-                    <img
-                      src={user?.profileImage?.url || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiM2MzY2RjEiLz4KPHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4PSIxMCIgeT0iMTAiPgo8cGF0aCBkPSJNMjAgMjFWMTlBNCA0IDAgMCAwIDE2IDE1SDhBNCA0IDAgMCAwIDQgMTlWMjEiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxjaXJjbGUgY3g9IjEyIiBjeT0iNyIgcj0iNCIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cjwvc3ZnPgo='}
-                      alt="Profile"
-                      className="h-10 w-10 rounded-full object-cover"
-                    />
-                    <div className="ml-3">
-                      <div className="text-white text-base font-medium">{user?.name}</div>
-                      <div className="text-gray-400 text-sm capitalize">{user?.role}</div>
+                {isAuthenticated && authenticatedNavItems.map((item) => (
+                  <Link
+                    key={item.name}
+                    to={item.path}
+                    onClick={() => setIsOpen(false)}
+                    className={`flex items-center space-x-2 px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
+                      isActive(item.path)
+                        ? 'text-white bg-white/20'
+                        : 'text-gray-300 hover:text-white hover:bg-white/10'
+                    }`}
+                  >
+                    <item.icon className="h-4 w-4" />
+                    <span>{item.name}</span>
+                  </Link>
+                ))}
+              </div>
+
+              {/* Mobile Auth Section */}
+              <div className="pt-4 pb-3 border-t border-white/10">
+                {isAuthenticated ? (
+                  <div className="px-2 space-y-1">
+                    <div className="flex items-center px-3 py-2">
+                      <img
+                        src={user?.profileImage?.url || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiM2MzY2RjEiLz4KPHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4PSIxMCIgeT0iMTAiPgo8cGF0aCBkPSJNMjAgMjFWMTlBNCA0IDAgMCAwIDE2IDE1SDhBNCA0IDAgMCAwIDQgMTlWMjEiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxjaXJjbGUgY3g9IjEyIiBjeT0iNyIgcj0iNCIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cjwvc3ZnPgo='}
+                        alt="Profile"
+                        className="h-10 w-10 rounded-full object-cover"
+                      />
+                      <div className="ml-3">
+                        <div className="text-white text-base font-medium">{user?.name}</div>
+                        <div className="text-gray-400 text-sm capitalize">{user?.role}</div>
+                      </div>
                     </div>
+                    <Link
+                      to="/profile"
+                      onClick={() => setIsOpen(false)}
+                      className="flex items-center space-x-2 px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-white/10 transition-colors"
+                    >
+                      <User className="h-4 w-4" />
+                      <span>Profile</span>
+                    </Link>
+                    <Link
+                      to="/settings"
+                      onClick={() => setIsOpen(false)}
+                      className="flex items-center space-x-2 px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-white/10 transition-colors"
+                    >
+                      <Settings className="h-4 w-4" />
+                      <span>Settings</span>
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center space-x-2 w-full px-3 py-2 rounded-md text-base font-medium text-red-400 hover:text-red-300 hover:bg-white/10 transition-colors"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      <span>Sign Out</span>
+                    </button>
                   </div>
-                  <Link
-                    to="/profile"
-                    onClick={() => setIsOpen(false)}
-                    className="flex items-center space-x-2 px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-white/10 transition-colors"
-                  >
-                    <User className="h-4 w-4" />
-                    <span>Profile</span>
-                  </Link>
-                  <Link
-                    to="/settings"
-                    onClick={() => setIsOpen(false)}
-                    className="flex items-center space-x-2 px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-white/10 transition-colors"
-                  >
-                    <Settings className="h-4 w-4" />
-                    <span>Settings</span>
-                  </Link>
-                  <button
-                    onClick={handleLogout}
-                    className="flex items-center space-x-2 w-full px-3 py-2 rounded-md text-base font-medium text-red-400 hover:text-red-300 hover:bg-white/10 transition-colors"
-                  >
-                    <LogOut className="h-4 w-4" />
-                    <span>Sign Out</span>
-                  </button>
-                </div>
-              ) : (
-                <div className="px-2 space-y-1">
-                  <Link
-                    to="/login"
-                    onClick={() => setIsOpen(false)}
-                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-white/10 transition-colors"
-                  >
-                    Sign In
-                  </Link>
-                  <Link
-                    to="/signup"
-                    onClick={() => setIsOpen(false)}
-                    className="block px-3 py-2 rounded-md text-base font-medium bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white transition-all duration-200"
-                  >
-                    Get Started
-                  </Link>
-                </div>
-              )}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                ) : (
+                  <div className="px-2 space-y-1">
+                    <Link
+                      to="/login"
+                      onClick={() => setIsOpen(false)}
+                      className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-white/10 transition-colors"
+                    >
+                      Sign In
+                    </Link>
+                    <Link
+                      to="/signup"
+                      onClick={() => setIsOpen(false)}
+                      className="block px-3 py-2 rounded-md text-base font-medium bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white transition-all duration-200"
+                    >
+                      Get Started
+                    </Link>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-      {/* Overlay to close user menu */}
-      {userMenuOpen && (
-        <div
-          className="fixed inset-0 z-40"
-          onClick={() => setUserMenuOpen(false)}
-        />
-      )}
-    </nav>
+        {/* Overlay to close user menu */}
+        {userMenuOpen && (
+          <div
+            className="fixed inset-0 z-40"
+            onClick={() => setUserMenuOpen(false)}
+          />
+        )}
+      </nav>
+    </>
   );
 };
 

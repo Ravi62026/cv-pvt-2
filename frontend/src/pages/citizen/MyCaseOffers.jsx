@@ -128,18 +128,18 @@ const MyCaseOffers = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">My Case Offers</h1>
-              <p className="mt-2 text-gray-600">
+              <h1 className="text-3xl font-bold text-white">My Case Offers</h1>
+              <p className="mt-2 text-gray-300">
                 Offers from lawyers who want to help with your cases
               </p>
             </div>
-            <div className="flex items-center space-x-2 text-sm text-gray-500">
+            <div className="flex items-center space-x-2 text-sm text-gray-400">
               <Gift className="h-4 w-4" />
               <span>{offers.length} total offers</span>
             </div>
@@ -150,14 +150,14 @@ const MyCaseOffers = () => {
         {offers.length === 0 ? (
           <div className="text-center py-12">
             <Gift className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No offers received</h3>
-            <p className="mt-1 text-sm text-gray-500">
+            <h3 className="mt-2 text-sm font-medium text-white">No offers received</h3>
+            <p className="mt-1 text-sm text-gray-400">
               No lawyers have offered to help with your cases yet.
             </p>
             <div className="mt-6">
               <button
                 onClick={() => navigate('/citizen/my-cases')}
-                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-200"
               >
                 <FileText className="h-4 w-4 mr-2" />
                 View My Cases
@@ -169,7 +169,7 @@ const MyCaseOffers = () => {
             {offers.map((offer) => (
               <div
                 key={offer.requestId}
-                className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
+                className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-xl shadow-sm border border-white/20 p-6 hover:shadow-lg hover:border-white/30 transition-all duration-300"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -177,15 +177,15 @@ const MyCaseOffers = () => {
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center space-x-3">
                         <div className="flex-shrink-0">
-                          <div className="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center">
-                            <User className="h-6 w-6 text-purple-600" />
+                          <div className="h-12 w-12 rounded-full bg-purple-500/20 flex items-center justify-center backdrop-blur-sm border border-purple-400/30">
+                            <User className="h-6 w-6 text-purple-400" />
                           </div>
                         </div>
                         <div>
-                          <h3 className="text-lg font-medium text-gray-900">
+                          <h3 className="text-lg font-medium text-white">
                             {offer.lawyer?.name || 'Unknown Lawyer'}
                           </h3>
-                          <div className="flex items-center space-x-2 text-sm text-gray-500">
+                          <div className="flex items-center space-x-2 text-sm text-gray-300">
                             <span>{offer.lawyer?.specialization || 'General Practice'}</span>
                             {offer.lawyer?.rating && (
                               <div className="flex items-center">
@@ -209,26 +209,26 @@ const MyCaseOffers = () => {
                     </div>
 
                     {/* Case Information */}
-                    <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                    <div className="bg-white/5 rounded-lg p-4 mb-4 backdrop-blur-sm border border-white/10">
                       <div className="flex items-center justify-between mb-2">
-                        <h4 className="text-sm font-medium text-gray-900">Case Details</h4>
-                        <span className="text-xs text-gray-500 capitalize">
+                        <h4 className="text-sm font-medium text-white">Case Details</h4>
+                        <span className="text-xs text-gray-400 capitalize">
                           {offer.caseType} Case
                         </span>
                       </div>
-                      <p className="text-sm text-gray-700 mb-2">
-                        <strong>Title:</strong> {offer.caseTitle || offer.case?.title || 'N/A'}
+                      <p className="text-sm text-gray-300 mb-2">
+                        <strong className="text-white">Title:</strong> {offer.caseTitle || offer.case?.title || 'N/A'}
                       </p>
-                      <p className="text-sm text-gray-700">
-                        <strong>Description:</strong> {offer.caseDescription || offer.case?.description || 'N/A'}
+                      <p className="text-sm text-gray-300">
+                        <strong className="text-white">Description:</strong> {offer.caseDescription || offer.case?.description || 'N/A'}
                       </p>
                     </div>
 
                     {/* Lawyer's Offer Message */}
                     {offer.message && (
                       <div className="mb-4">
-                        <h4 className="text-sm font-medium text-gray-900 mb-2">Lawyer's Offer</h4>
-                        <p className="text-sm text-gray-700 bg-blue-50 p-3 rounded-lg">
+                        <h4 className="text-sm font-medium text-white mb-2">Lawyer's Offer</h4>
+                        <p className="text-sm text-gray-300 bg-blue-500/20 p-3 rounded-lg backdrop-blur-sm border border-blue-400/30">
                           {offer.message}
                         </p>
                       </div>
@@ -253,17 +253,17 @@ const MyCaseOffers = () => {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="pt-4 border-t border-gray-200">
+                <div className="pt-4 border-t border-white/20">
                   {offer.status === 'pending' && (
                     <div className="flex items-center justify-between">
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-gray-300">
                         This lawyer wants to help with your case. Would you like to accept their offer?
                       </p>
                       <div className="flex space-x-3">
                         <button
                           onClick={() => handleRejectOffer(offer.requestId)}
                           disabled={processingOffer === offer.requestId}
-                          className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50"
+                          className="inline-flex items-center px-4 py-2 border border-white/20 text-sm font-medium rounded-md text-gray-300 bg-white/10 hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-400 disabled:opacity-50 backdrop-blur-sm transition-all duration-200"
                         >
                           <XCircle className="h-4 w-4 mr-2" />
                           Reject
@@ -271,7 +271,7 @@ const MyCaseOffers = () => {
                         <button
                           onClick={() => handleAcceptOffer(offer.requestId)}
                           disabled={processingOffer === offer.requestId}
-                          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
+                          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-400 disabled:opacity-50 transition-all duration-200 shadow-lg hover:shadow-green-500/25"
                         >
                           <CheckCircle className="h-4 w-4 mr-2" />
                           Accept Offer
@@ -282,12 +282,12 @@ const MyCaseOffers = () => {
 
                   {offer.status === 'accepted' && (
                     <div className="flex items-center justify-between">
-                      <p className="text-sm text-green-600 font-medium">
+                      <p className="text-sm text-green-400 font-medium">
                         ✅ Offer accepted! You can now chat with the lawyer.
                       </p>
                       <button
                         onClick={() => handleStartChat(offer)}
-                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-400 transition-all duration-200 shadow-lg hover:shadow-green-500/25"
                       >
                         <MessageCircle className="h-4 w-4 mr-2" />
                         Start Chat
@@ -296,7 +296,7 @@ const MyCaseOffers = () => {
                   )}
 
                   {offer.status === 'rejected' && (
-                    <p className="text-sm text-red-600">
+                    <p className="text-sm text-red-400">
                       ❌ You rejected this offer.
                     </p>
                   )}

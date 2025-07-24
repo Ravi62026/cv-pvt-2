@@ -86,6 +86,20 @@ class WebRTCService {
       this.localStream = await navigator.mediaDevices.getUserMedia(constraints);
       console.log('✅ WebRTC: Media permissions granted');
 
+      // Log local stream details for debugging
+      console.log('🎵 WebRTC: Local stream tracks:', this.localStream.getTracks().map(track => ({
+        kind: track.kind,
+        enabled: track.enabled,
+        readyState: track.readyState
+      })));
+
+      // Log local stream details for debugging
+      console.log('🎵 WebRTC: Local stream tracks:', this.localStream.getTracks().map(track => ({
+        kind: track.kind,
+        enabled: track.enabled,
+        readyState: track.readyState
+      })));
+
       // Create peer connection using native WebRTC
       console.log('🔗 WebRTC: Creating peer connection...');
       console.log('🔍 WebRTC: Local stream:', this.localStream);
@@ -145,7 +159,16 @@ class WebRTCService {
         video: this.callType === 'video'
       };
 
+      console.log('🎥 WebRTC: Requesting media permissions for answer...', constraints);
       this.localStream = await navigator.mediaDevices.getUserMedia(constraints);
+      console.log('✅ WebRTC: Media permissions granted for answer');
+
+      // Log local stream details for debugging
+      console.log('🎵 WebRTC: Local stream tracks (answer):', this.localStream.getTracks().map(track => ({
+        kind: track.kind,
+        enabled: track.enabled,
+        readyState: track.readyState
+      })));
 
       // Create peer connection using native WebRTC
       this.peerConnection = new RTCPeerConnection({
@@ -226,6 +249,14 @@ class WebRTCService {
     this.peerConnection.ontrack = (event) => {
       console.log('📺 WebRTC: Received remote stream');
       this.remoteStream = event.streams[0];
+
+      // Log stream details for debugging
+      console.log('🎵 WebRTC: Remote stream tracks:', this.remoteStream.getTracks().map(track => ({
+        kind: track.kind,
+        enabled: track.enabled,
+        readyState: track.readyState
+      })));
+
       if (this.onRemoteStream) {
         this.onRemoteStream(event.streams[0]);
       }
@@ -347,6 +378,23 @@ class WebRTCService {
   // Get remote stream
   getRemoteStream() {
     return this.remoteStream;
+  }
+
+  // Set up audio element for remote stream
+  setupAudioElement(audioElement) {
+    if (this.remoteStream && audioElement) {
+      audioElement.srcObject = this.remoteStream;
+      audioElement.play().catch(error => {
+        console.error('Failed to play remote audio:', error);
+      });
+    }
+  }
+
+  // Set up video element for remote stream
+  setupVideoElement(videoElement) {
+    if (this.remoteStream && videoElement) {
+      videoElement.srcObject = this.remoteStream;
+    }
   }
 
   // Cleanup resources

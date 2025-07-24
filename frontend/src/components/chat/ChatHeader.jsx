@@ -9,11 +9,8 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useCall } from '../../contexts/CallContext';
-// import { consultationAPI } from '../../services/api';
 import { useToast } from '../../contexts/ToastContext';
-// import VoiceCallInterface from '../calls/VoiceCallInterface';
-// import VideoCallInterface from '../calls/VideoCallInterface';
-// import ConsultationScheduleModal from '../calls/ConsultationScheduleModal';
+import CallInterface from '../call/CallInterface';
 
 const ChatHeader = ({ otherParticipant, isOnline, onBack, chatId }) => {
   console.log('ChatHeader rendering with props:', { otherParticipant, isOnline, onBack, chatId });
@@ -21,6 +18,10 @@ const ChatHeader = ({ otherParticipant, isOnline, onBack, chatId }) => {
   const { user } = useAuth();
   const { startCall } = useCall();
   const { success, error } = useToast();
+
+  const [showCallInterface, setShowCallInterface] = useState(false);
+  const [callType, setCallType] = useState('voice');
+  const [callDuration, setCallDuration] = useState(0);
 
   // Simple test function
   const testFunction = () => {
@@ -44,12 +45,17 @@ const ChatHeader = ({ otherParticipant, isOnline, onBack, chatId }) => {
 
     try {
       console.log('Starting voice call with:', otherParticipant.user.name);
+      setCallType('voice');
+      setShowCallInterface(true);
+      setCallDuration(0);
+
       const result = await startCall(otherParticipant.user._id, 'voice', chatId);
       console.log('✅ Voice call started successfully:', result);
       if (success) success(`Voice call started with ${otherParticipant.user.name}`);
     } catch (err) {
       console.error('Failed to start voice call:', err);
       if (error) error('Failed to start voice call: ' + err.message);
+      setShowCallInterface(false);
     }
   };
 
@@ -66,12 +72,17 @@ const ChatHeader = ({ otherParticipant, isOnline, onBack, chatId }) => {
 
     try {
       console.log('Starting video consultation with:', otherParticipant.user.name);
+      setCallType('video');
+      setShowCallInterface(true);
+      setCallDuration(0);
+
       const result = await startCall(otherParticipant.user._id, 'video', chatId);
       console.log('✅ Video call started successfully:', result);
       if (success) success(`Video call started with ${otherParticipant.user.name}`);
     } catch (err) {
       console.error('Failed to start video consultation:', err);
       if (error) error('Failed to start video consultation: ' + err.message);
+      setShowCallInterface(false);
     }
   };
 
@@ -107,46 +118,62 @@ const ChatHeader = ({ otherParticipant, isOnline, onBack, chatId }) => {
     canRequestConsultation
   });
 
+  const handleCallEnd = () => {
+    setShowCallInterface(false);
+    setCallDuration(0);
+  };
+
+  const handleCallAccept = () => {
+    // Start call timer
+    const timer = setInterval(() => {
+      setCallDuration(prev => prev + 1);
+    }, 1000);
+
+    // Store timer reference for cleanup
+    return () => clearInterval(timer);
+  };
+
   return (
-    <div className="bg-white border-b border-gray-200 p-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-3">
+    <>
+      <div className="bg-white border-b border-gray-200 p-3 sm:p-4">
+        <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-2 sm:space-x-3">
           {onBack && (
             <button
               onClick={onBack}
               className="p-2 hover:bg-gray-100 rounded-full transition-colors"
             >
-              <ArrowLeft className="h-5 w-5" />
+              <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
             </button>
           )}
 
           {/* Avatar */}
           <div className="relative">
-            <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-full flex items-center justify-center">
               {otherParticipant?.user.role === 'lawyer' ? (
-                <Shield className="h-5 w-5 text-white" />
+                <Shield className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
               ) : (
-                <User className="h-5 w-5 text-white" />
+                <User className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
               )}
             </div>
             {/* Online Status */}
             {isOnline && (
-              <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
+              <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-green-500 border-2 border-white rounded-full"></div>
             )}
           </div>
 
           {/* User Info */}
-          <div>
-            <h3 className="font-semibold text-gray-900">
+          <div className="min-w-0 flex-1">
+            <h3 className="font-semibold text-gray-900 text-sm sm:text-base truncate">
               {otherParticipant?.user.name || 'Unknown User'}
             </h3>
-            <div className="flex items-center space-x-2 text-sm text-gray-500">
+            <div className="flex items-center space-x-1 sm:space-x-2 text-xs sm:text-sm text-gray-500">
               <span className="capitalize">{otherParticipant?.user.role}</span>
-              {otherParticipant?.user.role === 'lawyer' && 
+              {otherParticipant?.user.role === 'lawyer' &&
                otherParticipant?.user.lawyerDetails?.specialization && (
                 <>
-                  <span>•</span>
-                  <span>{otherParticipant.user.lawyerDetails.specialization.join(', ')}</span>
+                  <span className="hidden sm:inline">•</span>
+                  <span className="hidden sm:inline truncate">{otherParticipant.user.lawyerDetails.specialization.join(', ')}</span>
                 </>
               )}
             </div>
@@ -157,72 +184,53 @@ const ChatHeader = ({ otherParticipant, isOnline, onBack, chatId }) => {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center space-x-2">
-          {/* Test Button - Always clickable */}
-          <button
-            onClick={testFunction}
-            className="p-2 rounded-full transition-colors hover:bg-green-100 text-green-600 border border-green-300"
-            title="Test button"
-          >
-            <span className="text-xs font-bold">T</span>
-          </button>
-
+        <div className="flex items-center space-x-1 sm:space-x-2">
           {/* Voice Call Button */}
           <button
             onClick={handleVoiceCall}
-            className="p-2 rounded-full transition-colors border hover:bg-blue-100 text-blue-600 border-blue-300 cursor-pointer"
+            className="p-1.5 sm:p-2 rounded-full transition-all duration-200 hover:bg-green-100 text-green-600 hover:scale-110 active:scale-95"
             title="Start voice call"
           >
-            <Phone className="h-5 w-5" />
+            <Phone className="h-4 w-4 sm:h-5 sm:w-5" />
           </button>
 
           {/* Video Call/Consultation Button */}
           <button
             onClick={handleVideoCall}
-            className="p-2 rounded-full transition-colors border hover:bg-purple-100 text-purple-600 border-purple-300 cursor-pointer"
-            title="Request video consultation"
+            className="p-1.5 sm:p-2 rounded-full transition-all duration-200 hover:bg-blue-100 text-blue-600 hover:scale-110 active:scale-95"
+            title="Start video call"
           >
-            <Video className="h-5 w-5" />
+            <Video className="h-4 w-4 sm:h-5 sm:w-5" />
           </button>
 
           {/* More Options Button */}
           <button
             onClick={() => {
               console.log('More options clicked!');
-              alert('More options clicked!');
               if (success) success('More options clicked!');
             }}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors border border-gray-300"
+            className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-full transition-colors"
           >
-            <MoreVertical className="h-5 w-5 text-gray-600" />
+            <MoreVertical className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" />
           </button>
         </div>
       </div>
+      </div>
 
-      {/* Call Interfaces and Modals - Temporarily disabled */}
-      {/*
-      <VoiceCallInterface
-        isOpen={showVoiceCall}
-        onClose={() => setShowVoiceCall(false)}
-        targetUser={otherParticipant?.user}
-        chatId={chatId}
-      />
-
-      <VideoCallInterface
-        isOpen={showVideoCall}
-        onClose={() => setShowVideoCall(false)}
-        targetUser={otherParticipant?.user}
-        chatId={chatId}
-      />
-
-      <ConsultationScheduleModal
-        isOpen={showConsultationModal}
-        onClose={() => setShowConsultationModal(false)}
-        targetUser={otherParticipant?.user}
-        onSchedule={handleScheduleConsultation}
-      />
-      */}
-    </div>
+      {/* Call Interface */}
+      {showCallInterface && (
+        <CallInterface
+          isIncoming={false}
+          callerName={otherParticipant?.user.name || 'Unknown User'}
+          callerRole={otherParticipant?.user.role || 'User'}
+          onAccept={handleCallAccept}
+          onDecline={handleCallEnd}
+          onEndCall={handleCallEnd}
+          isVideoCall={callType === 'video'}
+          callDuration={callDuration}
+        />
+      )}
+    </>
   );
 };
 

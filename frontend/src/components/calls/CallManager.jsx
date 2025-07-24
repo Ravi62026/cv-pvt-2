@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useSocket } from '../../hooks/useSocket';
 import { useWebRTC } from '../../hooks/useWebRTC';
 import { useAuth } from '../../contexts/AuthContext';
@@ -10,6 +11,7 @@ import ConsultationScheduleModal from './ConsultationScheduleModal';
 import { consultationAPI, callAPI } from '../../services/api';
 
 const CallManager = () => {
+  const navigate = useNavigate();
   const { socket } = useSocket();
   const { user } = useAuth();
   const { success, error } = useToast();
@@ -54,12 +56,10 @@ const CallManager = () => {
     const handleCallAnswered = (data) => {
       console.log('📞 Call answered:', data);
       setShowIncomingCall(false);
-      
-      if (data.callType === 'voice') {
-        setShowVoiceCall(true);
-      } else if (data.callType === 'video') {
-        setShowVideoCall(true);
-      }
+
+      // Navigate to call page
+      const callUrl = `/call/${data.callId}?type=${data.callType || 'voice'}`;
+      navigate(callUrl);
     };
 
     const handleCallEnded = (data) => {
@@ -148,19 +148,16 @@ const CallManager = () => {
 
     try {
       setShowIncomingCall(false);
-      
+
       // Answer the call through WebRTC
       await answerCall(currentCallData);
-      
+
       // Update call status via API
       await callAPI.answerCall(currentCallData.callId);
-      
-      // Show appropriate call interface
-      if (currentCallData.callType === 'voice') {
-        setShowVoiceCall(true);
-      } else if (currentCallData.callType === 'video') {
-        setShowVideoCall(true);
-      }
+
+      // Navigate to call page
+      const callUrl = `/call/${currentCallData.callId}?type=${currentCallData.callType || 'voice'}`;
+      navigate(callUrl);
     } catch (err) {
       console.error('Failed to answer call:', err);
       error('Failed to answer call');

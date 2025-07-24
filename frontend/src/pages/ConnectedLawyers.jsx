@@ -69,12 +69,12 @@ const ConnectedLawyers = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen pt-26 bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 p-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Connected Lawyers</h1>
-          <p className="text-gray-600">
+          <h1 className="text-3xl font-bold text-white mb-2">Connected Lawyers</h1>
+          <p className="text-gray-300">
             Lawyers who have accepted your connection requests
           </p>
         </div>
@@ -124,10 +124,10 @@ const ConnectedLawyers = () => {
                 <button
                   key={page}
                   onClick={() => setPagination(prev => ({ ...prev, current: page }))}
-                  className={`px-3 py-2 rounded-lg ${
+                  className={`px-3 py-2 rounded-lg transition-all duration-200 ${
                     page === pagination.current
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                      ? 'bg-blue-600 text-white shadow-lg'
+                      : 'bg-white/10 text-gray-300 hover:bg-white/20 border border-white/20 backdrop-blur-sm'
                   }`}
                 >
                   {page}
@@ -144,23 +144,24 @@ const ConnectedLawyers = () => {
 // Stats Card Component
 const StatsCard = ({ title, value, icon: Icon, color }) => {
   const colorClasses = {
-    blue: 'text-blue-600 bg-blue-100',
-    green: 'text-green-600 bg-green-100',
-    purple: 'text-purple-600 bg-purple-100',
+    blue: 'text-blue-400 bg-blue-500/20 border-blue-400/30',
+    green: 'text-green-400 bg-green-500/20 border-green-400/30',
+    purple: 'text-purple-400 bg-purple-500/20 border-purple-400/30',
   };
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
+      whileHover={{ y: -2, scale: 1.02 }}
+      className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-xl border border-white/20 p-6 hover:border-blue-400/50 transition-all duration-300"
     >
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm font-medium text-gray-600">{title}</p>
-          <p className="text-2xl font-bold text-gray-900">{value}</p>
+          <p className="text-sm font-medium text-gray-300">{title}</p>
+          <p className="text-2xl font-bold text-white">{value}</p>
         </div>
-        <div className={`p-3 rounded-full ${colorClasses[color]}`}>
+        <div className={`p-3 rounded-full backdrop-blur-sm border ${colorClasses[color]}`}>
           <Icon className="h-6 w-6" />
         </div>
       </div>
@@ -178,32 +179,33 @@ const ConnectedLawyerCard = ({ connection, onStartChat }) => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
+      whileHover={{ y: -2, scale: 1.01 }}
+      className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-xl border border-white/20 p-6 hover:border-blue-400/50 transition-all duration-300"
     >
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
         {/* Lawyer Info */}
         <div className="flex items-start space-x-4 mb-4 lg:mb-0">
-          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
-            <Shield className="h-8 w-8 text-blue-600" />
+          <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center backdrop-blur-sm border border-blue-400/30">
+            <Shield className="h-8 w-8 text-blue-400" />
           </div>
           <div className="flex-1">
             <div className="flex items-center space-x-2 mb-1">
-              <h3 className="text-lg font-semibold text-gray-900">{lawyer.name}</h3>
-              <CheckCircle className="h-5 w-5 text-green-500" />
+              <h3 className="text-lg font-semibold text-white">{lawyer.name}</h3>
+              <CheckCircle className="h-5 w-5 text-green-400" />
             </div>
-            <p className="text-sm text-gray-600 mb-2">{lawyer.email}</p>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-600">
+            <p className="text-sm text-gray-300 mb-2">{lawyer.email}</p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-300">
               <div className="flex items-center">
-                <Briefcase className="h-4 w-4 mr-2" />
+                <Briefcase className="h-4 w-4 mr-2 text-blue-400" />
                 <span>{lawyer.lawyerDetails?.experience || 'N/A'} years experience</span>
               </div>
               <div className="flex items-center">
-                <Award className="h-4 w-4 mr-2" />
+                <Award className="h-4 w-4 mr-2 text-purple-400" />
                 <span>{lawyer.lawyerDetails?.specialization?.join(', ') || 'General Practice'}</span>
               </div>
               <div className="flex items-center">
-                <Calendar className="h-4 w-4 mr-2" />
+                <Calendar className="h-4 w-4 mr-2 text-cyan-400" />
                 <span>Connected on {connectedAt}</span>
               </div>
               <div className="flex items-center">
@@ -220,9 +222,9 @@ const ConnectedLawyerCard = ({ connection, onStartChat }) => {
           {chatInfo && (
             <div className="flex items-center space-x-2 text-sm">
               <div className={`w-2 h-2 rounded-full ${
-                chatInfo.status === 'active' ? 'bg-green-500' : 'bg-gray-400'
+                chatInfo.status === 'active' ? 'bg-green-400' : 'bg-gray-500'
               }`}></div>
-              <span className="text-gray-600">
+              <span className="text-gray-300">
                 {chatInfo.status === 'active' ? 'Chat Active' : 'Chat Inactive'}
               </span>
               {chatInfo.unreadCount > 0 && (
@@ -235,7 +237,7 @@ const ConnectedLawyerCard = ({ connection, onStartChat }) => {
 
           {/* Last Message */}
           {chatInfo?.lastMessage && (
-            <div className="text-sm text-gray-500 max-w-xs">
+            <div className="text-sm text-gray-400 max-w-xs">
               <p className="truncate">
                 Last: {chatInfo.lastMessage.content}
               </p>
@@ -250,7 +252,7 @@ const ConnectedLawyerCard = ({ connection, onStartChat }) => {
             <button
               onClick={() => onStartChat(connection)}
               disabled={!chatInfo?.chatId}
-              className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2"
+              className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2 shadow-lg hover:shadow-blue-500/25"
             >
               <MessageSquare className="h-4 w-4" />
               <span>Start Chat</span>
@@ -261,13 +263,13 @@ const ConnectedLawyerCard = ({ connection, onStartChat }) => {
 
       {/* Connection Details */}
       {connection.requestMessage && (
-        <div className="mt-4 pt-4 border-t border-gray-200">
-          <p className="text-sm text-gray-600">
-            <span className="font-medium">Your request:</span> {connection.requestMessage}
+        <div className="mt-4 pt-4 border-t border-white/20">
+          <p className="text-sm text-gray-300">
+            <span className="font-medium text-white">Your request:</span> {connection.requestMessage}
           </p>
           {connection.responseMessage && (
-            <p className="text-sm text-gray-600 mt-1">
-              <span className="font-medium">Their response:</span> {connection.responseMessage}
+            <p className="text-sm text-gray-300 mt-1">
+              <span className="font-medium text-white">Their response:</span> {connection.responseMessage}
             </p>
           )}
         </div>
@@ -283,13 +285,13 @@ const EmptyState = () => {
   return (
     <div className="text-center py-12">
       <Users className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-      <h3 className="text-lg font-medium text-gray-900 mb-2">No connected lawyers yet</h3>
-      <p className="text-gray-500 mb-6">
+      <h3 className="text-lg font-medium text-white mb-2">No connected lawyers yet</h3>
+      <p className="text-gray-400 mb-6">
         Start by finding and connecting with lawyers who can help with your legal needs
       </p>
       <button
         onClick={() => navigate('/citizen/find-lawyers')}
-        className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors flex items-center space-x-2 mx-auto"
+        className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white px-6 py-3 rounded-lg transition-all duration-200 flex items-center space-x-2 mx-auto shadow-lg hover:shadow-blue-500/25"
       >
         <Users className="h-5 w-5" />
         <span>Find Lawyers</span>

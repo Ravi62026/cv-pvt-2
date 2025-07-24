@@ -148,18 +148,18 @@ const FindLawyers = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen pt-26 bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Find Lawyers</h1>
-          <p className="text-gray-600">
+          <h1 className="text-3xl font-bold text-white mb-2">Find Lawyers</h1>
+          <p className="text-gray-300">
             Browse and connect with verified lawyers across different specializations
           </p>
         </div>
 
         {/* Search and Filters */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+        <div className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-xl border border-white/20 p-6 mb-8">
           <div className="flex flex-col lg:flex-row gap-4">
             {/* Search Bar */}
             <div className="flex-1 relative">
@@ -167,7 +167,7 @@ const FindLawyers = () => {
               <input
                 type="text"
                 placeholder="Search lawyers by name, specialization..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 bg-white/10 border border-white/20 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-400 text-white placeholder-gray-400 backdrop-blur-sm"
                 value={filters.search}
                 onChange={(e) => handleFilterChange('search', e.target.value)}
               />
@@ -176,7 +176,7 @@ const FindLawyers = () => {
             {/* Filter Toggle */}
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+              className="flex items-center space-x-2 px-4 py-2 border border-white/20 rounded-lg hover:bg-white/10 text-white transition-all duration-200"
             >
               <Filter className="h-5 w-5" />
               <span>Filters</span>
@@ -190,20 +190,20 @@ const FindLawyers = () => {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="mt-4 pt-4 border-t border-gray-200"
+              className="mt-4 pt-4 border-t border-white/20"
             >
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
                     Specialization
                   </label>
                   <select
-                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full p-2 bg-white/10 border border-white/20 rounded-lg focus:ring-2 focus:ring-blue-400 text-white backdrop-blur-sm"
                     value={filters.specialization}
                     onChange={(e) => handleFilterChange('specialization', e.target.value)}
                   >
                     {specializations.map((spec, index) => (
-                      <option key={index} value={index === 0 ? 'all' : spec}>
+                      <option key={index} value={index === 0 ? 'all' : spec} className="bg-slate-800 text-white">
                         {spec}
                       </option>
                     ))}
@@ -211,16 +211,16 @@ const FindLawyers = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
                     Experience
                   </label>
                   <select
-                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full p-2 bg-white/10 border border-white/20 rounded-lg focus:ring-2 focus:ring-blue-400 text-white backdrop-blur-sm"
                     value={filters.experience}
                     onChange={(e) => handleFilterChange('experience', e.target.value)}
                   >
                     {experienceRanges.map((exp, index) => (
-                      <option key={index} value={index === 0 ? 'all' : exp}>
+                      <option key={index} value={index === 0 ? 'all' : exp} className="bg-slate-800 text-white">
                         {exp}
                       </option>
                     ))}
@@ -228,17 +228,17 @@ const FindLawyers = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
                     Sort By
                   </label>
                   <select
-                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full p-2 bg-white/10 border border-white/20 rounded-lg focus:ring-2 focus:ring-blue-400 text-white backdrop-blur-sm"
                     value={filters.sortBy}
                     onChange={(e) => handleFilterChange('sortBy', e.target.value)}
                   >
-                    <option value="createdAt">Newest First</option>
-                    <option value="name">Name</option>
-                    <option value="experience">Experience</option>
+                    <option value="createdAt" className="bg-slate-800 text-white">Newest First</option>
+                    <option value="name" className="bg-slate-800 text-white">Name</option>
+                    <option value="experience" className="bg-slate-800 text-white">Experience</option>
                   </select>
                 </div>
               </div>
@@ -248,13 +248,13 @@ const FindLawyers = () => {
 
         {/* Results Header */}
         <div className="flex justify-between items-center mb-6">
-          <p className="text-gray-600">
+          <p className="text-gray-300">
             Showing {lawyers.length} of {pagination.total} lawyers
           </p>
           {isLoading && (
             <div className="flex items-center space-x-2">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-              <span className="text-sm text-gray-500">Loading...</span>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-400"></div>
+              <span className="text-sm text-gray-400">Loading...</span>
             </div>
           )}
         </div>
@@ -274,8 +274,8 @@ const FindLawyers = () => {
         {lawyers.length === 0 && !isLoading && (
           <div className="text-center py-12">
             <Users className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No lawyers found</h3>
-            <p className="text-gray-500">
+            <h3 className="text-lg font-medium text-white mb-2">No lawyers found</h3>
+            <p className="text-gray-400">
               Try adjusting your search criteria or filters
             </p>
           </div>
@@ -289,10 +289,10 @@ const FindLawyers = () => {
                 <button
                   key={page}
                   onClick={() => setPagination(prev => ({ ...prev, current: page }))}
-                  className={`px-3 py-2 rounded-lg ${
+                  className={`px-3 py-2 rounded-lg transition-all duration-200 ${
                     page === pagination.current
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                      ? 'bg-blue-600 text-white shadow-lg'
+                      : 'bg-white/10 text-gray-300 hover:bg-white/20 border border-white/20 backdrop-blur-sm'
                   }`}
                 >
                   {page}
@@ -324,40 +324,41 @@ const LawyerCard = ({ lawyer, onRequestLawyer }) => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
+      whileHover={{ y: -2, scale: 1.02 }}
+      className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-xl border border-white/20 p-6 hover:border-blue-400/50 transition-all duration-300"
     >
       <div className="flex items-start space-x-4 mb-4">
-        <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
-          <Shield className="h-8 w-8 text-blue-600" />
+        <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center backdrop-blur-sm border border-blue-400/30">
+          <Shield className="h-8 w-8 text-blue-400" />
         </div>
         <div className="flex-1">
-          <h3 className="text-lg font-semibold text-gray-900">{lawyer.name}</h3>
-          <p className="text-sm text-gray-600">{lawyer.email}</p>
+          <h3 className="text-lg font-semibold text-white">{lawyer.name}</h3>
+          <p className="text-sm text-gray-300">{lawyer.email}</p>
           <div className="flex items-center mt-1">
             <Star className="h-4 w-4 text-yellow-400 fill-current" />
-            <span className="text-sm text-gray-600 ml-1">4.8 (24 reviews)</span>
+            <span className="text-sm text-gray-300 ml-1">4.8 (24 reviews)</span>
           </div>
         </div>
       </div>
 
       <div className="space-y-2 mb-4">
-        <div className="flex items-center text-sm text-gray-600">
-          <Briefcase className="h-4 w-4 mr-2" />
+        <div className="flex items-center text-sm text-gray-300">
+          <Briefcase className="h-4 w-4 mr-2 text-blue-400" />
           <span>{lawyer.lawyerDetails?.experience || 'N/A'} years experience</span>
         </div>
-        <div className="flex items-center text-sm text-gray-600">
-          <Award className="h-4 w-4 mr-2" />
+        <div className="flex items-center text-sm text-gray-300">
+          <Award className="h-4 w-4 mr-2 text-purple-400" />
           <span>{lawyer.lawyerDetails?.specialization?.join(', ') || 'General Practice'}</span>
         </div>
-        <div className="flex items-center text-sm text-gray-600">
-          <MapPin className="h-4 w-4 mr-2" />
+        <div className="flex items-center text-sm text-gray-300">
+          <MapPin className="h-4 w-4 mr-2 text-green-400" />
           <span>Available Online</span>
         </div>
       </div>
 
       <button
         onClick={() => onRequestLawyer(lawyer)}
-        className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors flex items-center justify-center space-x-2"
+        className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white py-2 px-4 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg hover:shadow-blue-500/25"
       >
         <MessageCircle className="h-4 w-4" />
         <span>Request Lawyer</span>
