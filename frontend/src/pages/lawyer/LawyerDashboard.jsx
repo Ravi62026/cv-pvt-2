@@ -127,49 +127,74 @@ const LawyerDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-blue-950/80 relative overflow-hidden py-8">
+    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-gray-800 relative overflow-hidden">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-blue-500/8 to-gray-500/12 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-gray-500/10 to-blue-500/8 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-20 right-20 w-96 h-96 bg-blue-600/10 rounded-full blur-[120px] animate-pulse"></div>
+        <div className="absolute bottom-20 left-20 w-96 h-96 bg-gray-600/15 rounded-full blur-[120px] animate-pulse delay-1000"></div>
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-br from-blue-500/5 to-gray-500/10 rounded-full blur-3xl animate-spin-slow"></div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 pb-8 relative z-10">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">Lawyer Dashboard</h1>
-          <p className="text-gray-300 text-lg">
-            Manage your cases and find new opportunities
-          </p>
+        <div className="mb-12">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-4xl font-bold text-white mb-3">
+                Lawyer Dashboard ⚖️
+              </h1>
+              <p className="text-xl text-gray-300 leading-relaxed">
+                Manage your cases and find new opportunities
+              </p>
+            </div>
+            <div className="hidden lg:block">
+              <div className="bg-gradient-to-r from-blue-500 to-cyan-600 rounded-2xl p-6 text-white">
+                <div className="flex items-center">
+                  <div className="p-2 bg-white/20 rounded-lg mr-4">
+                    <CheckCircle className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <p className="font-semibold">Verified Status</p>
+                    <p className="text-sm opacity-90">Professional Lawyer</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <StatsCard
-            title="Total Cases"
-            value={stats.totalCases}
-            icon={<FileText className="h-8 w-8 text-blue-600" />}
-            color="blue"
-          />
-          <StatsCard
-            title="Active Cases"
-            value={stats.activeCases}
-            icon={<TrendingUp className="h-8 w-8 text-green-600" />}
-            color="green"
-          />
-          <StatsCard
-            title="Completed Cases"
-            value={stats.completedCases}
-            icon={<CheckCircle className="h-8 w-8 text-purple-600" />}
-            color="purple"
-          />
-          <StatsCard
-            title="Pending Requests"
-            value={stats.pendingRequests}
-            icon={<Clock className="h-8 w-8 text-orange-600" />}
-            color="orange"
-          />
+        <div className="mb-12">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-3xl font-bold text-white">Your Performance</h2>
+            <div className="text-sm text-gray-400">Last updated: just now</div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <StatsCard
+              title="Total Cases"
+              value={stats.totalCases}
+              icon={<FileText className="h-8 w-8 text-blue-600" />}
+              color="blue"
+            />
+            <StatsCard
+              title="Active Cases"
+              value={stats.activeCases}
+              icon={<TrendingUp className="h-8 w-8 text-green-600" />}
+              color="green"
+            />
+            <StatsCard
+              title="Completed Cases"
+              value={stats.completedCases}
+              icon={<CheckCircle className="h-8 w-8 text-purple-600" />}
+              color="purple"
+            />
+            <StatsCard
+              title="Pending Requests"
+              value={stats.pendingRequests}
+              icon={<Clock className="h-8 w-8 text-orange-600" />}
+              color="orange"
+            />
+          </div>
         </div>
 
         {/* Available Cases Section */}
@@ -268,16 +293,25 @@ const StatsCard = ({ title, value, icon, color }) => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/20"
+      whileHover={{ y: -2, scale: 1.02 }}
+      transition={{ duration: 0.2 }}
+      className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:border-white/30 group cursor-pointer"
     >
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-gray-300 text-sm font-medium">{title}</p>
-          <p className="text-3xl font-bold text-white mt-1">{value}</p>
-        </div>
-        <div className={`flex-shrink-0 p-3 rounded-lg bg-gradient-to-r ${colorClasses[color]}`}>
+      <div className="flex items-center justify-between mb-4">
+        <div className={`p-3 rounded-xl bg-gradient-to-r ${colorClasses[color]} shadow-lg group-hover:shadow-xl transition-all duration-300`}>
           {React.cloneElement(icon, { className: "h-6 w-6 text-white" })}
         </div>
+        <div className="flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400">
+          <TrendingUp className="h-3 w-3" />
+          <span>+5%</span>
+        </div>
+      </div>
+      <div>
+        <p className="text-sm font-medium text-gray-400 mb-2">{title}</p>
+        <p className="text-3xl font-bold text-white group-hover:text-blue-300 transition-colors duration-300">
+          {value || 0}
+        </p>
+        <p className="text-xs text-gray-500 mt-1">this month</p>
       </div>
     </motion.div>
   );

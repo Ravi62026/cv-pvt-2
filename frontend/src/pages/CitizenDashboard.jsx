@@ -17,6 +17,7 @@ import {
   ArrowRight,
   Send,
   Gift,
+  Zap,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
@@ -24,6 +25,15 @@ import { citizenAPI } from '../services/api';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import CallHistoryCard from '../components/dashboard/CallHistoryCard';
 import CallNotificationWidget from '../components/dashboard/CallNotificationWidget';
+import {
+  ModernStatsCard,
+  ModernActionCard,
+  ModernSectionHeader,
+  ModernDashboardLayout,
+  ModernWelcomeHeader,
+  ModernStatusCard,
+  ModernGrid
+} from '../components/dashboard/ModernDashboardComponents';
 
 const CitizenDashboard = () => {
   const [stats, setStats] = useState(null);
@@ -58,110 +68,45 @@ const CitizenDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-blue-950/80 relative overflow-hidden p-6">
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-blue-500/8 to-gray-500/12 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-gray-500/10 to-blue-500/8 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-br from-blue-500/5 to-gray-500/10 rounded-full blur-3xl animate-spin-slow"></div>
-      </div>
+    <ModernDashboardLayout>
+      <ModernWelcomeHeader
+        title={`Welcome back, ${user?.name}!`}
+        subtitle="Manage your legal matters and connect with verified lawyers"
+        statusCard={
+          <ModernStatusCard
+            title="Legal Support"
+            subtitle="Available 24/7"
+            icon={CheckCircle}
+            color="blue"
+          />
+        }
+      />
 
-      <div className="max-w-7xl mx-auto relative z-10">
-        {/* Header */}
-        <div className="mb-12">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-4xl font-bold text-white mb-3">
-                Welcome back, {user?.name}! 👋
-              </h1>
-              <p className="text-xl text-gray-300 leading-relaxed">
-                Manage your legal matters and connect with verified lawyers
-              </p>
-            </div>
-            <div className="hidden lg:block">
-              <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl p-6 text-white">
-                <div className="flex items-center">
-                  <div className="p-2 bg-white/20 rounded-lg mr-4">
-                    <CheckCircle className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <p className="font-semibold">Legal Support</p>
-                    <p className="text-sm opacity-90">Available 24/7</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+      {/* Primary Actions */}
+      <ModernSectionHeader
+        title="Quick Actions"
+        subtitle="Get started with your legal needs"
+        icon={Zap}
+      />
+      <ModernGrid cols="grid-cols-1 md:grid-cols-2" className="mb-12">
+        <ModernActionCard
+          title="Submit Legal Query"
+          description="Get expert legal advice from verified lawyers for your questions"
+          icon={FileText}
+          onClick={() => navigate('/citizen/create-query')}
+          color="blue"
+          badge="24/7"
+        />
 
-        {/* Primary Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-          {/* Submit Legal Query Card */}
-          <motion.div
-            whileHover={{ scale: 1.02, y: -4 }}
-            whileTap={{ scale: 0.98 }}
-            className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 p-8 shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer"
-            onClick={() => navigate('/citizen/create-query')}
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-400/20 to-transparent"></div>
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
-            <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-12 -translate-x-12"></div>
-
-            <div className="relative z-10">
-              <div className="flex items-center justify-between mb-6">
-                <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
-                  <FileText className="h-8 w-8 text-white" />
-                </div>
-                <ArrowRight className="h-6 w-6 text-white/70 group-hover:text-white group-hover:translate-x-1 transition-all duration-300" />
-              </div>
-
-              <h3 className="text-2xl font-bold text-white mb-3">
-                Submit Legal Query
-              </h3>
-              <p className="text-blue-100 text-lg leading-relaxed">
-                Get expert legal advice from verified lawyers for your questions
-              </p>
-
-              <div className="mt-6 flex items-center text-blue-100">
-                <div className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></div>
-                <span className="text-sm font-medium">Available 24/7</span>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* File Dispute Card */}
-          <motion.div
-            whileHover={{ scale: 1.02, y: -4 }}
-            whileTap={{ scale: 0.98 }}
-            className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-red-500 via-red-600 to-red-700 p-8 shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer"
-            onClick={() => navigate('/citizen/create-dispute')}
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-red-400/20 to-transparent"></div>
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
-            <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-12 -translate-x-12"></div>
-
-            <div className="relative z-10">
-              <div className="flex items-center justify-between mb-6">
-                <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
-                  <Scale className="h-8 w-8 text-white" />
-                </div>
-                <ArrowRight className="h-6 w-6 text-white/70 group-hover:text-white group-hover:translate-x-1 transition-all duration-300" />
-              </div>
-
-              <h3 className="text-2xl font-bold text-white mb-3">
-                File Dispute
-              </h3>
-              <p className="text-red-100 text-lg leading-relaxed">
-                Resolve legal disputes with professional mediation and support
-              </p>
-
-              <div className="mt-6 flex items-center text-red-100">
-                <div className="w-2 h-2 bg-yellow-400 rounded-full mr-2 animate-pulse"></div>
-                <span className="text-sm font-medium">Expert Resolution</span>
-              </div>
-            </div>
-          </motion.div>
-        </div>
+        <ModernActionCard
+          title="File Dispute"
+          description="Resolve legal disputes with professional mediation and support"
+          icon={Scale}
+          onClick={() => navigate('/citizen/create-dispute')}
+          color="red"
+          badge="Expert"
+        />
+      </ModernGrid>
 
         {/* My Cases Card */}
         <div className="mb-8">
@@ -278,111 +223,66 @@ const CitizenDashboard = () => {
           </div>
         </div>
 
-        {/* Stats Overview */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold text-white mb-6">Overview</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* Total Cases */}
-            <motion.div
-              whileHover={{ y: -2 }}
-              className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/20 hover:border-white/30 transition-all duration-300"
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-300 mb-1">Total Cases</p>
-                  <p className="text-3xl font-bold text-white">{stats?.totalCases || 0}</p>
-                  <div className="flex items-center mt-2">
-                    <TrendingUp className="h-4 w-4 text-green-400 mr-1" />
-                    <span className="text-sm text-green-400 font-medium">+12%</span>
-                  </div>
-                </div>
-                <div className="p-3 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl">
-                  <FileText className="h-6 w-6 text-white" />
-                </div>
-              </div>
-            </motion.div>
+      {/* Stats Overview */}
+      <ModernSectionHeader
+        title="Your Overview"
+        action="Last updated: just now"
+        icon={BarChart3}
+      />
+      <ModernGrid cols="grid-cols-1 md:grid-cols-2 lg:grid-cols-4" className="mb-12">
+        <ModernStatsCard
+          title="Total Cases"
+          value={stats?.totalCases || 0}
+          icon={FileText}
+          color="blue"
+          trend="+12%"
+          subtitle="all time"
+        />
 
-            {/* Active Cases */}
-            <motion.div
-              whileHover={{ y: -2 }}
-              className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/20 hover:border-white/30 transition-all duration-300"
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-300 mb-1">Active Cases</p>
-                  <p className="text-3xl font-bold text-white">{stats?.activeCases || 0}</p>
-                  <div className="flex items-center mt-2">
-                    <TrendingUp className="h-4 w-4 text-green-400 mr-1" />
-                    <span className="text-sm text-green-400 font-medium">+8%</span>
-                  </div>
-                </div>
-                <div className="p-3 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl">
-                  <Activity className="h-6 w-6 text-white" />
-                </div>
-              </div>
-            </motion.div>
+        <ModernStatsCard
+          title="Active Cases"
+          value={stats?.activeCases || 0}
+          icon={Activity}
+          color="green"
+          trend="+8%"
+          subtitle="in progress"
+        />
+        <ModernStatsCard
+          title="Connected Lawyers"
+          value={stats?.connectedLawyers || 0}
+          icon={Users}
+          color="purple"
+          trend="+15%"
+          subtitle="verified"
+        />
+        <ModernStatsCard
+          title="Success Rate"
+          value="94%"
+          icon={CheckCircle}
+          color="orange"
+          trend="+2%"
+          subtitle="case resolution"
+        />
+      </ModernGrid>
 
-            {/* Connected Lawyers */}
-            <motion.div
-              whileHover={{ y: -2 }}
-              className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/20 hover:border-white/30 transition-all duration-300"
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-300 mb-1">Connected Lawyers</p>
-                  <p className="text-3xl font-bold text-white">{stats?.connectedLawyers || 0}</p>
-                  <div className="flex items-center mt-2">
-                    <TrendingUp className="h-4 w-4 text-green-400 mr-1" />
-                    <span className="text-sm text-green-400 font-medium">+15%</span>
-                  </div>
-                </div>
-                <div className="p-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl">
-                  <Users className="h-6 w-6 text-white" />
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Pending Requests */}
-            <motion.div
-              whileHover={{ y: -2 }}
-              className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/20 hover:border-white/30 transition-all duration-300"
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-300 mb-1">Pending Requests</p>
-                  <p className="text-3xl font-bold text-white">{stats?.pendingRequests || 0}</p>
-                  <div className="flex items-center mt-2">
-                    <Clock className="h-4 w-4 text-orange-400 mr-1" />
-                    <span className="text-sm text-orange-400 font-medium">Awaiting</span>
-                  </div>
-                </div>
-                <div className="p-3 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl">
-                  <Clock className="h-6 w-6 text-white" />
-                </div>
-              </div>
-            </motion.div>
-          </div>
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Recent Activity */}
+        <div className="lg:col-span-2">
+          <RecentActivitySection />
         </div>
 
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Recent Activity */}
-          <div className="lg:col-span-2">
-            <RecentActivitySection />
-          </div>
-
-          {/* Quick Stats */}
-          <div className="space-y-6">
-            <QuickStatsCard stats={stats} />
-            <CallHistoryCard limit={5} />
-            <RecentConnectionsCard />
-          </div>
+        {/* Quick Stats */}
+        <div className="space-y-6">
+          <QuickStatsCard stats={stats} />
+          <CallHistoryCard limit={5} />
+          <RecentConnectionsCard />
         </div>
       </div>
 
       {/* Call Notification Widget */}
       <CallNotificationWidget />
-    </div>
+    </ModernDashboardLayout>
   );
 };
 

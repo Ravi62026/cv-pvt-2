@@ -159,17 +159,24 @@ const MyCaseRequests = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-gray-800 relative overflow-hidden">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute top-20 right-20 w-96 h-96 bg-blue-600/10 rounded-full blur-[120px] animate-pulse"></div>
+        <div className="absolute bottom-20 left-20 w-96 h-96 bg-gray-600/15 rounded-full blur-[120px] animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-br from-blue-500/5 to-gray-500/10 rounded-full blur-3xl animate-spin-slow"></div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 pb-8 relative z-10">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-12">
           <div className="flex items-center">
             <div className="bg-gradient-to-r from-purple-500 to-indigo-600 p-4 rounded-2xl mr-6 shadow-lg">
               <FileText className="h-10 w-10 text-white" />
             </div>
             <div>
-              <h1 className="text-4xl font-bold text-gray-900 mb-2">My Case Requests</h1>
-              <p className="text-gray-600 text-lg">
+              <h1 className="text-4xl font-bold text-white mb-2">My Case Requests</h1>
+              <p className="text-gray-300 text-lg">
                 Manage your case requests and offers
               </p>
             </div>
@@ -178,7 +185,7 @@ const MyCaseRequests = () => {
 
         {/* Main Tabs */}
         <div className="mb-6">
-          <div className="border-b border-gray-200">
+          <div className="border-b border-white/20">
             <nav className="-mb-px flex space-x-8">
               <button
                 onClick={() => {
@@ -187,14 +194,14 @@ const MyCaseRequests = () => {
                 }}
                 className={`py-4 px-1 border-b-2 font-medium text-sm ${
                   activeTab === 'sent'
-                    ? 'border-purple-500 text-purple-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? 'border-purple-400 text-purple-400'
+                    : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-500'
                 }`}
               >
                 <div className="flex items-center">
                   <Send className="h-5 w-5 mr-2" />
                   Sent Requests
-                  <span className="ml-2 bg-gray-100 text-gray-900 py-0.5 px-2.5 rounded-full text-xs font-medium">
+                  <span className="ml-2 bg-white/10 text-white py-0.5 px-2.5 rounded-full text-xs font-medium">
                     {sentRequests.length}
                   </span>
                 </div>
@@ -206,14 +213,14 @@ const MyCaseRequests = () => {
                 }}
                 className={`py-4 px-1 border-b-2 font-medium text-sm ${
                   activeTab === 'received'
-                    ? 'border-purple-500 text-purple-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? 'border-purple-400 text-purple-400'
+                    : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-500'
                 }`}
               >
                 <div className="flex items-center">
                   <Inbox className="h-5 w-5 mr-2" />
                   Received Requests
-                  <span className="ml-2 bg-gray-100 text-gray-900 py-0.5 px-2.5 rounded-full text-xs font-medium">
+                  <span className="ml-2 bg-white/10 text-white py-0.5 px-2.5 rounded-full text-xs font-medium">
                     {receivedRequests.length}
                   </span>
                 </div>
@@ -224,7 +231,7 @@ const MyCaseRequests = () => {
 
         {/* Status Filter Tabs */}
         <div className="mb-6">
-          <div className="border-b border-gray-200">
+          <div className="border-b border-white/20">
             <nav className="-mb-px flex space-x-8">
               {['all', 'pending', 'accepted', 'rejected'].map((status) => (
                 <button
@@ -232,12 +239,12 @@ const MyCaseRequests = () => {
                   onClick={() => setStatusFilter(status)}
                   className={`py-2 px-1 border-b-2 font-medium text-sm capitalize ${
                     statusFilter === status
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      ? 'border-blue-400 text-blue-400'
+                      : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-500'
                   }`}
                 >
                   {status}
-                  <span className="ml-2 bg-gray-100 text-gray-900 py-0.5 px-2.5 rounded-full text-xs font-medium">
+                  <span className="ml-2 bg-white/10 text-white py-0.5 px-2.5 rounded-full text-xs font-medium">
                     {currentCounts[status]}
                   </span>
                 </button>
@@ -251,20 +258,20 @@ const MyCaseRequests = () => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-2xl shadow-lg border border-gray-200 p-16 text-center"
+            className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-2xl border border-white/20 p-16 text-center"
           >
-            <div className="bg-gray-100 rounded-full p-6 w-24 h-24 mx-auto mb-6">
+            <div className="bg-gradient-to-r from-gray-500/20 to-blue-500/20 rounded-full p-6 w-24 h-24 mx-auto mb-6">
               {activeTab === 'sent' ? (
-                <Send className="h-12 w-12 text-gray-400 mx-auto" />
+                <Send className="h-12 w-12 text-gray-300 mx-auto" />
               ) : (
-                <Inbox className="h-12 w-12 text-gray-400 mx-auto" />
+                <Inbox className="h-12 w-12 text-gray-300 mx-auto" />
               )}
             </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-3">
+            <h3 className="text-2xl font-bold text-white mb-3">
               No {statusFilter === 'all' ? '' : statusFilter} {activeTab} requests
             </h3>
-            <p className="text-gray-600 text-lg">
-              {activeTab === 'sent' 
+            <p className="text-gray-300 text-lg">
+              {activeTab === 'sent'
                 ? 'When you request to handle cases, they will appear here.'
                 : 'When citizens request you for their cases, they will appear here.'
               }
@@ -310,7 +317,7 @@ const RequestCard = ({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1 }}
-      className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
+      className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-xl border border-white/20 hover:border-white/30 p-6 hover:shadow-lg transition-all duration-300"
     >
       <div className="flex items-start justify-between">
         <div className="flex-1">
@@ -325,10 +332,10 @@ const RequestCard = ({
                 )}
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                <h3 className="text-lg font-semibold text-white mb-1">
                   {request.caseTitle}
                 </h3>
-                <div className="flex items-center text-sm text-gray-500">
+                <div className="flex items-center text-sm text-gray-400">
                   <span className="capitalize">{request.caseType}</span>
                   <span className="mx-2">•</span>
                   <span className="capitalize">{request.category}</span>
@@ -336,8 +343,8 @@ const RequestCard = ({
                     <>
                       <span className="mx-2">•</span>
                       <span className={`capitalize ${
-                        request.priority === 'high' ? 'text-red-600' :
-                        request.priority === 'medium' ? 'text-yellow-600' : 'text-green-600'
+                        request.priority === 'high' ? 'text-red-400' :
+                        request.priority === 'medium' ? 'text-yellow-400' : 'text-green-400'
                       }`}>
                         {request.priority} priority
                       </span>
@@ -356,18 +363,18 @@ const RequestCard = ({
 
           {/* Case Description */}
           <div className="mb-4">
-            <p className="text-gray-700 leading-relaxed">
+            <p className="text-gray-300 leading-relaxed">
               {request.description}
             </p>
           </div>
 
           {/* Request Message */}
           {request.message && (
-            <div className="mb-4 p-4 bg-gray-50 rounded-lg">
-              <h4 className="text-sm font-medium text-gray-900 mb-2">
+            <div className="mb-4 p-4 bg-white/5 rounded-lg border border-white/10">
+              <h4 className="text-sm font-medium text-white mb-2">
                 {activeTab === 'sent' ? 'Your Message:' : 'Citizen\'s Message:'}
               </h4>
-              <p className="text-gray-700 text-sm">{request.message}</p>
+              <p className="text-gray-300 text-sm">{request.message}</p>
             </div>
           )}
 
@@ -375,14 +382,14 @@ const RequestCard = ({
           {activeTab === 'received' && request.citizen && (
             <div className="mb-4 flex items-center">
               <User className="h-5 w-5 text-gray-400 mr-2" />
-              <span className="text-sm text-gray-600">
-                Requested by: <span className="font-medium">{request.citizen.name}</span>
+              <span className="text-sm text-gray-300">
+                Requested by: <span className="font-medium text-white">{request.citizen.name}</span>
               </span>
             </div>
           )}
 
           {/* Timestamps */}
-          <div className="flex items-center text-sm text-gray-500 mb-4">
+          <div className="flex items-center text-sm text-gray-400 mb-4">
             <Calendar className="h-4 w-4 mr-1" />
             <span>Requested: {new Date(request.requestedAt).toLocaleDateString()}</span>
             {request.respondedAt && (
@@ -394,17 +401,17 @@ const RequestCard = ({
           </div>
 
           {/* Action Buttons */}
-          <div className="pt-4 border-t border-gray-200">
+          <div className="pt-4 border-t border-white/20">
             {activeTab === 'received' && request.status === 'pending' && (
               <div className="flex items-center justify-between">
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-300">
                   This citizen wants you to handle their case. Would you like to accept?
                 </p>
                 <div className="flex space-x-3">
                   <button
                     onClick={() => onReject(request.requestId)}
                     disabled={processingRequest === request.requestId}
-                    className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50"
+                    className="inline-flex items-center px-4 py-2 border border-white/20 text-sm font-medium rounded-md text-gray-300 bg-white/5 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 transition-colors"
                   >
                     <XCircle className="h-4 w-4 mr-2" />
                     Reject
@@ -412,7 +419,7 @@ const RequestCard = ({
                   <button
                     onClick={() => onAccept(request.requestId)}
                     disabled={processingRequest === request.requestId}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 transition-all"
                   >
                     <CheckCircle className="h-4 w-4 mr-2" />
                     {processingRequest === request.requestId ? 'Processing...' : 'Accept'}
@@ -423,12 +430,12 @@ const RequestCard = ({
 
             {request.status === 'accepted' && (
               <div className="flex items-center justify-between">
-                <p className="text-sm text-green-600 font-medium">
+                <p className="text-sm text-green-400 font-medium">
                   ✅ Request accepted - You can now chat with the {activeTab === 'sent' ? 'citizen' : 'client'}
                 </p>
                 <button
                   onClick={() => onStartChat(request)}
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all"
                 >
                   <MessageCircle className="h-4 w-4 mr-2" />
                   Start Chat
@@ -438,13 +445,13 @@ const RequestCard = ({
             )}
 
             {request.status === 'rejected' && (
-              <p className="text-sm text-red-600">
+              <p className="text-sm text-red-400">
                 ❌ Request was rejected
               </p>
             )}
 
             {activeTab === 'sent' && request.status === 'pending' && (
-              <p className="text-sm text-yellow-600">
+              <p className="text-sm text-yellow-400">
                 ⏳ Waiting for citizen's response
               </p>
             )}

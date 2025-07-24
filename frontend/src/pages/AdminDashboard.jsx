@@ -94,19 +94,40 @@ const AdminDashboard = () => {
   const recentActivities = analytics?.recentActivities || {};
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-blue-950/80 relative overflow-hidden p-6">
+    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-gray-800 relative overflow-hidden">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-blue-500/8 to-gray-500/12 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-gray-500/10 to-blue-500/8 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-20 right-20 w-96 h-96 bg-blue-600/10 rounded-full blur-[120px] animate-pulse"></div>
+        <div className="absolute bottom-20 left-20 w-96 h-96 bg-gray-600/15 rounded-full blur-[120px] animate-pulse delay-1000"></div>
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-br from-blue-500/5 to-gray-500/10 rounded-full blur-3xl animate-spin-slow"></div>
       </div>
 
-      <div className="max-w-7xl mx-auto relative z-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 pb-8 relative z-10">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">Admin Dashboard</h1>
-          <p className="text-gray-300">Manage platform operations and monitor system performance</p>
+        <div className="mb-12">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-4xl font-bold text-white mb-3">
+                Admin Dashboard 🛡️
+              </h1>
+              <p className="text-xl text-gray-300 leading-relaxed">
+                Manage platform operations and monitor system performance
+              </p>
+            </div>
+            <div className="hidden lg:block">
+              <div className="bg-gradient-to-r from-blue-500 to-cyan-600 rounded-2xl p-6 text-white">
+                <div className="flex items-center">
+                  <div className="p-2 bg-white/20 rounded-lg mr-4">
+                    <Activity className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <p className="font-semibold">System Status</p>
+                    <p className="text-sm opacity-90">All Systems Operational</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Stats Cards */}
@@ -179,21 +200,33 @@ const StatsCard = ({ title, value = 0, icon: Icon, color, trend = "0%" }) => {
     orange: 'from-orange-500 to-red-500',
   };
 
+  const isPositiveTrend = trend.startsWith('+');
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-lg border border-white/20 p-6"
+      whileHover={{ y: -2, scale: 1.02 }}
+      transition={{ duration: 0.2 }}
+      className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-2xl border border-white/20 hover:border-white/30 p-6 group cursor-pointer"
     >
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium text-gray-300 mb-1">{title}</p>
-          <p className="text-3xl font-bold text-white">{(value || 0).toLocaleString()}</p>
-          <p className="text-sm text-green-400 mt-1">{trend} from last month</p>
-        </div>
-        <div className={`p-3 rounded-lg bg-gradient-to-r ${colorClasses[color]}`}>
+      <div className="flex items-center justify-between mb-4">
+        <div className={`p-3 rounded-xl bg-gradient-to-r ${colorClasses[color]} shadow-lg group-hover:shadow-xl transition-all duration-300`}>
           <Icon className="h-6 w-6 text-white" />
         </div>
+        <div className={`flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium ${
+          isPositiveTrend ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
+        }`}>
+          <TrendingUp className={`h-3 w-3 ${isPositiveTrend ? '' : 'rotate-180'}`} />
+          <span>{trend}</span>
+        </div>
+      </div>
+      <div>
+        <p className="text-sm font-medium text-gray-400 mb-2">{title}</p>
+        <p className="text-3xl font-bold text-white group-hover:text-blue-300 transition-colors duration-300">
+          {(value || 0).toLocaleString()}
+        </p>
+        <p className="text-xs text-gray-500 mt-1">from last month</p>
       </div>
     </motion.div>
   );
@@ -205,20 +238,30 @@ const PendingLawyersSection = ({ lawyers = [], onVerify, isProcessing = {} }) =>
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-lg border border-white/20"
+      className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-2xl border border-white/20 hover:border-white/30 transition-all duration-300"
     >
-      <div className="p-6 border-b border-white/20">
-        <h2 className="text-xl font-semibold text-white flex items-center">
-          <UserCheck className="h-5 w-5 mr-2 text-orange-400" />
-          Pending Lawyer Verifications ({lawyers.length})
-        </h2>
+      <div className="p-6 border-b border-white/10">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-bold text-white flex items-center">
+            <div className="p-2 bg-orange-500/20 rounded-lg mr-3">
+              <UserCheck className="h-6 w-6 text-orange-400" />
+            </div>
+            Pending Verifications
+          </h2>
+          <div className="bg-orange-500/20 text-orange-400 px-3 py-1 rounded-full text-sm font-medium">
+            {lawyers.length} pending
+          </div>
+        </div>
       </div>
 
       <div className="p-6">
         {lawyers.length === 0 ? (
-          <div className="text-center py-8">
-            <CheckCircle className="h-12 w-12 text-green-400 mx-auto mb-4" />
-            <p className="text-gray-300">No pending verifications</p>
+          <div className="text-center py-12">
+            <div className="bg-green-500/20 rounded-full p-4 w-20 h-20 mx-auto mb-4 flex items-center justify-center">
+              <CheckCircle className="h-10 w-10 text-green-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-white mb-2">All Caught Up!</h3>
+            <p className="text-gray-400">No pending lawyer verifications at the moment</p>
           </div>
         ) : (
           <div className="space-y-4">

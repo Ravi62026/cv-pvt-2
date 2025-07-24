@@ -283,7 +283,8 @@ export const getAvailableCases = async (req, res) => {
             sortOrder = "desc",
         } = req.query;
 
-
+        console.log("🔍 getAvailableCases called with params:", req.query);
+        console.log("🔍 User ID:", req.user._id);
 
         let cases = [];
 
@@ -297,10 +298,10 @@ export const getAvailableCases = async (req, res) => {
         };
 
         // Add filters
-        if (category && category !== "all") {
+        if (category && category !== "all" && category !== "undefined") {
             baseQuery.category = category;
         }
-        if (priority && priority !== "all") {
+        if (priority && priority !== "all" && priority !== "undefined") {
             baseQuery.priority = priority;
         }
         if (search) {
@@ -310,6 +311,8 @@ export const getAvailableCases = async (req, res) => {
             ];
         }
 
+        console.log("🔍 Base query:", JSON.stringify(baseQuery, null, 2));
+
         const lawyerId = req.user._id;
 
         // Get queries
@@ -318,7 +321,7 @@ export const getAvailableCases = async (req, res) => {
                 .populate("citizen", "name email phone")
                 .sort({ [sortBy]: sortOrder === "desc" ? -1 : 1 });
 
-
+            console.log("🔍 Found queries:", queries.length);
 
             cases.push(...queries.map(query => {
                 const queryObj = query.toObject();
@@ -340,7 +343,7 @@ export const getAvailableCases = async (req, res) => {
                 .populate("citizen", "name email phone")
                 .sort({ [sortBy]: sortOrder === "desc" ? -1 : 1 });
 
-
+            console.log("🔍 Found disputes:", disputes.length);
 
             cases.push(...disputes.map(dispute => {
                 const disputeObj = dispute.toObject();
@@ -358,6 +361,8 @@ export const getAvailableCases = async (req, res) => {
 
 
 
+        console.log("🔍 Total cases found:", cases.length);
+
         // Sort combined results
         cases.sort((a, b) => {
             const aValue = a[sortBy];
@@ -372,6 +377,8 @@ export const getAvailableCases = async (req, res) => {
         const startIndex = (page - 1) * limit;
         const endIndex = startIndex + parseInt(limit);
         const paginatedCases = cases.slice(startIndex, endIndex);
+
+        console.log("🔍 Returning paginated cases:", paginatedCases.length);
 
         res.json({
             success: true,
