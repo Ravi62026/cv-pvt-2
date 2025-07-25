@@ -72,6 +72,8 @@ export default defineConfig({
     global: 'globalThis',
   },
   server: {
+    host: true,
+    allowedHosts: ['db17ecff5725.ngrok-free.app'],
     proxy: {
       '/api': {
         target: 'http://localhost:5000',

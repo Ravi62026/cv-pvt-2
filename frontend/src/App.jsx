@@ -57,6 +57,8 @@ import CallTestComponent from './components/calls/CallTestComponent';
 import CallTestPage from './pages/CallTestPage';
 import TestChatPage from './pages/TestChatPage';
 import CallPage from './pages/CallPage';
+import DemoPage from './pages/DemoPage';
+import PricingPage from './pages/PricingPage';
 
 
 
@@ -172,6 +174,8 @@ function App() {
                 <Route path="/vision" element={<Layout><OurVisionPage /></Layout>} />
                 <Route path="/about" element={<Layout><AboutPage /></Layout>} />
                 <Route path="/contact" element={<Layout><ContactPage /></Layout>} />
+                <Route path="/demo" element={<Layout><DemoPage /></Layout>} />
+                <Route path="/pricing" element={<Layout><PricingPage /></Layout>} />
 
                 {/* Auth Routes */}
                 <Route path="/login" element={<Layout><LoginPage /></Layout>} />

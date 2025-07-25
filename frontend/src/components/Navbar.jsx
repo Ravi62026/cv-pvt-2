@@ -5,6 +5,7 @@ import { Menu, X, User, LogOut, Settings, LayoutDashboard, Cpu, FileText } from 
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import NotificationSystem from './NotificationSystem';
+import PricingButton from './PricingButton';
 import logCv from '../assets/log-cv.jpg';
 
 const Navbar = () => {
@@ -124,6 +125,15 @@ const Navbar = () => {
           <div className="hidden lg:block">
             {isAuthenticated ? (
               <div className="flex items-center space-x-4">
+                {/* Pricing Button */}
+                <PricingButton
+                  variant="premium"
+                  size="sm"
+                  className="hidden xl:flex"
+                >
+                  Premium
+                </PricingButton>
+
                 {/* Notification System */}
                 <NotificationSystem />
 
@@ -198,7 +208,14 @@ const Navbar = () => {
                 </div>
               </div>
             ) : (
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-3">
+                <PricingButton
+                  variant="outline"
+                  size="sm"
+                  className="hidden sm:flex text-xs"
+                >
+                  Pricing
+                </PricingButton>
                 <Link
                   to="/login"
                   className="text-gray-300 hover:text-white px-3 xl:px-4 py-2 rounded-md text-xs xl:text-sm font-medium transition-all duration-200 hover:bg-white/10 hover:backdrop-blur-sm"
@@ -291,6 +308,18 @@ const Navbar = () => {
                         <div className="text-gray-400 text-sm capitalize">{user?.role}</div>
                       </div>
                     </div>
+
+                    {/* Mobile Pricing Button */}
+                    <div className="px-3 py-2">
+                      <PricingButton
+                        variant="premium"
+                        size="md"
+                        className="w-full justify-center"
+                      >
+                        Explore Premium Features
+                      </PricingButton>
+                    </div>
+
                     <Link
                       to="/profile"
                       onClick={() => setIsOpen(false)}
@@ -316,7 +345,18 @@ const Navbar = () => {
                     </button>
                   </div>
                 ) : (
-                  <div className="px-2 space-y-1">
+                  <div className="px-2 space-y-3">
+                    {/* Mobile Pricing Button for Non-authenticated */}
+                    <div className="px-1">
+                      <PricingButton
+                        variant="premium"
+                        size="md"
+                        className="w-full justify-center"
+                      >
+                        View Pricing & Features
+                      </PricingButton>
+                    </div>
+
                     <Link
                       to="/login"
                       onClick={() => setIsOpen(false)}
