@@ -1,0 +1,96 @@
+{
+  "timestamp": "2025-07-25T20:29:33.915Z",
+  "platform": "ChainVerdict Legal Platform",
+  "testType": "Simple VAPT Assessment",
+  "summary": {
+    "totalTests": 13,
+    "passed": 12,
+    "failed": 1,
+    "warnings": 2,
+    "critical": 0
+  },
+  "riskLevel": "MEDIUM",
+  "results": {
+    "passed": [
+      {
+        "test": "Hardcoded Secrets Detection",
+        "status": "PASSED"
+      },
+      {
+        "test": "Dangerous Function Detection",
+        "status": "PASSED"
+      },
+      {
+        "test": "Console Statement Count",
+        "status": "PASSED"
+      },
+      {
+        "test": "Security TODO Detection",
+        "status": "PASSED"
+      },
+      {
+        "test": "Commented Security Code Detection",
+        "status": "PASSED"
+      },
+      {
+        "test": "Error Handling Implementation Count",
+        "status": "PASSED"
+      },
+      {
+        "test": "Authentication Implementation Count",
+        "status": "PASSED"
+      },
+      {
+        "test": "Data Validation Implementation Count",
+        "status": "PASSED"
+      },
+      {
+        "test": "Client data encryption patterns",
+        "status": "MANUAL_REVIEW_REQUIRED",
+        "recommendation": "Manual review required for: Client data encryption patterns"
+      },
+      {
+        "test": "Document access controls",
+        "status": "MANUAL_REVIEW_REQUIRED",
+        "recommendation": "Manual review required for: Document access controls"
+      },
+      {
+        "test": "Audit trail implementation",
+        "status": "MANUAL_REVIEW_REQUIRED",
+        "recommendation": "Manual review required for: Audit trail implementation"
+      },
+      {
+        "test": "Privacy compliance measures",
+        "status": "MANUAL_REVIEW_REQUIRED",
+        "recommendation": "Manual review required for: Privacy compliance measures"
+      }
+    ],
+    "failed": [
+      {
+        "test": "Frontend Dependency Vulnerabilities",
+        "error": "Command failed: cd frontend && npm audit --audit-level moderate\nThe system cannot find the path specified.\r\n"
+      }
+    ],
+    "warnings": [
+      {
+        "test": "Sensitive File Detection",
+        "issue": "Sensitive file found: .env",
+        "recommendation": "Ensure sensitive files are not committed to version control"
+      },
+      {
+        "test": "Gitignore Security",
+        "issue": "Missing entries in .gitignore: .env",
+        "recommendation": "Add missing entries to .gitignore"
+      }
+    ],
+    "critical": []
+  },
+  "recommendations": [
+    "Implement comprehensive input validation",
+    "Set up automated security scanning in CI/CD",
+    "Regular security training for development team",
+    "Implement proper error handling and logging",
+    "Use HTTPS in production environment",
+    "Regular security audits and penetration testing"
+  ]
+}

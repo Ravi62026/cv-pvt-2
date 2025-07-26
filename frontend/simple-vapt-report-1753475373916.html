@@ -1,0 +1,106 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ChainVerdict Simple VAPT Report</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .summary { background: #e3f2fd; padding: 20px; border-radius: 5px; margin-bottom: 20px; }
+        .risk-critical { color: #d32f2f; font-weight: bold; }
+        .risk-high { color: #f57c00; font-weight: bold; }
+        .risk-medium { color: #fbc02d; font-weight: bold; }
+        .risk-low { color: #388e3c; font-weight: bold; }
+        .section { margin: 20px 0; }
+        .test-passed { color: #4caf50; }
+        .test-failed { color: #f44336; }
+        .test-warning { color: #ff9800; }
+        .recommendation { background: #fff3e0; padding: 10px; margin: 5px 0; border-left: 4px solid #ff9800; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔒 ChainVerdict Simple VAPT Report</h1>
+            <p>Generated: 2025-07-25T20:29:33.915Z</p>
+        </div>
+        
+        <div class="summary">
+            <h2>📊 Executive Summary</h2>
+            <p><strong>Risk Level:</strong> <span class="risk-medium">MEDIUM</span></p>
+            <p><strong>Tests Passed:</strong> 12</p>
+            <p><strong>Tests Failed:</strong> 1</p>
+            <p><strong>Warnings:</strong> 2</p>
+            <p><strong>Critical Issues:</strong> 0</p>
+        </div>
+
+        <div class="section">
+            <h2>✅ Passed Tests</h2>
+            
+                <div class="test-passed">✅ Hardcoded Secrets Detection</div>
+            
+                <div class="test-passed">✅ Dangerous Function Detection</div>
+            
+                <div class="test-passed">✅ Console Statement Count</div>
+            
+                <div class="test-passed">✅ Security TODO Detection</div>
+            
+                <div class="test-passed">✅ Commented Security Code Detection</div>
+            
+                <div class="test-passed">✅ Error Handling Implementation Count</div>
+            
+                <div class="test-passed">✅ Authentication Implementation Count</div>
+            
+                <div class="test-passed">✅ Data Validation Implementation Count</div>
+            
+                <div class="test-passed">✅ Client data encryption patterns</div>
+            
+                <div class="test-passed">✅ Document access controls</div>
+            
+                <div class="test-passed">✅ Audit trail implementation</div>
+            
+                <div class="test-passed">✅ Privacy compliance measures</div>
+            
+        </div>
+
+        <div class="section">
+            <h2>❌ Failed Tests</h2>
+            
+                <div class="test-failed">❌ Frontend Dependency Vulnerabilities</div>
+            
+        </div>
+
+        <div class="section">
+            <h2>⚠️ Warnings</h2>
+            
+                <div class="test-warning">⚠️ Sensitive File Detection: Sensitive file found: .env</div>
+            
+                <div class="test-warning">⚠️ Gitignore Security: Missing entries in .gitignore: .env</div>
+            
+        </div>
+
+        <div class="section">
+            <h2>🚨 Critical Issues</h2>
+            
+        </div>
+
+        <div class="section">
+            <h2>💡 Recommendations</h2>
+            
+                <div class="recommendation">Implement comprehensive input validation</div>
+            
+                <div class="recommendation">Set up automated security scanning in CI/CD</div>
+            
+                <div class="recommendation">Regular security training for development team</div>
+            
+                <div class="recommendation">Implement proper error handling and logging</div>
+            
+                <div class="recommendation">Use HTTPS in production environment</div>
+            
+                <div class="recommendation">Regular security audits and penetration testing</div>
+            
+        </div>
+    </div>
+</body>
+</html>

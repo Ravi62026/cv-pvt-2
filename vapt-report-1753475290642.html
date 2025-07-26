@@ -1,0 +1,131 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ChainVerdict VAPT Report</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .critical { color: #d32f2f; }
+        .high { color: #f57c00; }
+        .medium { color: #fbc02d; }
+        .low { color: #388e3c; }
+        .summary { background: #f5f5f5; padding: 20px; border-radius: 5px; }
+        .finding { margin: 10px 0; padding: 10px; border-left: 4px solid #ccc; }
+    </style>
+</head>
+<body>
+    <h1>ChainVerdict VAPT Report</h1>
+    <div class="summary">
+        <h2>Executive Summary</h2>
+        <p><strong>Risk Level:</strong> <span class="critical">CRITICAL</span></p>
+        <p><strong>Critical Issues:</strong> 2</p>
+        <p><strong>Vulnerabilities:</strong> 4</p>
+        <p><strong>Warnings:</strong> 0</p>
+    </div>
+    
+    <h2>Findings</h2>
+    
+        <div class="finding critical">
+            <h3>CRITICAL: Frontend Dependency Vulnerability Scan</h3>
+            <p>{
+  "auditReportVersion": 2,
+  "vulnerabilities": {},
+  "metadata": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 0,
+      "critical": 0,
+      "total": 0
+    },
+    "dependencies": {
+      "prod": 237,
+      "dev": 406,
+      "optional": 70,
+      "peer": 3,
+      "peerOptional": 0,
+      "total": 712
+    }
+  }
+}
+</p>
+        </div>
+    
+        <div class="finding critical">
+            <h3>CRITICAL: Backend Dependency Vulnerability Scan</h3>
+            <p>{
+  "auditReportVersion": 2,
+  "vulnerabilities": {},
+  "metadata": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 0,
+      "critical": 0,
+      "total": 0
+    },
+    "dependencies": {
+      "prod": 167,
+      "dev": 30,
+      "optional": 2,
+      "peer": 4,
+      "peerOptional": 0,
+      "total": 199
+    }
+  }
+}
+</p>
+        </div>
+    
+    
+    
+        <div class="finding medium">
+            <h3>MEDIUM: Outdated Package Detection</h3>
+            <p>Command failed: cd frontend && npm outdated</p>
+            
+        </div>
+    
+        <div class="finding medium">
+            <h3>MEDIUM: Snyk Advanced Vulnerability Scan</h3>
+            <p>Command failed: cd frontend && npx snyk test --severity-threshold=medium</p>
+            
+        </div>
+    
+        <div class="finding medium">
+            <h3>MEDIUM: ESLint Security Analysis</h3>
+            <p>Command failed: cd frontend && npx eslint . --ext .js,.jsx,.ts,.tsx -c ../.eslintrc.security.js --format json
+
+Oops! Something went wrong! :(
+
+ESLint: 9.31.0
+
+Error: ENOENT: no such file or directory, stat 'C:\Users\ravi1\Desktop\cv-pvt-2\.eslintrc.security.js'
+    at async Object.stat (node:internal/fs/promises:1036:18)
+    at async loadConfigFile (C:\Users\ravi1\Desktop\cv-pvt-2\node_modules\eslint\lib\config\config-loader.js:206:17)
+    at async ConfigLoader.calculateConfigArray (C:\Users\ravi1\Desktop\cv-pvt-2\node_modules\eslint\lib\config\config-loader.js:589:23)
+    at async #calculateConfigArray (C:\Users\ravi1\Desktop\cv-pvt-2\node_modules\eslint\lib\config\config-loader.js:743:23)
+    at async entryFilter (C:\Users\ravi1\Desktop\cv-pvt-2\node_modules\eslint\lib\eslint\eslint-helpers.js:289:5)
+    at async NodeHfs.<anonymous> (file:///C:/Users/ravi1/Desktop/cv-pvt-2/node_modules/@humanfs/core/src/hfs.js:574:24)
+    at async NodeHfs.walk (file:///C:/Users/ravi1/Desktop/cv-pvt-2/node_modules/@humanfs/core/src/hfs.js:614:3)
+    at async globSearch (C:\Users\ravi1\Desktop\cv-pvt-2\node_modules\eslint\lib\eslint\eslint-helpers.js:331:20)
+    at async Promise.allSettled (index 0)
+    at async globMultiSearch (C:\Users\ravi1\Desktop\cv-pvt-2\node_modules\eslint\lib\eslint\eslint-helpers.js:422:18)
+</p>
+            
+        </div>
+    
+        <div class="finding medium">
+            <h3>MEDIUM: Rate Limiting</h3>
+            <p>No rate limiting detected</p>
+            <p><strong>Recommendation:</strong> Implement API rate limiting</p>
+        </div>
+    
+    
+    <h2>Next Steps</h2>
+    <ol>
+        <li>URGENT: Address critical security issues within 24 hours</li><li>Review and fix all critical vulnerabilities immediately</li><li>Implement missing security headers</li><li>Set up automated security scanning in CI/CD pipeline</li><li>Conduct regular penetration testing</li><li>Implement comprehensive logging and monitoring</li><li>Train development team on secure coding practices</li>
+    </ol>
+</body>
+</html>
