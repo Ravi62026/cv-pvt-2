@@ -1133,6 +1133,70 @@ export const chatAPI = {
       };
     }
   },
+
+  // Get chat info (for ChatPage)
+  async getChatInfo(chatId) {
+    try {
+      const response = await apiClient.get(`/chats/${chatId}`);
+      return {
+        success: true,
+        data: response.data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
+
+  // Get chat messages (for ChatPage)
+  async getChatMessages(chatId) {
+    try {
+      const response = await apiClient.get(`/chats/${chatId}/messages`);
+      return {
+        success: true,
+        data: response.data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
+
+  // Create direct chat
+  async createDirectChat(otherUserId) {
+    try {
+      const response = await apiClient.post(`/chats/direct/${otherUserId}`);
+      return {
+        success: true,
+        data: response.data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
+
+  // Upload file to chat
+  async uploadFile(formData) {
+    try {
+      const response = await apiClient.uploadFile('/chats/upload-file', formData);
+      return {
+        success: true,
+        data: response.data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
 };
 
 // Consultation API services

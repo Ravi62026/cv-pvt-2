@@ -7,6 +7,7 @@ import { useToast } from '../contexts/ToastContext';
 import { Send, ArrowLeft, Phone, Video, MoreVertical } from 'lucide-react';
 import MessageInput from '../components/chat/MessageInput';
 import MessageBubble from '../components/chat/MessageBubble';
+import { authAPI, chatAPI } from '../services/api';
 
 const ChatPage = () => {
   const { chatId } = useParams();
@@ -41,9 +42,14 @@ const ChatPage = () => {
     console.log('👤 FRONTEND: User authenticated, proceeding with chat setup...');
 
     // Test token validity first
-    testTokenValidity().then(() => {
-      fetchChatInfo();
-      fetchMessages();
+    testTokenValidity().then((validUser) => {
+      if (validUser) {
+        console.log('🔐 FRONTEND: Token validated for user:', validUser.name);
+        fetchChatInfo();
+        fetchMessages();
+      } else {
+        console.log('❌ FRONTEND: Token validation failed, not proceeding with chat setup');
+      }
     });
 
     // Join chat room when component mounts
@@ -63,26 +69,24 @@ const ChatPage = () => {
 
   const testTokenValidity = async () => {
     try {
-      const token = getToken();
-      console.log('🧪 FRONTEND: Testing token validity...');
+      console.log('🧪 FRONTEND: Testing token validity using API client...');
 
-      const response = await fetch('http://localhost:5000/api/auth/me', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const result = await authAPI.getCurrentUser();
 
-      if (response.ok) {
-        console.log('✅ FRONTEND: Token is valid');
+      if (result.success) {
+        console.log('✅ FRONTEND: Token is valid, user:', result.data.name);
+        return result.data;
       } else {
-        console.error('❌ FRONTEND: Token is invalid:', response.status);
-        if (response.status === 401) {
-          console.log('🔄 FRONTEND: Redirecting to login...');
-          // Could redirect to login here
+        console.error('❌ FRONTEND: Token validation failed:', result.error);
+        if (result.error.includes('token') || result.error.includes('Session expired')) {
+          console.log('🔄 FRONTEND: Session expired, redirecting to login...');
+          navigate('/login');
         }
+        return null;
       }
     } catch (error) {
       console.error('🚨 FRONTEND: Token test failed:', error);
+      return null;
     }
   };
 
@@ -137,40 +141,35 @@ const ChatPage = () => {
 
   const fetchChatInfo = async () => {
     try {
-      const token = getToken();
-      console.log('🔐 FRONTEND: Using token for chat info:', token ? 'Present' : 'Missing');
+      console.log('📋 FRONTEND: Fetching chat info using API client...');
 
-      const response = await fetch(`http://localhost:5000/api/chats/${chatId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const result = await chatAPI.getChatInfo(chatId);
 
-      if (response.ok) {
-        const data = await response.json();
+      if (result.success) {
+        const data = result.data;
 
         // Extract other user from participants
         const currentUserId = user?.id || user?._id;
-        const otherParticipant = data.data.chat.participants.find(
+        const otherParticipant = data.chat.participants.find(
           p => (p.user._id || p.user.id) !== currentUserId
         );
 
         // Add otherUser to the data for easier access
         const chatData = {
-          ...data.data.chat,
+          ...data.chat,
           otherUser: otherParticipant?.user
         };
 
-        setChatInfo({ ...data, data: { chat: chatData } });
-      } else if (response.status === 404 && chatId.startsWith('direct_')) {
+        setChatInfo({ ...data, chat: chatData });
+      } else if (result.error.includes('not found') && chatId.startsWith('direct_')) {
         // If it's a direct chat that doesn't exist, try to create it
         console.log('📝 FRONTEND: Direct chat not found, attempting to create...');
         await createDirectChatIfNeeded();
-      } else if (response.status === 401) {
+      } else if (result.error.includes('token') || result.error.includes('Authentication')) {
         console.error('🔐 FRONTEND: Authentication failed - token may be expired');
-        // Redirect to login or refresh token
+        navigate('/login');
       } else {
-        console.error('🚨 FRONTEND: Failed to fetch chat info:', response.status, response.statusText);
+        console.error('🚨 FRONTEND: Failed to fetch chat info:', result.error);
       }
     } catch (error) {
       console.error('Error fetching chat info:', error);
@@ -191,35 +190,31 @@ const ChatPage = () => {
       // Determine which user is the other user
       const otherUserId = userId1 === currentUserId ? userId2 : userId1;
 
-      console.log('🔄 FRONTEND: Creating direct chat with user:', otherUserId);
+      console.log('🔄 FRONTEND: Creating direct chat with user using API client:', otherUserId);
 
-      const response = await fetch(`http://localhost:5000/api/chats/direct/${otherUserId}`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${getToken()}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      const result = await chatAPI.createDirectChat(otherUserId);
 
-      if (response.ok) {
-        const data = await response.json();
+      if (result.success) {
+        const data = result.data;
         console.log('✅ FRONTEND: Direct chat created:', data);
 
         // Extract other user from participants
         const currentUserId = user?.id || user?._id;
-        const otherParticipant = data.data.chat.participants.find(
+        const otherParticipant = data.chat.participants.find(
           p => (p.user._id || p.user.id) !== currentUserId
         );
 
         // Add otherUser to the data for easier access
         const chatData = {
-          ...data.data.chat,
+          ...data.chat,
           otherUser: otherParticipant?.user
         };
 
-        setChatInfo({ ...data, data: { chat: chatData } });
+        setChatInfo({ ...data, chat: chatData });
         // Fetch messages after creating the chat
         fetchMessages();
+      } else {
+        console.error('❌ FRONTEND: Failed to create direct chat:', result.error);
       }
     } catch (error) {
       console.error('Error creating direct chat:', error);
@@ -228,17 +223,14 @@ const ChatPage = () => {
 
   const fetchMessages = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/chats/${chatId}/messages`, {
-        headers: {
-          'Authorization': `Bearer ${getToken()}`
-        }
-      });
+      console.log('📥 FRONTEND: Fetching messages using API client...');
 
-      if (response.ok) {
-        const result = await response.json();
-        console.log('📥 FRONTEND: Fetched messages:', result);
+      const result = await chatAPI.getChatMessages(chatId);
 
-        if (result.success && result.data && result.data.messages) {
+      if (result.success) {
+        console.log('📥 FRONTEND: Fetched messages:', result.data);
+
+        if (result.data && result.data.messages) {
           const messagesData = result.data.messages;
           console.log('📝 FRONTEND: Setting messages:', messagesData.length, 'messages');
           setMessages(Array.isArray(messagesData) ? messagesData : []);
@@ -246,11 +238,11 @@ const ChatPage = () => {
           console.log('📝 FRONTEND: No messages in response');
           setMessages([]);
         }
-      } else if (response.status === 404) {
+      } else if (result.error.includes('not found')) {
         console.log('📝 FRONTEND: Messages not found (chat may not exist yet)');
         setMessages([]);
       } else {
-        console.error('Failed to fetch messages:', response.status, response.statusText);
+        console.error('Failed to fetch messages:', result.error);
         setMessages([]);
       }
     } catch (error) {
@@ -312,25 +304,18 @@ const ChatPage = () => {
     setIsUploading(true);
 
     try {
-      // Upload file to server first
+      // Upload file to server first using API client
       const formData = new FormData();
       formData.append('file', file);
       formData.append('chatId', chatId);
       formData.append('description', `File shared in chat`);
 
-      const response = await fetch('/api/chats/upload-file', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${getToken()}`
-        },
-        body: formData
-      });
+      console.log('📤 FRONTEND: Uploading file using API client...');
+      const uploadResult = await chatAPI.uploadFile(formData);
 
-      if (!response.ok) {
-        throw new Error('Failed to upload file');
+      if (!uploadResult.success) {
+        throw new Error(uploadResult.error || 'Failed to upload file');
       }
-
-      const uploadResult = await response.json();
 
       // Send file message via socket
       const tempId = Date.now().toString();
