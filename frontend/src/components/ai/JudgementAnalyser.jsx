@@ -44,11 +44,52 @@ Choose your preferred method to get started!`,
   const fileInputRef = useRef(null);
   const { success, error } = useToast();
 
+  // Simulate streaming effect
+  const simulateStreaming = (text, messageId) => {
+    const words = text.split(' ');
+    let currentText = '';
+    let wordIndex = 0;
+
+    const streamInterval = setInterval(() => {
+      if (wordIndex < words.length) {
+        // Add multiple words at once to reduce state updates
+        const wordsToAdd = Math.min(3, words.length - wordIndex);
+        for (let i = 0; i < wordsToAdd; i++) {
+          currentText += (wordIndex > 0 ? ' ' : '') + words[wordIndex];
+          wordIndex++;
+        }
+        setMessages(prev => prev.map(msg =>
+          msg.id === messageId
+            ? { ...msg, content: currentText }
+            : msg
+        ));
+      } else {
+        clearInterval(streamInterval);
+        setMessages(prev => prev.map(msg =>
+          msg.id === messageId
+            ? { ...msg, isStreaming: false }
+            : msg
+        ));
+        setIsLoading(false);
+      }
+    }, 100); // Slower interval to reduce rapid updates
+  };
+
   const handleSendMessage = async (message) => {
     // Add user message
     const userMessage = { content: message, isUser: true };
     setMessages(prev => [...prev, userMessage]);
     setIsLoading(true);
+
+    // Add empty AI message for streaming
+    const aiMessageId = Date.now();
+    const initialAiMessage = {
+      id: aiMessageId,
+      content: '',
+      isUser: false,
+      isStreaming: true
+    };
+    setMessages(prev => [...prev, initialAiMessage]);
 
     try {
       // Call Judgement Analyser API
@@ -59,13 +100,13 @@ Choose your preferred method to get started!`,
         true, // verify
         analysisSettings.includeDetailedAnalysis
       );
-      
+
       if (response.success) {
         const data = response.data;
-        
+
         // Create AI response
         let aiResponseContent = data.analysis || 'Analysis completed successfully.';
-        
+
         // Add suggested questions if available
         if (data.suggested_questions && data.suggested_questions.length > 0) {
           aiResponseContent += `\n\n---\n\n💡 **Suggested Follow-up Questions:**\n`;
@@ -79,37 +120,28 @@ Choose your preferred method to get started!`,
           aiResponseContent += `\n\n📚 **Framework**: ${data.framework}`;
         }
 
-        const aiResponse = {
-          content: aiResponseContent,
-          isUser: false
-        };
-        setMessages(prev => [...prev, aiResponse]);
-        
+        // Start streaming simulation
+        simulateStreaming(aiResponseContent, aiMessageId);
+
         // Show success notification
         success('Judgement analysis completed');
       } else {
         // Handle API error
-        const errorMessage = {
-          content: `❌ **Error**: ${response.error || 'Failed to analyze the judgement. Please try again.'}
+        const errorContent = `❌ **Error**: ${response.error || 'Failed to analyze the judgement. Please try again.'}
 
-Please check your input and try again. If the problem persists, contact support.`,
-          isUser: false
-        };
-        setMessages(prev => [...prev, errorMessage]);
+Please check your input and try again. If the problem persists, contact support.`;
+
+        simulateStreaming(errorContent, aiMessageId);
         error('Failed to analyze judgement');
       }
-    } catch (error) {
-      console.error('Judgement Analyser error:', error);
-      const errorMessage = {
-        content: `❌ **System Error**: Unable to process your request at the moment.
+    } catch (err) {
+      console.error('Judgement Analyser error:', err);
+      const errorContent = `❌ **System Error**: Unable to process your request at the moment.
 
-Please try again later or contact support if the issue persists.`,
-        isUser: false
-      };
-      setMessages(prev => [...prev, errorMessage]);
+Please try again later or contact support if the issue persists.`;
+
+      simulateStreaming(errorContent, aiMessageId);
       error('System error occurred');
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -133,17 +165,27 @@ Please try again later or contact support if the issue persists.`,
     }
 
     // Add user message about file upload
-    const userMessage = { 
-      content: `📁 **Uploading PDF**: ${selectedFile.name} (${(selectedFile.size / 1024 / 1024).toFixed(2)} MB)`, 
-      isUser: true 
+    const userMessage = {
+      content: `📁 **Uploading PDF**: ${selectedFile.name} (${(selectedFile.size / 1024 / 1024).toFixed(2)} MB)`,
+      isUser: true
     };
     setMessages(prev => [...prev, userMessage]);
     setIsLoading(true);
 
+    // Add empty AI message for streaming
+    const aiMessageId = Date.now();
+    const initialAiMessage = {
+      id: aiMessageId,
+      content: '',
+      isUser: false,
+      isStreaming: true
+    };
+    setMessages(prev => [...prev, initialAiMessage]);
+
     try {
       // First validate the PDF
       const validateResponse = await aiAPI.validateJudgementPDF(selectedFile);
-      
+
       if (!validateResponse.success) {
         throw new Error(validateResponse.error || 'PDF validation failed');
       }
@@ -153,14 +195,14 @@ Please try again later or contact support if the issue persists.`,
         selectedFile,
         analysisSettings.includeDetailedAnalysis
       );
-      
+
       if (response.success) {
         const data = response.data;
-        
+
         // Create AI response
         let aiResponseContent = `✅ **PDF Analysis Complete**\n\n`;
         aiResponseContent += data.analysis || 'Analysis completed successfully.';
-        
+
         // Add suggested questions if available
         if (data.suggested_questions && data.suggested_questions.length > 0) {
           aiResponseContent += `\n\n---\n\n💡 **Suggested Follow-up Questions:**\n`;
@@ -174,12 +216,9 @@ Please try again later or contact support if the issue persists.`,
           aiResponseContent += `\n\n📚 **Framework**: ${data.framework}`;
         }
 
-        const aiResponse = {
-          content: aiResponseContent,
-          isUser: false
-        };
-        setMessages(prev => [...prev, aiResponse]);
-        
+        // Start streaming simulation
+        simulateStreaming(aiResponseContent, aiMessageId);
+
         // Clear selected file
         setSelectedFile(null);
         if (fileInputRef.current) {
@@ -190,18 +229,14 @@ Please try again later or contact support if the issue persists.`,
       } else {
         throw new Error(response.error || 'Failed to analyze PDF');
       }
-    } catch (error) {
-      console.error('PDF upload error:', error);
-      const errorMessage = {
-        content: `❌ **PDF Analysis Error**: ${error.message}
+    } catch (err) {
+      console.error('PDF upload error:', err);
+      const errorContent = `❌ **PDF Analysis Error**: ${err.message}
 
-Please ensure the PDF contains readable judgement text and try again.`,
-        isUser: false
-      };
-      setMessages(prev => [...prev, errorMessage]);
+Please ensure the PDF contains readable judgement text and try again.`;
+
+      simulateStreaming(errorContent, aiMessageId);
       error('PDF analysis failed');
-    } finally {
-      setIsLoading(false);
     }
   };
 

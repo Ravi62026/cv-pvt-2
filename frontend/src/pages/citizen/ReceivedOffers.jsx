@@ -59,7 +59,7 @@ const ReceivedOffers = () => {
   const handleAcceptOffer = async (offer) => {
     try {
       // Call API to accept the offer using the correct endpoint
-      const response = await fetch(`http://localhost:5000/api/citizens/accept-case-offer/${offer.requestId}`, {
+      const response = await fetch(`https://fluent-music-374010.el.r.appspot.com/api/citizens/accept-case-offer/${offer.requestId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

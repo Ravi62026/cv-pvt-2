@@ -50,6 +50,7 @@ app.use(
             process.env.CLIENT_URL || "http://localhost:5173",
             process.env.FRONTEND_URL || "http://localhost:5173",
             "https://fluent-music-374010.web.app",
+            "https://cv-pvt-2-frontend.vercel.app",
             "http://localhost:5173" // for development
         ],
         credentials: true,

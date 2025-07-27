@@ -1,5 +1,5 @@
 // API Configuration
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://fluent-music-374010.el.r.appspot.com/api';
 const AI_API_BASE_URL = import.meta.env.VITE_AI_API_URL || 'http://localhost:3000/api';
 
 // API Client class

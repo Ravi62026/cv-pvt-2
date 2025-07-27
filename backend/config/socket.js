@@ -15,13 +15,25 @@ export const initializeSocket = (server) => {
                 process.env.CLIENT_URL || "http://localhost:5173",
                 process.env.FRONTEND_URL || "http://localhost:5173",
                 "https://fluent-music-374010.web.app",
-                "http://localhost:5173" // for development
+                "https://cv-pvt-2-frontend.vercel.app",
+                "http://localhost:5173", // for development
+                "http://localhost:517", // alternative dev port
+                "https://localhost:5173", // HTTPS dev
+                "*" // Allow all origins for now (remove in production)
             ],
             methods: ["GET", "POST"],
             credentials: true,
         },
+        // Use WebSockets for Render, polling for App Engine
+        transports: process.env.NODE_ENV === 'production' && process.env.RENDER
+            ? ['websocket', 'polling'] // Render supports WebSockets
+            : ['polling'], // App Engine only supports polling
+        allowEIO3: true, // Allow Engine.IO v3 clients
         pingTimeout: 60000,
         pingInterval: 25000,
+        upgradeTimeout: 30000,
+        maxHttpBufferSize: 1e6,
+        allowUpgrades: process.env.RENDER ? true : false, // Enable WebSocket upgrades on Render
     });
 
     // Store active users and chat rooms

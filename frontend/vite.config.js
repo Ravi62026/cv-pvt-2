@@ -73,20 +73,19 @@ export default defineConfig({
   },
   server: {
     host: true,
-    allowedHosts: ['db17ecff5725.ngrok-free.app'],
     proxy: {
       '/api': {
-        target: 'http://localhost:5000',
+        target: 'https://fluent-music-374010.el.r.appspot.com',
         changeOrigin: true,
         secure: false,
       },
       '/uploads': {
-        target: 'http://localhost:5000',
+        target: 'https://fluent-music-374010.el.r.appspot.com',
         changeOrigin: true,
         secure: false,
       },
       '/socket.io': {
-        target: 'http://localhost:5000',
+        target: 'https://cv-pvt-2-be.onrender.com',
         changeOrigin: true,
         secure: false,
         ws: true,

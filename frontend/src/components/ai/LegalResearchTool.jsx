@@ -40,11 +40,52 @@ Ask me any legal research question to get started!`,
   const [pendingClarification, setPendingClarification] = useState(null);
   const { success, error, info } = useToast();
 
+  // Simulate streaming effect
+  const simulateStreaming = (text, messageId) => {
+    const words = text.split(' ');
+    let currentText = '';
+    let wordIndex = 0;
+
+    const streamInterval = setInterval(() => {
+      if (wordIndex < words.length) {
+        // Add multiple words at once to reduce state updates
+        const wordsToAdd = Math.min(3, words.length - wordIndex);
+        for (let i = 0; i < wordsToAdd; i++) {
+          currentText += (wordIndex > 0 ? ' ' : '') + words[wordIndex];
+          wordIndex++;
+        }
+        setMessages(prev => prev.map(msg =>
+          msg.id === messageId
+            ? { ...msg, content: currentText }
+            : msg
+        ));
+      } else {
+        clearInterval(streamInterval);
+        setMessages(prev => prev.map(msg =>
+          msg.id === messageId
+            ? { ...msg, isStreaming: false }
+            : msg
+        ));
+        setIsLoading(false);
+      }
+    }, 100); // Slower interval to reduce rapid updates
+  };
+
   const handleSendMessage = async (message) => {
     // Add user message
     const userMessage = { content: message, isUser: true };
     setMessages(prev => [...prev, userMessage]);
     setIsLoading(true);
+
+    // Add empty AI message for streaming
+    const aiMessageId = Date.now();
+    const initialAiMessage = {
+      id: aiMessageId,
+      content: '',
+      isUser: false,
+      isStreaming: true
+    };
+    setMessages(prev => [...prev, initialAiMessage]);
 
     try {
       let response;
@@ -86,11 +127,8 @@ Ask me any legal research question to get started!`,
             questionNumber: data.question_number
           });
 
-          const aiResponse = {
-            content: clarificationContent,
-            isUser: false
-          };
-          setMessages(prev => [...prev, aiResponse]);
+          // Start streaming simulation for clarification
+          simulateStreaming(clarificationContent, aiMessageId);
 
           info(`Clarification needed (${data.question_number}/${data.total_questions})`);
         } else {
@@ -136,37 +174,28 @@ Ask me any legal research question to get started!`,
             researchContent += `- **Search Quality**: ${analytics.search_quality || 'Premium'}\n`;
           }
 
-          const aiResponse = {
-            content: researchContent,
-            isUser: false
-          };
-          setMessages(prev => [...prev, aiResponse]);
+          // Start streaming simulation
+          simulateStreaming(researchContent, aiMessageId);
 
           success('Research completed successfully');
         }
       } else {
         // Handle API error
-        const errorMessage = {
-          content: `❌ **Research Error**: ${response.error || 'Failed to complete research. Please try again.'}
+        const errorContent = `❌ **Research Error**: ${response.error || 'Failed to complete research. Please try again.'}
 
-Please refine your query and try again. If the problem persists, contact support.`,
-          isUser: false
-        };
-        setMessages(prev => [...prev, errorMessage]);
+Please refine your query and try again. If the problem persists, contact support.`;
+
+        simulateStreaming(errorContent, aiMessageId);
         error('Research failed');
       }
-    } catch (error) {
-      console.error('Legal Research error:', error);
-      const errorMessage = {
-        content: `❌ **System Error**: Unable to process your research request at the moment.
+    } catch (err) {
+      console.error('Legal Research error:', err);
+      const errorContent = `❌ **System Error**: Unable to process your research request at the moment.
 
-Please try again later or contact support if the issue persists.`,
-        isUser: false
-      };
-      setMessages(prev => [...prev, errorMessage]);
+Please try again later or contact support if the issue persists.`;
+
+      simulateStreaming(errorContent, aiMessageId);
       error('System error occurred');
-    } finally {
-      setIsLoading(false);
     }
   };
 
