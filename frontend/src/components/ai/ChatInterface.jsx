@@ -1,12 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, Loader2, User, Bot, Copy, Check } from 'lucide-react';
+import { Send, Loader2, User, Bot, Copy, Check, Download } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 // Message Bubble Component
 const MessageBubble = ({ message, isUser, isTyping = false }) => {
   const [copied, setCopied] = useState(false);
+  const [downloaded, setDownloaded] = useState(false);
 
   // Handle both old format (message.content) and new format (message as string)
   const messageContent = typeof message === 'string' ? message : message.content;
@@ -19,6 +20,24 @@ const MessageBubble = ({ message, isUser, isTyping = false }) => {
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
       console.error('Failed to copy text:', err);
+    }
+  };
+
+  const handleDownload = () => {
+    try {
+      const blob = new Blob([messageContent], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `legal-response-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      setDownloaded(true);
+      setTimeout(() => setDownloaded(false), 2000);
+    } catch (err) {
+      console.error('Failed to download text:', err);
     }
   };
 
@@ -102,18 +121,32 @@ const MessageBubble = ({ message, isUser, isTyping = false }) => {
             )}
           </div>
 
-          {/* Copy Button for AI messages */}
+          {/* Copy and Download Buttons for AI messages */}
           {!isUser && !isTyping && (
-            <button
-              onClick={handleCopy}
-              className="absolute -bottom-2 right-2 p-1 bg-white/10 hover:bg-white/20 rounded-full transition-colors duration-200 opacity-0 group-hover:opacity-100"
-            >
-              {copied ? (
-                <Check className="h-3 w-3 text-green-400" />
-              ) : (
-                <Copy className="h-3 w-3 text-gray-400" />
-              )}
-            </button>
+            <div className="absolute -bottom-2 right-2 flex space-x-1 opacity-0 group-hover:opacity-100">
+              <button
+                onClick={handleCopy}
+                className="p-1 bg-white/10 hover:bg-white/20 rounded-full transition-colors duration-200"
+                title="Copy response"
+              >
+                {copied ? (
+                  <Check className="h-3 w-3 text-green-400" />
+                ) : (
+                  <Copy className="h-3 w-3 text-gray-400" />
+                )}
+              </button>
+              <button
+                onClick={handleDownload}
+                className="p-1 bg-white/10 hover:bg-white/20 rounded-full transition-colors duration-200"
+                title="Download response"
+              >
+                {downloaded ? (
+                  <Check className="h-3 w-3 text-green-400" />
+                ) : (
+                  <Download className="h-3 w-3 text-gray-400" />
+                )}
+              </button>
+            </div>
           )}
         </div>
       </div>
@@ -196,33 +229,52 @@ const ChatInterface = ({
   subtitle = "Ask me anything about legal matters"
 }) => {
   const messagesEndRef = useRef(null);
+  const messagesContainerRef = useRef(null);
+  const [userHasScrolled, setUserHasScrolled] = useState(false);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  // Check if user has manually scrolled up
+  const handleScroll = () => {
+    if (messagesContainerRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
+      const isAtBottom = scrollHeight - scrollTop <= clientHeight + 100; // 100px threshold
+      setUserHasScrolled(!isAtBottom);
+    }
+  };
+
+  // Simple auto-scroll logic - only scroll if user hasn't manually scrolled
   useEffect(() => {
-    scrollToBottom();
-  }, [messages, isLoading]);
+    if (!userHasScrolled) {
+      scrollToBottom();
+    }
+  }, [messages, userHasScrolled]);
 
   return (
     <div className="flex flex-col h-full bg-gradient-to-br from-black via-gray-900 to-gray-800">
-      {/* Header */}
-      <div className="flex-shrink-0 bg-white/5 backdrop-blur-sm border-b border-white/10 p-6">
+      {/* Compact Header */}
+      <div className="flex-shrink-0 bg-white/5 backdrop-blur-sm border-b border-white/10 p-3">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-white mb-2">{title}</h2>
-          <p className="text-gray-300 text-sm">{subtitle}</p>
+          <h2 className="text-lg font-bold text-white mb-1">{title}</h2>
+          <p className="text-gray-300 text-xs">{subtitle}</p>
         </div>
       </div>
 
-      {/* Messages Container */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-4">
+      {/* Extended Messages Container */}
+      <div
+        ref={messagesContainerRef}
+        className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0"
+        onScroll={handleScroll}
+        style={{ maxHeight: 'calc(100vh - 200px)' }}
+      >
         <AnimatePresence>
           {messages.map((msg, index) => (
             <div key={index} className="group">
-              <MessageBubble 
-                message={msg.content} 
-                isUser={msg.isUser} 
+              <MessageBubble
+                message={msg}
+                isUser={msg.isUser}
               />
             </div>
           ))}
@@ -240,8 +292,8 @@ const ChatInterface = ({
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Area */}
-      <div className="flex-shrink-0 p-6 bg-white/5 backdrop-blur-sm border-t border-white/10">
+      {/* Compact Input Area */}
+      <div className="flex-shrink-0 p-3 bg-white/5 backdrop-blur-sm border-t border-white/10">
         <ChatInput 
           onSendMessage={onSendMessage}
           disabled={isLoading}

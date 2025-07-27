@@ -48,8 +48,8 @@ Ask me any legal research question to get started!`,
 
     const streamInterval = setInterval(() => {
       if (wordIndex < words.length) {
-        // Add multiple words at once to reduce state updates
-        const wordsToAdd = Math.min(3, words.length - wordIndex);
+        // Add multiple words at once for smoother streaming
+        const wordsToAdd = Math.min(4, words.length - wordIndex);
         for (let i = 0; i < wordsToAdd; i++) {
           currentText += (wordIndex > 0 ? ' ' : '') + words[wordIndex];
           wordIndex++;
@@ -68,7 +68,7 @@ Ask me any legal research question to get started!`,
         ));
         setIsLoading(false);
       }
-    }, 100); // Slower interval to reduce rapid updates
+    }, 80); // Faster streaming for better UX
   };
 
   const handleSendMessage = async (message) => {
