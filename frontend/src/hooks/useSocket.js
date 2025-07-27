@@ -3,9 +3,10 @@ import { io } from 'socket.io-client';
 import { useAuth } from '../contexts/AuthContext';
 
 // Use the backend URL directly for socket connection
-const SOCKET_URL = process.env.NODE_ENV === 'development'
-  ? 'http://localhost:5000'
-  : window.location.protocol + '//' + window.location.host;
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL ||
+  (process.env.NODE_ENV === 'development'
+    ? 'http://localhost:5000'
+    : 'https://fluent-music-374010.el.r.appspot.com');
 
 export const useSocket = () => {
   const [socket, setSocket] = useState(null);

@@ -38,11 +38,11 @@ router.use(protect);
 router.use(authorize("lawyer"));
 
 // Dashboard and stats
-router.get("/dashboard/stats", getLawyerDashboardStats);
+router.get("/dashboard/stats", requireVerifiedLawyer, getLawyerDashboardStats);
 
 // Case management
-router.get("/available-cases", getAvailableCases);
-router.get("/my-cases", getMyAssignedCases);
+router.get("/available-cases", requireVerifiedLawyer, getAvailableCases);
+router.get("/my-cases", requireVerifiedLawyer, getMyAssignedCases);
 router.post(
     "/offer-help/:caseType/:caseId",
     requireVerifiedLawyer,
@@ -50,8 +50,8 @@ router.post(
 );
 
 // Client management
-router.get("/my-clients", getMyClients);
-router.get("/my-direct-clients", getMyDirectClients);
+router.get("/my-clients", requireVerifiedLawyer, getMyClients);
+router.get("/my-direct-clients", requireVerifiedLawyer, getMyDirectClients);
 router.post(
     "/accept-client/:citizenId",
     requireVerifiedLawyer,
@@ -59,19 +59,19 @@ router.post(
 );
 
 // Direct message request management (legacy)
-router.get("/pending-requests", getPendingDirectRequests);
+router.get("/pending-requests", requireVerifiedLawyer, getPendingDirectRequests);
 router.post("/accept-request/:chatId", requireVerifiedLawyer, acceptDirectRequest);
-router.get("/my-chats", getMyDirectChats);
+router.get("/my-chats", requireVerifiedLawyer, getMyDirectChats);
 
 // Direct connection management (new system)
-router.get("/pending-connection-requests", getPendingDirectConnectionRequests);
+router.get("/pending-connection-requests", requireVerifiedLawyer, getPendingDirectConnectionRequests);
 router.post("/accept-connection-request/:connectionId", requireVerifiedLawyer, acceptDirectConnectionRequest);
 router.post("/reject-connection-request/:connectionId", requireVerifiedLawyer, rejectDirectConnectionRequest);
-router.get("/connected-citizens", getMyConnectedCitizens);
+router.get("/connected-citizens", requireVerifiedLawyer, getMyConnectedCitizens);
 
 // Case request management
-router.get("/my-case-requests", getMyCaseRequests);
-router.get("/received-case-requests", getReceivedCaseRequests);
+router.get("/my-case-requests", requireVerifiedLawyer, getMyCaseRequests);
+router.get("/received-case-requests", requireVerifiedLawyer, getReceivedCaseRequests);
 router.post("/accept-case-request/:requestId", requireVerifiedLawyer, acceptCaseRequest);
 router.post("/reject-case-request/:requestId", requireVerifiedLawyer, rejectCaseRequest);
 

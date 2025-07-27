@@ -3,6 +3,7 @@ import {
     getCitizenDashboard,
     getMyLawyers,
     getMyCases,
+    getRecentActivity,
     sendDirectMessageRequest,
     getPendingRequests,
     getReceivedOffers,
@@ -29,6 +30,7 @@ router.use(authorize("citizen"));
 
 // Dashboard and stats
 router.get("/dashboard", getCitizenDashboard);
+router.get("/recent-activity", getRecentActivity);
 
 // Lawyer management
 router.get("/my-lawyers", getMyLawyers);

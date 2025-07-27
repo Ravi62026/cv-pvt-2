@@ -1,5 +1,6 @@
 // API Configuration
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const AI_API_BASE_URL = import.meta.env.VITE_AI_API_URL || 'http://localhost:3000/api';
 
 // API Client class
 class ApiClient {
@@ -114,8 +115,9 @@ class ApiClient {
   }
 }
 
-// Create API client instance
+// Create API client instances
 const apiClient = new ApiClient();
+const aiApiClient = new ApiClient(AI_API_BASE_URL);
 
 // Authentication API services
 export const authAPI = {
@@ -1065,6 +1067,23 @@ export const lawyerAPI = {
       };
     }
   },
+
+  // Get my assigned cases (queries and disputes)
+  async getMyAssignedCases(params = {}) {
+    try {
+      const queryString = new URLSearchParams(params).toString();
+      const response = await apiClient.get(`/lawyers/my-cases?${queryString}`);
+      return {
+        success: true,
+        data: response.data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
 };
 
 // Chat API services
@@ -1409,6 +1428,363 @@ export const callAPI = {
   async getCallById(callId) {
     try {
       const response = await apiClient.get(`/calls/${callId}`);
+      return {
+        success: true,
+        data: response.data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  }
+};
+
+// AI API services with streaming support
+export const aiAPI = {
+  // Streaming helper function
+  async streamResponse(endpoint, data, onChunk, onComplete, onError) {
+    try {
+      const response = await fetch(`${AI_API_BASE_URL}${endpoint}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify({ ...data, stream: true }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop(); // Keep incomplete line in buffer
+
+        for (const line of lines) {
+          if (line.trim() && line.startsWith('data: ')) {
+            try {
+              const jsonData = JSON.parse(line.slice(6));
+              if (jsonData.chunk) {
+                onChunk(jsonData.chunk);
+              } else if (jsonData.complete) {
+                onComplete(jsonData);
+                return;
+              }
+            } catch (e) {
+              console.warn('Failed to parse streaming data:', line);
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Streaming error:', error);
+      onError(error);
+    }
+  },
+  // BNS Advisor - Analyze case using BNS/BNSS/BSA framework
+  async analyzeBNSCase(caseDescription, verify = true) {
+    try {
+      const response = await aiApiClient.post('/bns-advisor', {
+        case_description: caseDescription,
+        verify: verify
+      });
+      return {
+        success: true,
+        data: response,
+      };
+    } catch (error) {
+      console.error('BNS Advisor API error:', error);
+
+      // Check if it's a connection error (API not running)
+      if (error.code === 'ECONNREFUSED' || error.message.includes('fetch')) {
+        return {
+          success: false,
+          error: 'AI API server is not running. Please start the Flask API server at http://localhost:3000'
+        };
+      }
+
+      return {
+        success: false,
+        error: error.response?.data?.error || error.message || 'Failed to analyze case'
+      };
+    }
+  },
+
+  // BNS Advisor - Streaming version
+  async analyzeBNSCaseStream(caseDescription, verify = true, onChunk, onComplete, onError) {
+    return this.streamResponse('/bns-advisor', {
+      case_description: caseDescription,
+      verify: verify
+    }, onChunk, onComplete, onError);
+  },
+
+  // Legal Advisor - Comprehensive case analysis with optional debate
+  async analyzeLegalCase(caseDescription, evidence = null, verify = true, includeDebate = false, chatId = null) {
+    try {
+      const requestData = {
+        case_description: caseDescription,
+        verify: verify,
+        include_debate: includeDebate
+      };
+
+      if (evidence) {
+        requestData.evidence = evidence;
+      }
+
+      if (chatId) {
+        requestData.chat_id = chatId;
+      }
+
+      const response = await aiApiClient.post('/legal-advisor', requestData);
+      return {
+        success: true,
+        data: response,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
+
+  // Judgement Analyser - Analyze court judgements
+  async analyzeJudgement(judgementDetails, crimeDetails = "", evidenceDetails = "", verify = true, includeDetailedAnalysis = false) {
+    try {
+      const response = await aiApiClient.post('/judgement-analyser', {
+        judgement_details: judgementDetails,
+        crime_details: crimeDetails,
+        evidence_details: evidenceDetails,
+        verify: verify,
+        include_detailed_analysis: includeDetailedAnalysis
+      });
+      return {
+        success: true,
+        data: response,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
+
+  // Judgement Analyser - Upload PDF for analysis
+  async analyzeJudgementPDF(pdfFile, includeDetailedAnalysis = false) {
+    try {
+      const formData = new FormData();
+      formData.append('pdf_file', pdfFile);
+      formData.append('include_detailed_analysis', includeDetailedAnalysis.toString());
+
+      const response = await apiClient.request('/judgement-analyser/upload', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          // Don't set Content-Type for FormData, let browser set it with boundary
+          ...apiClient.getHeaders(),
+          'Content-Type': undefined
+        }
+      });
+      return {
+        success: true,
+        data: response,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
+
+  // Judgement Analyser - Validate PDF before analysis
+  async validateJudgementPDF(pdfFile) {
+    try {
+      const formData = new FormData();
+      formData.append('pdf_file', pdfFile);
+
+      const response = await apiClient.request('/judgement-analyser/validate', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          // Don't set Content-Type for FormData, let browser set it with boundary
+          ...apiClient.getHeaders(),
+          'Content-Type': undefined
+        }
+      });
+      return {
+        success: true,
+        data: response,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
+
+  // Legal Research Tool - Advanced AI-powered research
+  async researchLegalQuery(query, conversationId = null) {
+    try {
+      const requestData = {
+        query: query
+      };
+
+      if (conversationId) {
+        requestData.conversation_id = conversationId;
+      }
+
+      const response = await aiApiClient.post('/legal-research', requestData);
+      return {
+        success: true,
+        data: response,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
+
+  // Legal Research Tool - Follow-up questions
+  async researchFollowUp(conversationId, query, answer, questionNumber) {
+    try {
+      const response = await aiApiClient.post('/legal-research/follow-up', {
+        conversation_id: conversationId,
+        query: query,
+        answer: answer,
+        question_number: questionNumber
+      });
+      return {
+        success: true,
+        data: response,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  }
+};
+
+// Document API services
+export const documentAPI = {
+  // Get user's documents
+  async getUserDocuments(params = {}) {
+    try {
+      const queryString = new URLSearchParams(params).toString();
+      const response = await apiClient.get(`/documents/repository/my-documents?${queryString}`);
+      return {
+        success: true,
+        data: response.data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
+
+  // Get document statistics
+  async getDocumentStats() {
+    try {
+      const response = await apiClient.get('/documents/stats/overview');
+      return {
+        success: true,
+        data: response.data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
+
+  // Upload document
+  async uploadDocument(formData) {
+    try {
+      const response = await apiClient.uploadFile('/documents/upload', formData);
+      return {
+        success: true,
+        data: response.data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
+
+  // Upload multiple documents
+  async uploadMultipleDocuments(formData) {
+    try {
+      const response = await apiClient.uploadFile('/documents/upload-multiple', formData);
+      return {
+        success: true,
+        data: response.data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
+
+  // Delete document
+  async deleteDocument(documentId) {
+    try {
+      const response = await apiClient.delete(`/documents/${documentId}`);
+      return {
+        success: true,
+        data: response.data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
+
+  // Get document details
+  async getDocument(documentId) {
+    try {
+      const response = await apiClient.get(`/documents/details/${documentId}`);
+      return {
+        success: true,
+        data: response.data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
+
+  // Get documents for a specific case/connection
+  async getDocuments(documentType, relatedId) {
+    try {
+      const response = await apiClient.get(`/documents/${documentType}/${relatedId}`);
       return {
         success: true,
         data: response.data,

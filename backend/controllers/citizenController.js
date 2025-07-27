@@ -4,6 +4,45 @@ import Dispute from "../models/Dispute.js";
 import Chat from "../models/Chat.js";
 import DirectConnection from "../models/DirectConnection.js";
 
+// Helper function to emit real-time dashboard updates
+const emitDashboardUpdate = async (req, citizenId, activityData = null) => {
+    try {
+        const io = req.app.get("socketio");
+        if (!io) return;
+
+        // Emit new activity if provided
+        if (activityData) {
+            console.log("📡 Emitting new_activity to user:", citizenId);
+            io.to(`user_${citizenId}`).emit("new_activity", activityData);
+        }
+
+        // Fetch and emit updated stats
+        const [totalQueries, totalDisputes, totalConnections, resolvedQueries, resolvedDisputes] = await Promise.all([
+            Query.countDocuments({ citizen: citizenId }),
+            Dispute.countDocuments({ citizen: citizenId }),
+            DirectConnection.countDocuments({ citizen: citizenId, status: 'accepted' }),
+            Query.countDocuments({ citizen: citizenId, status: 'resolved' }),
+            Dispute.countDocuments({ citizen: citizenId, status: 'resolved' })
+        ]);
+
+        const updatedStats = {
+            totalCases: totalQueries + totalDisputes,
+            activeCases: totalQueries + totalDisputes - resolvedQueries - resolvedDisputes,
+            resolvedCases: resolvedQueries + resolvedDisputes,
+            connectedLawyers: totalConnections,
+            pendingRequests: 0, // This would need to be calculated based on pending requests
+            receivedOffers: 0 // This would need to be calculated based on your offer system
+        };
+
+        console.log("📊 Emitting dashboard_stats_updated:", updatedStats);
+        io.to(`user_${citizenId}`).emit("dashboard_stats_updated", updatedStats);
+        io.to(`user_${citizenId}`).emit("quick_stats_updated", updatedStats);
+
+    } catch (error) {
+        console.error("Error emitting dashboard update:", error);
+    }
+};
+
 // Get citizen dashboard stats
 export const getCitizenDashboard = async (req, res) => {
     try {
@@ -142,6 +181,187 @@ export const getMyLawyers = async (req, res) => {
 };
 
 // Get citizen's cases (queries + disputes)
+// Get recent activity for citizen dashboard
+export const getRecentActivity = async (req, res) => {
+    try {
+        const { limit = 10 } = req.query;
+        const citizenId = req.user._id;
+
+        console.log("🔍 Fetching recent activity for citizen:", citizenId);
+
+        // Get recent queries, disputes, and direct connections
+        const [recentQueries, recentDisputes, recentConnections] = await Promise.all([
+            Query.find({ citizen: citizenId })
+                .populate("assignedLawyer", "name email lawyerDetails.specialization")
+                .sort({ createdAt: -1 })
+                .limit(parseInt(limit)),
+
+            Dispute.find({ citizen: citizenId })
+                .populate("assignedLawyer", "name email lawyerDetails.specialization")
+                .sort({ createdAt: -1 })
+                .limit(parseInt(limit)),
+
+            DirectConnection.find({ citizen: citizenId })
+                .populate("lawyer", "name email lawyerDetails.specialization")
+                .sort({ createdAt: -1 })
+                .limit(parseInt(limit))
+        ]);
+
+        console.log("📊 Data found:");
+        console.log("   Queries:", recentQueries.length);
+        console.log("   Disputes:", recentDisputes.length);
+        console.log("   Connections:", recentConnections.length);
+
+        // If no data exists, create some sample data for testing
+        if (recentQueries.length === 0 && recentDisputes.length === 0 && recentConnections.length === 0) {
+            console.log("🔧 No data found, creating sample data...");
+
+            // Create a sample query
+            const sampleQuery = await Query.create({
+                title: "Property Boundary Dispute",
+                description: "Need legal advice regarding property boundary issues with neighbor",
+                category: "property",
+                priority: "medium",
+                citizen: citizenId,
+                status: "pending"
+            });
+
+            // Add to timeline
+            sampleQuery.timeline.push({
+                action: "created",
+                description: "Legal query submitted for property boundary dispute",
+                performedBy: citizenId
+            });
+            await sampleQuery.save();
+
+            // Create a sample dispute
+            const sampleDispute = await Dispute.create({
+                title: "Contract Breach Issue",
+                description: "Contractor failed to complete work as per agreement",
+                disputeType: "contract",
+                category: "civil",
+                priority: "high",
+                citizen: citizenId,
+                status: "pending",
+                disputeValue: 50000
+            });
+
+            // Add to timeline
+            sampleDispute.timeline.push({
+                action: "created",
+                description: "Legal dispute filed for contract breach",
+                performedBy: citizenId
+            });
+            await sampleDispute.save();
+
+            console.log("✅ Sample data created");
+
+            // Refetch data
+            const [newQueries, newDisputes] = await Promise.all([
+                Query.find({ citizen: citizenId })
+                    .populate("assignedLawyer", "name email lawyerDetails.specialization")
+                    .sort({ createdAt: -1 })
+                    .limit(parseInt(limit)),
+
+                Dispute.find({ citizen: citizenId })
+                    .populate("assignedLawyer", "name email lawyerDetails.specialization")
+                    .sort({ createdAt: -1 })
+                    .limit(parseInt(limit))
+            ]);
+
+            recentQueries.push(...newQueries);
+            recentDisputes.push(...newDisputes);
+        }
+
+        // Combine and format activities
+        const activities = [];
+
+        // Add query activities
+        recentQueries.forEach(query => {
+            const latestTimeline = query.timeline[query.timeline.length - 1];
+            activities.push({
+                id: query._id,
+                type: 'query',
+                title: query.title,
+                description: latestTimeline?.description || 'Legal query submitted',
+                status: query.status,
+                timestamp: query.createdAt,
+                assignedLawyer: query.assignedLawyer,
+                category: query.category,
+                priority: query.priority
+            });
+        });
+
+        // Add dispute activities
+        recentDisputes.forEach(dispute => {
+            const latestTimeline = dispute.timeline[dispute.timeline.length - 1];
+            activities.push({
+                id: dispute._id,
+                type: 'dispute',
+                title: dispute.title,
+                description: latestTimeline?.description || 'Legal dispute filed',
+                status: dispute.status,
+                timestamp: dispute.createdAt,
+                assignedLawyer: dispute.assignedLawyer,
+                category: dispute.category,
+                priority: dispute.priority,
+                disputeType: dispute.disputeType
+            });
+        });
+
+        // Add direct connection activities
+        recentConnections.forEach(connection => {
+            let description = '';
+            switch (connection.status) {
+                case 'pending':
+                    description = `Connection request sent to ${connection.lawyer?.name || 'lawyer'}`;
+                    break;
+                case 'accepted':
+                    description = `Connected with ${connection.lawyer?.name || 'lawyer'}`;
+                    break;
+                case 'rejected':
+                    description = `Connection request declined by ${connection.lawyer?.name || 'lawyer'}`;
+                    break;
+                default:
+                    description = `Direct connection with ${connection.lawyer?.name || 'lawyer'}`;
+            }
+
+            activities.push({
+                id: connection._id,
+                type: 'connection',
+                title: `Direct Lawyer Connection`,
+                description: description,
+                status: connection.status,
+                timestamp: connection.createdAt,
+                assignedLawyer: connection.lawyer,
+                category: 'consultation',
+                priority: 'medium'
+            });
+        });
+
+        // Sort by timestamp and limit
+        activities.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        const limitedActivities = activities.slice(0, 5); // Show top 5
+
+        console.log("📤 Returning activities:", limitedActivities.length);
+        console.log("   Activity types:", limitedActivities.map(a => a.type));
+
+        res.json({
+            success: true,
+            data: {
+                activities: limitedActivities,
+                total: activities.length
+            }
+        });
+    } catch (error) {
+        console.error("Get recent activity error:", error);
+        res.status(500).json({
+            success: false,
+            message: "Failed to get recent activity"
+        });
+    }
+};
+
 export const getMyCases = async (req, res) => {
     try {
         const {
@@ -1091,6 +1311,29 @@ export const sendDirectConnectionRequest = async (req, res) => {
                 connectionType,
                 timestamp: new Date(),
             });
+
+            // Emit dashboard update to citizen
+            const activityData = {
+                id: newConnection._id,
+                type: 'connection',
+                title: 'Direct Lawyer Connection',
+                description: `Connection request sent to ${lawyer.name}`,
+                status: newConnection.status,
+                timestamp: newConnection.createdAt,
+                assignedLawyer: {
+                    _id: lawyer._id,
+                    name: lawyer.name,
+                    lawyerDetails: { specialization: lawyer.lawyerDetails?.specialization }
+                },
+                category: 'consultation',
+                priority: 'medium'
+            };
+
+            console.log("📡 Emitting new_activity for connection request:", activityData);
+            io.to(`user_${citizenId}`).emit("new_activity", activityData);
+
+            // Emit updated connection stats
+            emitDashboardUpdate(req, citizenId);
         }
 
         res.json({

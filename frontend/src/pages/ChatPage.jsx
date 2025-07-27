@@ -16,6 +16,8 @@ const ChatPage = () => {
   const { socket, isConnected } = useSocket();
   const { startCall } = useCall();
   const { success, error } = useToast();
+
+
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [chatInfo, setChatInfo] = useState(null);
@@ -31,6 +33,8 @@ const ChatPage = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+
 
   useEffect(() => {
     // Only proceed if user is authenticated
@@ -91,10 +95,11 @@ const ChatPage = () => {
   };
 
   // Socket event handlers
-  useSocketEvent('new_message', (messageData) => {
+  useSocketEvent('new_message', async (messageData) => {
     console.log('💬 FRONTEND: Received new_message:', messageData);
     if (messageData.chatId === chatId) {
       console.log('   ✅ Message is for current chat, adding to messages');
+
       setMessages(prev => {
         // Check if message already exists (avoid duplicates)
         const messageExists = prev.some(msg =>
@@ -233,6 +238,7 @@ const ChatPage = () => {
         if (result.data && result.data.messages) {
           const messagesData = result.data.messages;
           console.log('📝 FRONTEND: Setting messages:', messagesData.length, 'messages');
+
           setMessages(Array.isArray(messagesData) ? messagesData : []);
         } else {
           console.log('📝 FRONTEND: No messages in response');
@@ -258,10 +264,12 @@ const ChatPage = () => {
     if (!newMessage.trim() || isSending || !socket || !isConnected) return;
 
     const tempId = Date.now().toString();
+    const originalMessage = newMessage.trim();
+
     const messageData = {
       tempId,
       chatId,
-      content: newMessage.trim(),
+      content: originalMessage,
       sender: {
         _id: user.id || user._id,
         name: user.name,
@@ -279,10 +287,12 @@ const ChatPage = () => {
     try {
       const emitData = {
         chatId,
-        content: messageData.content,
+        content: originalMessage,
         tempId,
       };
+
       console.log('📤 FRONTEND: Sending message via socket:', emitData);
+
       socket.emit('send_message', emitData);
 
       // Set a timeout to reset sending state if no confirmation received
@@ -411,23 +421,26 @@ const ChatPage = () => {
                 <h3 className="font-semibold text-white text-lg">
                   {chatInfo?.data?.chat?.otherUser?.name || 'User'}
                 </h3>
-                <p className="text-sm text-gray-300 flex items-center">
-                  <span className="capitalize">
-                    {chatInfo?.data?.chat?.otherUser?.role === 'lawyer' ? '⚖️ Lawyer' : '👤 Citizen'}
-                  </span>
-                  {!isConnected && (
-                    <span className="ml-2 text-red-400 flex items-center">
-                      <span className="w-2 h-2 bg-red-400 rounded-full mr-1"></span>
-                      Offline
+                <div className="space-y-1">
+                  <p className="text-sm text-gray-300 flex items-center">
+                    <span className="capitalize">
+                      {chatInfo?.data?.chat?.otherUser?.role === 'lawyer' ? '⚖️ Lawyer' : '👤 Citizen'}
                     </span>
-                  )}
-                  {isConnected && (
-                    <span className="ml-2 text-green-400 flex items-center">
-                      <span className="w-2 h-2 bg-green-400 rounded-full mr-1 animate-pulse"></span>
-                      Online
-                    </span>
-                  )}
-                </p>
+                    {!isConnected && (
+                      <span className="ml-2 text-red-400 flex items-center">
+                        <span className="w-2 h-2 bg-red-400 rounded-full mr-1"></span>
+                        Offline
+                      </span>
+                    )}
+                    {isConnected && (
+                      <span className="ml-2 text-green-400 flex items-center">
+                        <span className="w-2 h-2 bg-green-400 rounded-full mr-1 animate-pulse"></span>
+                        Online
+                      </span>
+                    )}
+                  </p>
+
+                </div>
               </div>
             </div>
           </div>

@@ -11,7 +11,12 @@ import {
 export const initializeSocket = (server) => {
     const io = new Server(server, {
         cors: {
-            origin: process.env.CLIENT_URL || "http://localhost:5173",
+            origin: [
+                process.env.CLIENT_URL || "http://localhost:5173",
+                process.env.FRONTEND_URL || "http://localhost:5173",
+                "https://fluent-music-374010.web.app",
+                "http://localhost:5173" // for development
+            ],
             methods: ["GET", "POST"],
             credentials: true,
         },
@@ -211,6 +216,8 @@ export const initializeSocket = (server) => {
                     content: savedMessage.content,
                     messageType: savedMessage.messageType,
                     fileData: savedMessage.fileData,
+                    isEncrypted: savedMessage.isEncrypted,
+                    encryptedData: savedMessage.encryptedData,
                     sender: {
                         _id: socket.userId,
                         name: socket.userName,

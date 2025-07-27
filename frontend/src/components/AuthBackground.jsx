@@ -3,7 +3,7 @@ import { Scale, Gavel, FileText } from 'lucide-react';
 
 export const AuthBackground = () => {
   return (
-    <div className="hidden lg:flex lg:w-1/2 flex-col items-center justify-center p-12 relative overflow-hidden">
+    <div className="w-full h-full flex flex-col items-center justify-center p-6 lg:p-12 relative overflow-hidden">
       {/* Background Elements */}
       <div className="absolute inset-0">
         {/* Animated Gradient Background */}

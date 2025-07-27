@@ -148,7 +148,7 @@ const FindLawyers = () => {
   }
 
   return (
-    <div className="min-h-screen pt-26 bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 p-6">
+    <div className="min-h-screen pt-26 bg-gradient-to-br from-black via-gray-900 to-gray-800 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">

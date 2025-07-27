@@ -16,14 +16,24 @@ import {
   Calendar,
   DollarSign,
   MessageCircle,
+  Brain,
+  Cpu,
+  BookOpen,
+  Gavel,
+  Search,
+  ArrowRight,
 } from 'lucide-react';
 import { useToast } from '../../contexts/ToastContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { lawyerAPI } from '../../services/api';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
+import VerificationStatus from '../../components/lawyer/VerificationStatus';
+import VerificationGuard from '../../components/lawyer/VerificationGuard';
 
 const LawyerDashboard = () => {
   const navigate = useNavigate();
   const { success, error } = useToast();
+  const { user } = useAuth();
   const [stats, setStats] = useState({
     totalCases: 0,
     activeCases: 0,
@@ -163,39 +173,16 @@ const LawyerDashboard = () => {
           </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="mb-12">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-3xl font-bold text-white">Your Performance</h2>
-            <div className="text-sm text-gray-400">Last updated: just now</div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <StatsCard
-              title="Total Cases"
-              value={stats.totalCases}
-              icon={<FileText className="h-8 w-8 text-blue-600" />}
-              color="blue"
-            />
-            <StatsCard
-              title="Active Cases"
-              value={stats.activeCases}
-              icon={<TrendingUp className="h-8 w-8 text-green-600" />}
-              color="green"
-            />
-            <StatsCard
-              title="Completed Cases"
-              value={stats.completedCases}
-              icon={<CheckCircle className="h-8 w-8 text-purple-600" />}
-              color="purple"
-            />
-            <StatsCard
-              title="Pending Requests"
-              value={stats.pendingRequests}
-              icon={<Clock className="h-8 w-8 text-orange-600" />}
-              color="orange"
-            />
-          </div>
-        </div>
+        {/* Verification Status */}
+        <VerificationStatus user={user} className="mb-8" />
+
+        {/* Quick Access Cards */}
+        <VerificationGuard feature="dashboard statistics and case management">
+          <QuickAccessSection />
+        </VerificationGuard>
+
+        {/* AI Tools Section */}
+        <AIToolsSection />
 
         {/* Available Cases Section */}
         <div className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-2xl border border-white/20 mb-8">
@@ -415,6 +402,196 @@ const CaseCard = ({ caseItem, index, onSendRequest, getStatusIcon, getStatusColo
           <Send className="h-3 w-3 mr-1" />
           Send Request
         </button>
+      </div>
+    </motion.div>
+  );
+};
+
+// AI Tools Section
+const AIToolsSection = () => {
+  const navigate = useNavigate();
+
+  const aiTools = [
+    {
+      title: 'BNS Advisor',
+      description: 'Get instant guidance on Bharatiya Nyaya Sanhita provisions',
+      icon: BookOpen,
+      path: '/ai-tools/bns-advisor',
+      color: 'from-blue-500 to-cyan-500',
+      bgColor: 'from-blue-500/20 to-cyan-500/10',
+    },
+    {
+      title: 'Legal Advisor',
+      description: 'AI-powered legal consultation and advice',
+      icon: Brain,
+      path: '/ai-tools/legal-advisor',
+      color: 'from-purple-500 to-pink-500',
+      bgColor: 'from-purple-500/20 to-pink-500/10',
+    },
+    {
+      title: 'Judgment Analyzer',
+      description: 'Analyze and understand court judgments',
+      icon: Gavel,
+      path: '/ai-tools/judgment-analyzer',
+      color: 'from-orange-500 to-red-500',
+      bgColor: 'from-orange-500/20 to-red-500/10',
+    },
+    {
+      title: 'Legal Research',
+      description: 'Research legal cases and precedents',
+      icon: Search,
+      path: '/ai-tools/legal-research',
+      color: 'from-green-500 to-emerald-500',
+      bgColor: 'from-green-500/20 to-emerald-500/10',
+    },
+  ];
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="mb-8"
+    >
+      <div className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-2xl border border-white/20">
+        <div className="p-6 border-b border-white/20">
+          <div className="flex items-center">
+            <Cpu className="h-6 w-6 text-blue-400 mr-3" />
+            <div>
+              <h2 className="text-2xl font-bold text-white">AI Legal Tools</h2>
+              <p className="text-gray-300">Powered by advanced AI to assist with your legal work</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {aiTools.map((tool, index) => {
+              const IconComponent = tool.icon;
+              return (
+                <motion.div
+                  key={tool.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  onClick={() => navigate(tool.path)}
+                  className={`bg-gradient-to-br ${tool.bgColor} backdrop-blur-sm border border-white/10 rounded-xl p-6 cursor-pointer hover:scale-105 transition-all duration-300 group`}
+                >
+                  <div className={`inline-flex p-3 rounded-lg bg-gradient-to-r ${tool.color} mb-4`}>
+                    <IconComponent className="h-6 w-6 text-white" />
+                  </div>
+
+                  <h3 className="text-lg font-semibold text-white mb-2 group-hover:text-blue-300 transition-colors">
+                    {tool.title}
+                  </h3>
+
+                  <p className="text-gray-300 text-sm leading-relaxed mb-4">
+                    {tool.description}
+                  </p>
+
+                  <div className="flex items-center text-blue-400 text-sm font-medium group-hover:text-blue-300 transition-colors">
+                    <span>Try Now</span>
+                    <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+// Quick Access Section
+const QuickAccessSection = () => {
+  const navigate = useNavigate();
+
+  const quickAccessItems = [
+    {
+      title: 'Performance',
+      description: 'View your case statistics and performance metrics',
+      icon: TrendingUp,
+      path: '/lawyer/performance',
+      color: 'from-blue-500 to-cyan-500',
+      bgColor: 'from-blue-500/20 to-cyan-500/10',
+    },
+    {
+      title: 'AI Tools',
+      description: 'Access AI-powered legal assistance tools',
+      icon: Brain,
+      path: '/ai-tools',
+      color: 'from-purple-500 to-pink-500',
+      bgColor: 'from-purple-500/20 to-pink-500/10',
+    },
+    {
+      title: 'Documents',
+      description: 'Manage and organize your legal documents',
+      icon: FileText,
+      path: '/lawyer/documents',
+      color: 'from-orange-500 to-red-500',
+      bgColor: 'from-orange-500/20 to-red-500/10',
+    },
+    {
+      title: 'Clients',
+      description: 'Connect and communicate with your clients',
+      icon: Users,
+      path: '/lawyer/clients',
+      color: 'from-green-500 to-emerald-500',
+      bgColor: 'from-green-500/20 to-emerald-500/10',
+    },
+  ];
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="mb-12"
+    >
+      <div className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-2xl border border-white/20">
+        <div className="p-6 border-b border-white/20">
+          <div className="flex items-center">
+            <Cpu className="h-6 w-6 text-blue-400 mr-3" />
+            <div>
+              <h2 className="text-2xl font-bold text-white">Quick Access</h2>
+              <p className="text-gray-300">Access your most used features and tools</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {quickAccessItems.map((item, index) => {
+              const IconComponent = item.icon;
+              return (
+                <motion.div
+                  key={item.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  onClick={() => navigate(item.path)}
+                  className={`bg-gradient-to-br ${item.bgColor} backdrop-blur-sm border border-white/10 rounded-xl p-6 cursor-pointer hover:scale-105 transition-all duration-300 group`}
+                >
+                  <div className={`inline-flex p-3 rounded-lg bg-gradient-to-r ${item.color} mb-4`}>
+                    <IconComponent className="h-6 w-6 text-white" />
+                  </div>
+
+                  <h3 className="text-lg font-semibold text-white mb-2 group-hover:text-blue-300 transition-colors">
+                    {item.title}
+                  </h3>
+
+                  <p className="text-gray-300 text-sm leading-relaxed mb-4">
+                    {item.description}
+                  </p>
+
+                  <div className="flex items-center text-blue-400 text-sm font-medium group-hover:text-blue-300 transition-colors">
+                    <span>Access Now</span>
+                    <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
       </div>
     </motion.div>
   );

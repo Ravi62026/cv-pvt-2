@@ -18,7 +18,12 @@ import ResetPasswordPage from './pages/ResetPasswordPage';
 import FeaturesPage from './pages/FeaturesPage';
 import ProfilePage from './pages/ProfilePage';
 import CitizenDashboard from './pages/CitizenDashboard';
+import AdminDashboard from './pages/AdminDashboard';
+import PendingLawyers from './pages/admin/PendingLawyers';
 import LawyerDashboard from './pages/lawyer/LawyerDashboard';
+import LawyerPerformance from './pages/lawyer/LawyerPerformance';
+import LawyerDocuments from './pages/lawyer/LawyerDocuments';
+import LawyerClients from './pages/lawyer/LawyerClients';
 import AvailableCases from './pages/lawyer/AvailableCases';
 import PendingCaseRequests from './pages/lawyer/PendingCaseRequests';
 import ReceivedCaseRequests from './pages/lawyer/ReceivedCaseRequests';
@@ -33,6 +38,7 @@ import ReceivedOffers from './pages/citizen/ReceivedOffers';
 import PendingRequests from './pages/citizen/PendingRequests';
 import MyCaseRequests from './pages/citizen/MyCaseRequests';
 import MyCaseOffers from './pages/citizen/MyCaseOffers';
+import CitizenDocuments from './pages/citizen/CitizenDocuments';
 import ChatPage from './pages/ChatPage';
 import CreateQuery from './pages/CreateQuery';
 import CreateDispute from './pages/CreateDispute';
@@ -59,6 +65,7 @@ import TestChatPage from './pages/TestChatPage';
 import CallPage from './pages/CallPage';
 import DemoPage from './pages/DemoPage';
 import PricingPage from './pages/PricingPage';
+import AISection from './pages/AISection';
 
 
 
@@ -177,9 +184,16 @@ function App() {
                 <Route path="/demo" element={<Layout><DemoPage /></Layout>} />
                 <Route path="/pricing" element={<Layout><PricingPage /></Layout>} />
 
+                {/* AI Section Routes */}
+                <Route path="/ai-tools" element={<Layout showNavbar={true} showFooter={false}><AISection /></Layout>} />
+                <Route path="/ai-tools/bns-advisor" element={<Layout showNavbar={false} showFooter={false}><AISection /></Layout>} />
+                <Route path="/ai-tools/legal-advisor" element={<Layout showNavbar={false} showFooter={false}><AISection /></Layout>} />
+                <Route path="/ai-tools/judgment-analyzer" element={<Layout showNavbar={false} showFooter={false}><AISection /></Layout>} />
+                <Route path="/ai-tools/legal-research" element={<Layout showNavbar={false} showFooter={false}><AISection /></Layout>} />
+
                 {/* Auth Routes */}
-                <Route path="/login" element={<Layout><LoginPage /></Layout>} />
-                <Route path="/signup" element={<Layout><SignupPage /></Layout>} />
+                <Route path="/login" element={<Layout showNavbar={false} showFooter={false}><LoginPage /></Layout>} />
+                <Route path="/signup" element={<Layout showNavbar={false} showFooter={false}><SignupPage /></Layout>} />
                 <Route path="/forgot-password" element={<Layout><ForgotPasswordPage /></Layout>} />
                 <Route path="/reset-password" element={<Layout><ResetPasswordPage /></Layout>} />
 
@@ -187,6 +201,22 @@ function App() {
 
                 {/* Protected Routes */}
                 <Route path="/profile" element={<Layout><ProfilePage /></Layout>} />
+
+                {/* Admin Routes */}
+                <Route path="/admin/dashboard" element={
+                  <ProtectedRoute roles={['admin']}>
+                    <Layout showFooter={false} showNavbar={true} showNotificationSystem={false}>
+                      <AdminDashboard />
+                    </Layout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin/pending-lawyers" element={
+                  <ProtectedRoute roles={['admin']}>
+                    <Layout showFooter={false} showNavbar={true} showNotificationSystem={false}>
+                      <PendingLawyers />
+                    </Layout>
+                  </ProtectedRoute>
+                } />
 
                 {/* Citizen Routes */}
                 <Route path="/citizen/dashboard" element={<Layout showNotificationSystem={false} showFooter={false}><CitizenDashboard /></Layout>} />
@@ -203,9 +233,13 @@ function App() {
                 <Route path="/citizen/pending-requests" element={<Layout><PendingRequests /></Layout>} />
                 <Route path="/citizen/my-case-requests" element={<Layout><MyCaseRequests /></Layout>} />
                 <Route path="/citizen/my-case-offers" element={<Layout><MyCaseOffers /></Layout>} />
+                <Route path="/citizen/documents" element={<Layout showFooter={false} showNavbar={true}><CitizenDocuments /></Layout>} />
 
                 {/* Lawyer Routes */}
                 <Route path="/lawyer/dashboard" element={<Layout showFooter={false} showNavbar={true} showNotificationSystem={false} ><LawyerDashboard /></Layout>} />
+                <Route path="/lawyer/performance" element={<Layout showFooter={false} showNavbar={true}><LawyerPerformance /></Layout>} />
+                <Route path="/lawyer/documents" element={<Layout showFooter={false} showNavbar={true}><LawyerDocuments /></Layout>} />
+                <Route path="/lawyer/clients" element={<Layout showFooter={false} showNavbar={true}><LawyerClients /></Layout>} />
                 <Route path="/lawyer/available-cases" element={<Layout><AvailableCases /></Layout>} />
                 <Route path="/lawyer/my-case-requests" element={<Layout><LawyerMyCaseRequests /></Layout>} />
                 <Route path="/lawyer/pending-case-requests" element={<Layout><PendingCaseRequests /></Layout>} />

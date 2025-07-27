@@ -70,6 +70,7 @@ const chatSchema = new mongoose.Schema({
                 enum: ["text", "file", "image", "system"],
                 default: "text",
             },
+
             // IPFS File Data (new approach)
             fileData: {
                 ipfsHash: String,

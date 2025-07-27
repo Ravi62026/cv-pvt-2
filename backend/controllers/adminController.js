@@ -2,6 +2,7 @@ import User from "../models/User.js";
 import Query from "../models/Query.js";
 import Dispute from "../models/Dispute.js";
 import Chat from "../models/Chat.js";
+import emailService from "../utils/emailService.js";
 import { validationResult } from "express-validator";
 
 // Helper function to clean user data based on role
@@ -331,7 +332,39 @@ export const updateLawyerVerification = async (req, res) => {
         // Clean lawyer data before sending response
         const cleanedLawyer = cleanUserData(lawyer);
 
-        // TODO: Send email notification to lawyer about verification status
+        // Send email notification to lawyer about verification status
+        try {
+            if (verificationStatus === "verified") {
+                console.log(`📧 Sending verification approval email to ${lawyer.email}`);
+                const emailResult = await emailService.sendLawyerVerificationApproved(
+                    lawyer.email,
+                    lawyer.name,
+                    reason || notes || "Your account has been successfully verified."
+                );
+
+                if (emailResult.success) {
+                    console.log(`✅ Verification approval email sent successfully to ${lawyer.email}`);
+                } else {
+                    console.error(`❌ Failed to send verification approval email to ${lawyer.email}:`, emailResult.error);
+                }
+            } else if (verificationStatus === "rejected") {
+                console.log(`📧 Sending verification rejection email to ${lawyer.email}`);
+                const emailResult = await emailService.sendLawyerVerificationRejected(
+                    lawyer.email,
+                    lawyer.name,
+                    reason || notes || "Please review your application and contact support for more information."
+                );
+
+                if (emailResult.success) {
+                    console.log(`✅ Verification rejection email sent successfully to ${lawyer.email}`);
+                } else {
+                    console.error(`❌ Failed to send verification rejection email to ${lawyer.email}:`, emailResult.error);
+                }
+            }
+        } catch (emailError) {
+            console.error(`❌ Email service error for ${lawyer.email}:`, emailError);
+            // Don't fail the verification process if email fails
+        }
 
         res.json({
             success: true,

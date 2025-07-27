@@ -17,6 +17,8 @@ import {
   ArrowRight,
   Award,
   DollarSign,
+  Bot,
+  FolderOpen,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
@@ -78,33 +80,47 @@ const LawyerDashboard = () => {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <QuickActionCard
+            title="AI Legal Tools"
+            description="Access AI-powered legal assistance"
+            icon={Bot}
+            color="blue"
+            onClick={() => navigate('/ai-tools')}
+          />
+          <QuickActionCard
+            title="Documents"
+            description="Manage your legal documents"
+            icon={FolderOpen}
+            color="green"
+            onClick={() => navigate('/documents')}
+          />
           <QuickActionCard
             title="Incoming Requests"
             description="Review connection requests"
             icon={Inbox}
-            color="blue"
+            color="purple"
             onClick={() => navigate('/lawyer/incoming-requests')}
           />
           <QuickActionCard
             title="Connected Clients"
             description="View your clients"
             icon={UserCheck}
-            color="green"
+            color="orange"
             onClick={() => navigate('/lawyer/connected-clients')}
           />
           <QuickActionCard
             title="Direct Chats"
             description="Message your clients"
             icon={MessageSquare}
-            color="purple"
+            color="blue"
             onClick={() => navigate('/lawyer/direct-chats')}
           />
           <QuickActionCard
             title="My Cases"
             description="Manage assigned cases"
             icon={FileText}
-            color="orange"
+            color="green"
             onClick={() => navigate('/lawyer/my-cases')}
           />
         </div>
@@ -139,6 +155,97 @@ const LawyerDashboard = () => {
             color="orange"
             trend="+2%"
           />
+        </div>
+
+        {/* Quick Access */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-white mb-6">Quick Access</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+            {/* Incoming Requests */}
+            <motion.div
+              whileHover={{ y: -2, scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/20 hover:border-blue-400/50 transition-all duration-300 cursor-pointer group"
+              onClick={() => navigate('/lawyer/incoming-requests')}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-2.5 bg-blue-500/20 rounded-lg backdrop-blur-sm border border-blue-400/30">
+                  <Inbox className="h-5 w-5 text-blue-400" />
+                </div>
+                <ArrowRight className="h-4 w-4 text-white/60 group-hover:text-blue-400 group-hover:translate-x-1 transition-all duration-300" />
+              </div>
+              <h3 className="font-semibold text-white mb-2">Incoming Requests</h3>
+              <p className="text-sm text-gray-300">Review connection requests</p>
+            </motion.div>
+
+            {/* Connected Clients */}
+            <motion.div
+              whileHover={{ y: -2, scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/20 hover:border-green-400/50 transition-all duration-300 cursor-pointer group"
+              onClick={() => navigate('/lawyer/connected-clients')}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-2.5 bg-green-500/20 rounded-lg backdrop-blur-sm border border-green-400/30">
+                  <UserCheck className="h-5 w-5 text-green-400" />
+                </div>
+                <ArrowRight className="h-4 w-4 text-white/60 group-hover:text-green-400 group-hover:translate-x-1 transition-all duration-300" />
+              </div>
+              <h3 className="font-semibold text-white mb-2">Connected Clients</h3>
+              <p className="text-sm text-gray-300">View your clients</p>
+            </motion.div>
+
+            {/* Direct Chats */}
+            <motion.div
+              whileHover={{ y: -2, scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/20 hover:border-purple-400/50 transition-all duration-300 cursor-pointer group"
+              onClick={() => navigate('/lawyer/direct-chats')}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-2.5 bg-purple-500/20 rounded-lg backdrop-blur-sm border border-purple-400/30">
+                  <MessageSquare className="h-5 w-5 text-purple-400" />
+                </div>
+                <ArrowRight className="h-4 w-4 text-white/60 group-hover:text-purple-400 group-hover:translate-x-1 transition-all duration-300" />
+              </div>
+              <h3 className="font-semibold text-white mb-2">Direct Chats</h3>
+              <p className="text-sm text-gray-300">Message your clients</p>
+            </motion.div>
+
+            {/* My Cases */}
+            <motion.div
+              whileHover={{ y: -2, scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/20 hover:border-orange-400/50 transition-all duration-300 cursor-pointer group"
+              onClick={() => navigate('/lawyer/my-cases')}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-2.5 bg-orange-500/20 rounded-lg backdrop-blur-sm border border-orange-400/30">
+                  <FileText className="h-5 w-5 text-orange-400" />
+                </div>
+                <ArrowRight className="h-4 w-4 text-white/60 group-hover:text-orange-400 group-hover:translate-x-1 transition-all duration-300" />
+              </div>
+              <h3 className="font-semibold text-white mb-2">My Cases</h3>
+              <p className="text-sm text-gray-300">Manage assigned cases</p>
+            </motion.div>
+
+            {/* Case Documents */}
+            <motion.div
+              whileHover={{ y: -2, scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/20 hover:border-indigo-400/50 transition-all duration-300 cursor-pointer group"
+              onClick={() => navigate('/lawyer/case-documents')}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-2.5 bg-indigo-500/20 rounded-lg backdrop-blur-sm border border-indigo-400/30">
+                  <FolderOpen className="h-5 w-5 text-indigo-400" />
+                </div>
+                <ArrowRight className="h-4 w-4 text-white/60 group-hover:text-indigo-400 group-hover:translate-x-1 transition-all duration-300" />
+              </div>
+              <h3 className="font-semibold text-white mb-2">Case Documents</h3>
+              <p className="text-sm text-gray-300">Access case files</p>
+            </motion.div>
+          </div>
         </div>
 
         {/* Main Content Grid */}

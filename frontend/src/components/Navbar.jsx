@@ -41,7 +41,7 @@ const Navbar = () => {
   const navItems = [
     { name: 'Home', path: '/', public: true },
     // { name: 'About', path: '/about', public: true },
-    // { name: 'Features', path: '/features', public: true },
+    { name: 'Features', path: '/features', public: true },
     // { name: 'How It Works', path: '/how-it-works', public: true },
     { name: 'Our Vision', path: '/vision', public: true },
     { name: 'Contact', path: '/contact', public: true },
@@ -63,8 +63,6 @@ const Navbar = () => {
 
   const authenticatedNavItems = [
     { name: 'Dashboard', path: getDashboardPath(), icon: LayoutDashboard },
-    { name: 'Documents', path: '/documents', icon: FileText },
-    { name: 'AI Tools', path: '/dashboard/ai-tools', icon: Cpu },
   ];
 
   return (
@@ -141,16 +139,20 @@ const Navbar = () => {
                 <div className="relative">
                   <button
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  className="flex items-center space-x-3 p-2 rounded-lg hover:bg-white/10 transition-colors duration-200"
+                  className="flex items-center space-x-3 p-2 rounded-lg hover:bg-white/10 transition-colors duration-200 max-w-[200px]"
                 >
                   <img
                     src={user?.profileImage?.url || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTYiIGN5PSIxNiIgcj0iMTYiIGZpbGw9IiM2MzY2RjEiLz4KPHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4PSI4IiB5PSI4Ij4KPHBhdGggZD0iTTIwIDIxVjE5QTQgNCAwIDAgMCAxNiAxNUg4QTQgNCAwIDAgMCA0IDE5VjIxIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8Y2lyY2xlIGN4PSIxMiIgY3k9IjciIHI9IjQiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo8L3N2Zz4K'}
                     alt="Profile"
-                    className="h-8 w-8 rounded-full object-cover"
+                    className="h-8 w-8 rounded-full object-cover flex-shrink-0"
                   />
-                  <div className="text-left">
-                    <div className="text-white text-sm font-medium">{user?.name}</div>
-                    <div className="text-gray-400 text-xs capitalize">{user?.role}</div>
+                  <div className="text-left min-w-0 flex-1">
+                    <div className="text-white text-sm font-medium truncate" title={user?.name}>
+                      {user?.name}
+                    </div>
+                    <div className="text-gray-400 text-xs capitalize truncate">
+                      {user?.role}
+                    </div>
                   </div>
                 </button>
 
@@ -162,22 +164,14 @@ const Navbar = () => {
                       exit={{ opacity: 0, scale: 0.95, y: -10 }}
                       className="absolute right-0 mt-2 w-48 bg-gray-900 border border-white/10 rounded-lg shadow-xl py-1"
                     >
-                                             <Link
-                         to="/dashboard"
+                      <Link
+                         to={getDashboardPath()}
                          onClick={() => setUserMenuOpen(false)}
                          className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-300 hover:text-white hover:bg-white/10 transition-colors"
                        >
                          <LayoutDashboard className="h-4 w-4" />
                          <span>Dashboard</span>
                        </Link>
-                      <Link
-                        to="/documents"
-                        onClick={() => setUserMenuOpen(false)}
-                        className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-300 hover:text-white hover:bg-white/10 transition-colors"
-                      >
-                        <FileText className="h-4 w-4" />
-                        <span>Documents</span>
-                      </Link>
                       <Link
                         to="/profile"
                         onClick={() => setUserMenuOpen(false)}
@@ -301,11 +295,15 @@ const Navbar = () => {
                       <img
                         src={user?.profileImage?.url || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiM2MzY2RjEiLz4KPHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4PSIxMCIgeT0iMTAiPgo8cGF0aCBkPSJNMjAgMjFWMTlBNCA0IDAgMCAwIDE2IDE1SDhBNCA0IDAgMCAwIDQgMTlWMjEiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxjaXJjbGUgY3g9IjEyIiBjeT0iNyIgcj0iNCIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cjwvc3ZnPgo='}
                         alt="Profile"
-                        className="h-10 w-10 rounded-full object-cover"
+                        className="h-10 w-10 rounded-full object-cover flex-shrink-0"
                       />
-                      <div className="ml-3">
-                        <div className="text-white text-base font-medium">{user?.name}</div>
-                        <div className="text-gray-400 text-sm capitalize">{user?.role}</div>
+                      <div className="ml-3 min-w-0 flex-1">
+                        <div className="text-white text-base font-medium truncate" title={user?.name}>
+                          {user?.name}
+                        </div>
+                        <div className="text-gray-400 text-sm capitalize truncate">
+                          {user?.role}
+                        </div>
                       </div>
                     </div>
 

@@ -15,12 +15,18 @@ import {
   Send,
   Gift,
   Zap,
+  Brain,
+  Cpu,
+  BookOpen,
+  Gavel,
+  Bot,
+  FolderOpen,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
+import { useSocket, useSocketEvent } from '../hooks/useSocket';
 import { citizenAPI } from '../services/api';
 import LoadingSpinner from '../components/common/LoadingSpinner';
-import CallHistoryCard from '../components/dashboard/CallHistoryCard';
 import CallNotificationWidget from '../components/dashboard/CallNotificationWidget';
 import {
   ModernStatsCard,
@@ -37,9 +43,23 @@ const CitizenDashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
   const { error } = useToast();
+  const { socket } = useSocket();
   const navigate = useNavigate();
 
   useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  // Real-time updates for dashboard stats
+  useSocketEvent('dashboard_stats_updated', (updatedStats) => {
+    console.log('📊 Real-time stats update:', updatedStats);
+    setStats(prev => ({ ...prev, ...updatedStats }));
+  }, []);
+
+  // Real-time updates for new activities
+  useSocketEvent('new_activity', (activityData) => {
+    console.log('🔔 New activity:', activityData);
+    // Trigger refresh of dashboard data to get updated stats
     fetchDashboardData();
   }, []);
 
@@ -79,31 +99,8 @@ const CitizenDashboard = () => {
         }
       />
 
-      {/* Primary Actions */}
-      <ModernSectionHeader
-        title="Quick Actions"
-        subtitle="Get started with your legal needs"
-        icon={Zap}
-      />
-      <ModernGrid cols="grid-cols-1 md:grid-cols-2" className="mb-12">
-        <ModernActionCard
-          title="Submit Legal Query"
-          description="Get expert legal advice from verified lawyers for your questions"
-          icon={FileText}
-          onClick={() => navigate('/citizen/create-query')}
-          color="blue"
-          badge="24/7"
-        />
-
-        <ModernActionCard
-          title="File Dispute"
-          description="Resolve legal disputes with professional mediation and support"
-          icon={Scale}
-          onClick={() => navigate('/citizen/create-dispute')}
-          color="red"
-          badge="Expert"
-        />
-      </ModernGrid>
+      {/* Quick Actions */}
+      <QuickActionsSection />
 
         {/* My Cases Card */}
         <div className="mb-8">
@@ -142,14 +139,14 @@ const CitizenDashboard = () => {
             <motion.div
               whileHover={{ y: -2, scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/20 hover:border-green-400/50 transition-all duration-300 cursor-pointer group"
+              className="bg-gradient-to-br from-green-500/20 via-emerald-500/15 to-green-600/10 backdrop-blur-sm rounded-xl p-6 border border-green-400/30 hover:border-green-400/60 transition-all duration-300 cursor-pointer group shadow-lg hover:shadow-green-500/20"
               onClick={() => navigate('/citizen/find-lawyers')}
             >
               <div className="flex items-center justify-between mb-4">
-                <div className="p-2.5 bg-green-500/20 rounded-lg backdrop-blur-sm border border-green-400/30">
-                  <Search className="h-5 w-5 text-green-400" />
+                <div className="p-2.5 bg-green-500/30 rounded-lg backdrop-blur-sm border border-green-400/40">
+                  <Search className="h-5 w-5 text-green-300" />
                 </div>
-                <ArrowRight className="h-4 w-4 text-white/60 group-hover:text-green-400 group-hover:translate-x-1 transition-all duration-300" />
+                <ArrowRight className="h-4 w-4 text-white/60 group-hover:text-green-300 group-hover:translate-x-1 transition-all duration-300" />
               </div>
               <h3 className="font-semibold text-white mb-2">Find Lawyers</h3>
               <p className="text-sm text-gray-300">Browse verified legal professionals</p>
@@ -159,14 +156,14 @@ const CitizenDashboard = () => {
             <motion.div
               whileHover={{ y: -2, scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/20 hover:border-purple-400/50 transition-all duration-300 cursor-pointer group"
+              className="bg-gradient-to-br from-purple-500/20 via-violet-500/15 to-purple-600/10 backdrop-blur-sm rounded-xl p-6 border border-purple-400/30 hover:border-purple-400/60 transition-all duration-300 cursor-pointer group shadow-lg hover:shadow-purple-500/20"
               onClick={() => navigate('/citizen/connected-lawyers')}
             >
               <div className="flex items-center justify-between mb-4">
-                <div className="p-2.5 bg-purple-500/20 rounded-lg backdrop-blur-sm border border-purple-400/30">
-                  <UserPlus className="h-5 w-5 text-purple-400" />
+                <div className="p-2.5 bg-purple-500/30 rounded-lg backdrop-blur-sm border border-purple-400/40">
+                  <UserPlus className="h-5 w-5 text-purple-300" />
                 </div>
-                <ArrowRight className="h-4 w-4 text-white/60 group-hover:text-purple-400 group-hover:translate-x-1 transition-all duration-300" />
+                <ArrowRight className="h-4 w-4 text-white/60 group-hover:text-purple-300 group-hover:translate-x-1 transition-all duration-300" />
               </div>
               <h3 className="font-semibold text-white mb-2">Connected Lawyers</h3>
               <p className="text-sm text-gray-300">View your legal connections</p>
@@ -176,14 +173,14 @@ const CitizenDashboard = () => {
             <motion.div
               whileHover={{ y: -2, scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/20 hover:border-blue-400/50 transition-all duration-300 cursor-pointer group"
+              className="bg-gradient-to-br from-blue-500/20 via-cyan-500/15 to-blue-600/10 backdrop-blur-sm rounded-xl p-6 border border-blue-400/30 hover:border-blue-400/60 transition-all duration-300 cursor-pointer group shadow-lg hover:shadow-blue-500/20"
               onClick={() => navigate('/citizen/my-case-requests')}
             >
               <div className="flex items-center justify-between mb-4">
-                <div className="p-2.5 bg-blue-500/20 rounded-lg backdrop-blur-sm border border-blue-400/30">
-                  <Send className="h-5 w-5 text-blue-400" />
+                <div className="p-2.5 bg-blue-500/30 rounded-lg backdrop-blur-sm border border-blue-400/40">
+                  <Send className="h-5 w-5 text-blue-300" />
                 </div>
-                <ArrowRight className="h-4 w-4 text-white/60 group-hover:text-blue-400 group-hover:translate-x-1 transition-all duration-300" />
+                <ArrowRight className="h-4 w-4 text-white/60 group-hover:text-blue-300 group-hover:translate-x-1 transition-all duration-300" />
               </div>
               <h3 className="font-semibold text-white mb-2">My Requests</h3>
               <p className="text-sm text-gray-300">Requests sent to lawyers</p>
@@ -193,14 +190,14 @@ const CitizenDashboard = () => {
             <motion.div
               whileHover={{ y: -2, scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/20 hover:border-indigo-400/50 transition-all duration-300 cursor-pointer group"
+              className="bg-gradient-to-br from-indigo-500/20 via-blue-500/15 to-indigo-600/10 backdrop-blur-sm rounded-xl p-6 border border-indigo-400/30 hover:border-indigo-400/60 transition-all duration-300 cursor-pointer group shadow-lg hover:shadow-indigo-500/20"
               onClick={() => navigate('/citizen/my-case-offers')}
             >
               <div className="flex items-center justify-between mb-4">
-                <div className="p-2.5 bg-indigo-500/20 rounded-lg backdrop-blur-sm border border-indigo-400/30">
-                  <Gift className="h-5 w-5 text-indigo-400" />
+                <div className="p-2.5 bg-indigo-500/30 rounded-lg backdrop-blur-sm border border-indigo-400/40">
+                  <Gift className="h-5 w-5 text-indigo-300" />
                 </div>
-                <ArrowRight className="h-4 w-4 text-white/60 group-hover:text-indigo-400 group-hover:translate-x-1 transition-all duration-300" />
+                <ArrowRight className="h-4 w-4 text-white/60 group-hover:text-indigo-300 group-hover:translate-x-1 transition-all duration-300" />
               </div>
               <h3 className="font-semibold text-white mb-2">Offers Received</h3>
               <p className="text-sm text-gray-300">Lawyers offering help</p>
@@ -210,14 +207,14 @@ const CitizenDashboard = () => {
             <motion.div
               whileHover={{ y: -2, scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/20 hover:border-orange-400/50 transition-all duration-300 cursor-pointer group"
+              className="bg-gradient-to-br from-orange-500/20 via-amber-500/15 to-orange-600/10 backdrop-blur-sm rounded-xl p-6 border border-orange-400/30 hover:border-orange-400/60 transition-all duration-300 cursor-pointer group shadow-lg hover:shadow-orange-500/20"
               onClick={() => navigate('/citizen/my-queries')}
             >
               <div className="flex items-center justify-between mb-4">
-                <div className="p-2.5 bg-orange-500/20 rounded-lg backdrop-blur-sm border border-orange-400/30">
-                  <MessageCircle className="h-5 w-5 text-orange-400" />
+                <div className="p-2.5 bg-orange-500/30 rounded-lg backdrop-blur-sm border border-orange-400/40">
+                  <MessageCircle className="h-5 w-5 text-orange-300" />
                 </div>
-                <ArrowRight className="h-4 w-4 text-white/60 group-hover:text-orange-400 group-hover:translate-x-1 transition-all duration-300" />
+                <ArrowRight className="h-4 w-4 text-white/60 group-hover:text-orange-300 group-hover:translate-x-1 transition-all duration-300" />
               </div>
               <h3 className="font-semibold text-white mb-2">My Queries</h3>
               <p className="text-sm text-gray-300">Manage legal questions</p>
@@ -267,6 +264,9 @@ const CitizenDashboard = () => {
         />
       </ModernGrid>
 
+      {/* AI Tools Section */}
+      <AIToolsSection />
+
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Recent Activity */}
@@ -277,8 +277,6 @@ const CitizenDashboard = () => {
         {/* Quick Stats */}
         <div className="space-y-6">
           <QuickStatsCard stats={stats} />
-          <CallHistoryCard limit={5} />
-          <RecentConnectionsCard />
         </div>
       </div>
 
@@ -292,26 +290,174 @@ const CitizenDashboard = () => {
 
 // Recent Activity Section
 const RecentActivitySection = () => {
+  const [activities, setActivities] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const { socket } = useSocket();
+
+  useEffect(() => {
+    fetchRecentActivity();
+  }, []);
+
+  // Real-time updates for new activities
+  useSocketEvent('new_activity', (activityData) => {
+    console.log('🔔 New activity for recent section:', activityData);
+    // Add new activity to the beginning of the list and keep only 5
+    setActivities(prev => [activityData, ...prev.slice(0, 4)]);
+  }, []);
+
+  // Real-time updates for activity status changes
+  useSocketEvent('activity_status_updated', (updateData) => {
+    console.log('📝 Activity status updated:', updateData);
+    setActivities(prev => prev.map(activity =>
+      activity.id === updateData.activityId
+        ? { ...activity, status: updateData.newStatus }
+        : activity
+    ));
+  }, []);
+
+  const fetchRecentActivity = async () => {
+    try {
+      const token = localStorage.getItem('cv_access_token');
+      const response = await fetch('/api/citizens/recent-activity?limit=5', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setActivities(data.data.activities);
+      }
+    } catch (error) {
+      console.error('Error fetching recent activity:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'pending': return 'text-yellow-400';
+      case 'assigned': return 'text-blue-400';
+      case 'in-progress': return 'text-purple-400';
+      case 'resolved': return 'text-green-400';
+      case 'closed': return 'text-gray-400';
+      default: return 'text-gray-400';
+    }
+  };
+
+  const getTypeIcon = (type) => {
+    switch (type) {
+      case 'query': return FileText;
+      case 'dispute': return Scale;
+      case 'connection': return Users;
+      default: return Activity;
+    }
+  };
+
+  const getTypeColor = (type) => {
+    switch (type) {
+      case 'query': return 'from-blue-500 to-cyan-500';
+      case 'dispute': return 'from-orange-500 to-red-500';
+      case 'connection': return 'from-green-500 to-emerald-500';
+      default: return 'from-gray-500 to-gray-600';
+    }
+  };
+
+  const formatTimeAgo = (timestamp) => {
+    const now = new Date();
+    const time = new Date(timestamp);
+    const diffInHours = Math.floor((now - time) / (1000 * 60 * 60));
+
+    if (diffInHours < 1) return 'Just now';
+    if (diffInHours < 24) return `${diffInHours}h ago`;
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 7) return `${diffInDays}d ago`;
+    return time.toLocaleDateString();
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-lg border border-white/20"
+      className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-2xl border border-white/20"
     >
       <div className="p-6 border-b border-white/20">
-        <h2 className="text-xl font-semibold text-white flex items-center">
-          <Activity className="h-5 w-5 mr-2 text-blue-400" />
-          Recent Activity
-        </h2>
-      </div>
-      <div className="p-6">
-        <div className="text-center py-8">
-          <Activity className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-300">No recent activity</p>
-          <p className="text-sm text-gray-400 mt-2">
-            Your recent cases and lawyer interactions will appear here
-          </p>
+        <div className="flex items-center">
+          <Activity className="h-6 w-6 text-blue-400 mr-3" />
+          <div>
+            <h2 className="text-2xl font-bold text-white">Recent Activity</h2>
+            <p className="text-gray-300">Your latest case updates and interactions</p>
+          </div>
         </div>
+      </div>
+
+      <div className="p-6">
+        {loading ? (
+          <div className="text-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400 mx-auto mb-4"></div>
+            <p className="text-gray-300">Loading recent activity...</p>
+          </div>
+        ) : activities.length === 0 ? (
+          <div className="text-center py-8">
+            <Activity className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-300">No recent activity</p>
+            <p className="text-sm text-gray-400 mt-2">
+              Your recent cases and lawyer interactions will appear here
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {activities.map((activity, index) => {
+              const IconComponent = getTypeIcon(activity.type);
+              return (
+                <motion.div
+                  key={activity.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className="bg-gradient-to-r from-white/5 to-white/10 backdrop-blur-sm border border-white/10 rounded-xl p-4 hover:from-white/10 hover:to-white/15 transition-all duration-300"
+                >
+                  <div className="flex items-start space-x-4">
+                    <div className="flex-shrink-0">
+                      <div className={`w-10 h-10 bg-gradient-to-r ${getTypeColor(activity.type)} rounded-lg flex items-center justify-center`}>
+                        <IconComponent className="h-5 w-5 text-white" />
+                      </div>
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-sm font-semibold text-white truncate">
+                          {activity.title}
+                        </h4>
+                        <span className="text-xs text-gray-400 flex-shrink-0 ml-2">
+                          {formatTimeAgo(activity.timestamp)}
+                        </span>
+                      </div>
+
+                      <p className="text-sm text-gray-300 mt-1">
+                        {activity.description}
+                      </p>
+
+                      <div className="flex items-center justify-between mt-2">
+                        <span className={`text-xs font-medium ${getStatusColor(activity.status)} capitalize`}>
+                          {activity.status}
+                        </span>
+
+                        {activity.assignedLawyer && (
+                          <span className="text-xs text-gray-400">
+                            Lawyer: {activity.assignedLawyer.name}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </motion.div>
   );
@@ -319,52 +465,278 @@ const RecentActivitySection = () => {
 
 // Quick Stats Card
 const QuickStatsCard = ({ stats }) => {
+  const { socket } = useSocket();
+  const [localStats, setLocalStats] = useState(stats);
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  // Update local stats when props change
+  useEffect(() => {
+    setLocalStats(stats);
+  }, [stats]);
+
+  // Real-time updates for quick stats
+  useSocketEvent('quick_stats_updated', (updatedStats) => {
+    console.log('📊 Quick stats updated:', updatedStats);
+    setIsUpdating(true);
+    setLocalStats(prev => ({ ...prev, ...updatedStats }));
+
+    // Remove updating indicator after animation
+    setTimeout(() => setIsUpdating(false), 1000);
+  }, []);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-lg border border-white/20 p-6"
+      className={`bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-lg border border-white/20 p-6 transition-all duration-300 ${
+        isUpdating ? 'ring-2 ring-blue-400/50 shadow-lg shadow-blue-400/20' : ''
+      }`}
     >
-      <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
-        <BarChart3 className="h-5 w-5 mr-2 text-blue-400" />
-        Quick Stats
+      <h3 className="text-lg font-semibold text-white mb-4 flex items-center justify-between">
+        <div className="flex items-center">
+          <BarChart3 className="h-5 w-5 mr-2 text-blue-400" />
+          Quick Stats
+        </div>
+        {isUpdating && (
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            className="w-2 h-2 bg-green-400 rounded-full"
+          />
+        )}
       </h3>
       <div className="space-y-4">
-        <div className="flex justify-between items-center">
+        <motion.div
+          className="flex justify-between items-center"
+          animate={isUpdating ? { scale: [1, 1.05, 1] } : {}}
+          transition={{ duration: 0.3 }}
+        >
+          <span className="text-sm text-gray-300">Total Cases</span>
+          <span className="font-semibold text-blue-400">{localStats?.totalCases || 0}</span>
+        </motion.div>
+        <motion.div
+          className="flex justify-between items-center"
+          animate={isUpdating ? { scale: [1, 1.05, 1] } : {}}
+          transition={{ duration: 0.3, delay: 0.1 }}
+        >
+          <span className="text-sm text-gray-300">Active Cases</span>
+          <span className="font-semibold text-orange-400">{localStats?.activeCases || 0}</span>
+        </motion.div>
+        <motion.div
+          className="flex justify-between items-center"
+          animate={isUpdating ? { scale: [1, 1.05, 1] } : {}}
+          transition={{ duration: 0.3, delay: 0.2 }}
+        >
           <span className="text-sm text-gray-300">Resolved Cases</span>
-          <span className="font-semibold text-green-400">{stats?.resolvedCases || 0}</span>
+          <span className="font-semibold text-green-400">{localStats?.resolvedCases || 0}</span>
+        </motion.div>
+        <motion.div
+          className="flex justify-between items-center"
+          animate={isUpdating ? { scale: [1, 1.05, 1] } : {}}
+          transition={{ duration: 0.3, delay: 0.3 }}
+        >
+          <span className="text-sm text-gray-300">Connected Lawyers</span>
+          <span className="font-semibold text-purple-400">{localStats?.connectedLawyers || 0}</span>
+        </motion.div>
+        <motion.div
+          className="flex justify-between items-center"
+          animate={isUpdating ? { scale: [1, 1.05, 1] } : {}}
+          transition={{ duration: 0.3, delay: 0.4 }}
+        >
+          <span className="text-sm text-gray-300">Pending Requests</span>
+          <span className="font-semibold text-yellow-400">{localStats?.pendingRequests || 0}</span>
+        </motion.div>
+      </div>
+    </motion.div>
+  );
+};
+
+
+// Quick Actions Section
+const QuickActionsSection = () => {
+  const navigate = useNavigate();
+
+  const quickActionItems = [
+    {
+      title: 'AI Legal Tools',
+      description: 'Access AI-powered legal assistance and guidance',
+      icon: Bot,
+      path: '/ai-tools',
+      color: 'from-blue-500 to-cyan-500',
+      bgColor: 'from-blue-500/20 to-cyan-500/10',
+    },
+    {
+      title: 'Documents',
+      description: 'Manage and organize your legal documents',
+      icon: FolderOpen,
+      path: '/citizen/documents',
+      color: 'from-purple-500 to-pink-500',
+      bgColor: 'from-purple-500/20 to-pink-500/10',
+    },
+    {
+      title: 'Submit Legal Query',
+      description: 'Get expert legal advice from verified lawyers for your questions',
+      icon: FileText,
+      path: '/citizen/create-query',
+      color: 'from-orange-500 to-red-500',
+      bgColor: 'from-orange-500/20 to-red-500/10',
+    },
+    {
+      title: 'File Dispute',
+      description: 'Resolve legal disputes with professional mediation and support',
+      icon: Scale,
+      path: '/citizen/create-dispute',
+      color: 'from-green-500 to-emerald-500',
+      bgColor: 'from-green-500/20 to-emerald-500/10',
+    },
+  ];
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="mb-12"
+    >
+      <div className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-2xl border border-white/20">
+        <div className="p-6 border-b border-white/20">
+          <div className="flex items-center">
+            <Zap className="h-6 w-6 text-blue-400 mr-3" />
+            <div>
+              <h2 className="text-2xl font-bold text-white">Quick Actions</h2>
+              <p className="text-gray-300">Get started with your legal needs</p>
+            </div>
+          </div>
         </div>
-        <div className="flex justify-between items-center">
-          <span className="text-sm text-gray-300">Received Offers</span>
-          <span className="font-semibold text-blue-400">{stats?.receivedOffers || 0}</span>
-        </div>
-        <div className="flex justify-between items-center">
-          <span className="text-sm text-gray-300">Success Rate</span>
-          <span className="font-semibold text-purple-400">95%</span>
+
+        <div className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {quickActionItems.map((item, index) => {
+              const IconComponent = item.icon;
+              return (
+                <motion.div
+                  key={item.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  onClick={() => navigate(item.path)}
+                  className={`bg-gradient-to-br ${item.bgColor} backdrop-blur-sm border border-white/10 rounded-xl p-6 cursor-pointer hover:scale-105 transition-all duration-300 group`}
+                >
+                  <div className={`inline-flex p-3 rounded-lg bg-gradient-to-r ${item.color} mb-4`}>
+                    <IconComponent className="h-6 w-6 text-white" />
+                  </div>
+
+                  <h3 className="text-lg font-semibold text-white mb-2 group-hover:text-blue-300 transition-colors">
+                    {item.title}
+                  </h3>
+
+                  <p className="text-gray-300 text-sm leading-relaxed mb-4">
+                    {item.description}
+                  </p>
+
+                  <div className="flex items-center text-blue-400 text-sm font-medium group-hover:text-blue-300 transition-colors">
+                    <span>Available Now</span>
+                    <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
         </div>
       </div>
     </motion.div>
   );
 };
 
-// Recent Connections Card
-const RecentConnectionsCard = () => {
+// AI Tools Section
+const AIToolsSection = () => {
+  const navigate = useNavigate();
+
+  const aiTools = [
+    {
+      title: 'BNS Advisor',
+      description: 'Get instant guidance on Bharatiya Nyaya Sanhita provisions',
+      icon: BookOpen,
+      path: '/ai-tools/bns-advisor',
+      color: 'from-blue-500 to-cyan-500',
+      bgColor: 'from-blue-500/20 to-cyan-500/10',
+    },
+    {
+      title: 'Legal Advisor',
+      description: 'AI-powered legal consultation and advice',
+      icon: Brain,
+      path: '/ai-tools/legal-advisor',
+      color: 'from-purple-500 to-pink-500',
+      bgColor: 'from-purple-500/20 to-pink-500/10',
+    },
+    {
+      title: 'Judgment Analyzer',
+      description: 'Analyze and understand court judgments',
+      icon: Gavel,
+      path: '/ai-tools/judgment-analyzer',
+      color: 'from-orange-500 to-red-500',
+      bgColor: 'from-orange-500/20 to-red-500/10',
+    },
+    {
+      title: 'Legal Research',
+      description: 'Research legal cases and precedents',
+      icon: Search,
+      path: '/ai-tools/legal-research',
+      color: 'from-green-500 to-emerald-500',
+      bgColor: 'from-green-500/20 to-emerald-500/10',
+    },
+  ];
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-lg border border-white/20 p-6"
+      className="mb-12"
     >
-      <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
-        <Users className="h-5 w-5 mr-2 text-green-400" />
-        Recent Connections
-      </h3>
-      <div className="text-center py-4">
-        <Users className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-        <p className="text-sm text-gray-300">No recent connections</p>
-        <p className="text-xs text-gray-400 mt-1">
-          Connect with lawyers to see them here
-        </p>
+      <div className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-2xl border border-white/20">
+        <div className="p-6 border-b border-white/20">
+          <div className="flex items-center">
+            <Cpu className="h-6 w-6 text-blue-400 mr-3" />
+            <div>
+              <h2 className="text-2xl font-bold text-white">AI Legal Tools</h2>
+              <p className="text-gray-300">Powered by advanced AI to assist with your legal needs</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {aiTools.map((tool, index) => {
+              const IconComponent = tool.icon;
+              return (
+                <motion.div
+                  key={tool.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  onClick={() => navigate(tool.path)}
+                  className={`bg-gradient-to-br ${tool.bgColor} backdrop-blur-sm border border-white/10 rounded-xl p-6 cursor-pointer hover:scale-105 transition-all duration-300 group`}
+                >
+                  <div className={`inline-flex p-3 rounded-lg bg-gradient-to-r ${tool.color} mb-4`}>
+                    <IconComponent className="h-6 w-6 text-white" />
+                  </div>
+
+                  <h3 className="text-lg font-semibold text-white mb-2 group-hover:text-blue-300 transition-colors">
+                    {tool.title}
+                  </h3>
+
+                  <p className="text-gray-300 text-sm leading-relaxed mb-4">
+                    {tool.description}
+                  </p>
+
+                  <div className="flex items-center text-blue-400 text-sm font-medium group-hover:text-blue-300 transition-colors">
+                    <span>Try Now</span>
+                    <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
       </div>
     </motion.div>
   );

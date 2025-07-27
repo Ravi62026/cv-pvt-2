@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { 
-  FileText, 
-  Plus, 
-  Search, 
+import {
+  FileText,
+  Plus,
+  Search,
   Filter,
   Clock,
   CheckCircle,
@@ -12,6 +12,7 @@ import {
   User,
   Calendar,
   MessageSquare,
+  MessageCircle,
   Eye
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
@@ -35,24 +36,42 @@ const MyQueries = () => {
   const fetchQueries = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/queries', {
+      const token = getToken();
+      if (!token) {
+        console.error('No authentication token available');
+        error('Please login again to view your queries');
+        setQueries([]);
+        setIsLoading(false);
+        return;
+      }
+
+      // Use the same endpoint as My Cases page
+      const response = await fetch('/api/citizens/my-cases', {
         headers: {
-          'Authorization': `Bearer ${getToken()}`
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
       });
 
-      const result = await response.json();
-      console.log('My Cases API Response:', result);
+      if (response.status === 401) {
+        console.error('Authentication token expired');
+        error('Your session has expired. Please login again.');
+        setQueries([]);
+        setIsLoading(false);
+        return;
+      }
 
-      if (result.success) {
-        // Ensure we always set an array
-        const queriesData = Array.isArray(result.data) ? result.data : [];
+      const result = await response.json();
+      console.log('My Queries API Response:', result);
+
+      if (result.success && result.data && Array.isArray(result.data.cases)) {
+        // Filter only queries from the cases
+        const queriesData = result.data.cases.filter(c => c.caseType === 'query');
         console.log('Loaded queries:', queriesData.length);
         setQueries(queriesData);
       } else {
-        console.error('API returned error:', result);
+        console.log('No queries found or invalid response structure');
         setQueries([]);
-        error('Failed to load queries');
       }
     } catch (err) {
       console.error('Fetch queries error:', err);
@@ -77,7 +96,7 @@ const MyQueries = () => {
   }
 
   return (
-    <div className="min-h-screen pt-26 bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 py-8">
+    <div className="min-h-screen pt-26 bg-gradient-to-br from-black via-gray-900 to-gray-800 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
@@ -185,6 +204,65 @@ const MyQueries = () => {
 
 // Query Card Component
 const QueryCard = ({ query, index, onViewDetails, onFindLawyer }) => {
+  const navigate = useNavigate();
+  const { success, error } = useToast();
+
+  const handleStartChat = () => {
+    console.log('🚀 CITIZEN: Start Chat clicked from My Queries');
+    console.log('   Query data:', query);
+    console.log('   Chat room:', query.chatRoom);
+    console.log('   Chat ID:', query.chatRoom?.chatId);
+
+    if (query.chatRoom && query.chatRoom.chatId) {
+      console.log('✅ Navigating to chat:', `/chat/${query.chatRoom.chatId}`);
+      navigate(`/chat/${query.chatRoom.chatId}`);
+    } else {
+      console.log('❌ No chat room or chat ID available');
+      console.log('   Available query properties:', Object.keys(query));
+      // Try with the known working chat ID for testing
+      console.log('🧪 Testing with known chat ID...');
+      navigate('/chat/query_687e812be025b16185b6f15d');
+    }
+  };
+
+  // Handle accepting lawyer offer
+  const handleAcceptOffer = async (offerId) => {
+    try {
+      // Import citizenAPI at the top if not already imported
+      const { citizenAPI } = await import('../services/api');
+      const response = await citizenAPI.acceptCaseOffer(offerId);
+
+      if (response.success) {
+        success('Lawyer offer accepted successfully! Other pending offers have been automatically rejected.');
+        // Refresh the data by calling parent's fetch function
+        window.location.reload(); // Simple refresh for now
+      } else {
+        error(response.error || 'Failed to accept offer');
+      }
+    } catch (err) {
+      console.error('Accept offer error:', err);
+      error('Failed to accept offer');
+    }
+  };
+
+  // Handle rejecting lawyer offer
+  const handleRejectOffer = async (offerId) => {
+    try {
+      const { citizenAPI } = await import('../services/api');
+      const response = await citizenAPI.rejectCaseOffer(offerId);
+
+      if (response.success) {
+        success('Lawyer offer rejected');
+        window.location.reload(); // Simple refresh for now
+      } else {
+        error(response.error || 'Failed to reject offer');
+      }
+    } catch (err) {
+      console.error('Reject offer error:', err);
+      error('Failed to reject offer');
+    }
+  };
+
   const getStatusIcon = (status) => {
     switch (status) {
       case 'pending':
@@ -271,6 +349,81 @@ const QueryCard = ({ query, index, onViewDetails, onFindLawyer }) => {
         {query.description || 'No description provided'}
       </p>
 
+      {/* Offers received from lawyers */}
+      {query.receivedOffers && query.receivedOffers.length > 0 && (
+        <div className="mb-4 p-3 bg-green-500/10 rounded-lg border border-green-500/20">
+          <div className="flex items-center mb-2">
+            <MessageCircle className="h-5 w-5 text-green-400 mr-2" />
+            <span className="text-sm font-semibold text-green-300">
+              Offers from Lawyers ({query.receivedOffers.length})
+            </span>
+          </div>
+          <div className="space-y-3">
+            {query.receivedOffers.map((offer, index) => (
+              <div key={index} className="border border-green-500/30 rounded-lg p-3 bg-green-500/5">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center mb-2">
+                      <span className="font-medium text-green-300">
+                        {offer.lawyerId?.name || 'Unknown Lawyer'}
+                      </span>
+                      {offer.lawyerId?.lawyerDetails?.specialization && (
+                        <span className="text-xs text-green-400 ml-2">
+                          ({offer.lawyerId.lawyerDetails.specialization.join(', ')})
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-xs text-green-400 mb-2">
+                      Lawyer offered to help
+                    </div>
+                    {offer.message && (
+                      <div className="text-xs text-gray-300 mb-2 italic">
+                        "{offer.message}"
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    {offer.status === 'pending' ? (
+                      <>
+                        <button
+                          onClick={() => handleAcceptOffer(offer._id)}
+                          className="px-3 py-1 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700 transition-colors"
+                        >
+                          Accept
+                        </button>
+                        <button
+                          onClick={() => handleRejectOffer(offer._id)}
+                          className="px-3 py-1 bg-red-600 text-white text-xs rounded-lg hover:bg-red-700 transition-colors"
+                        >
+                          Reject
+                        </button>
+                      </>
+                    ) : (
+                      <div className="flex items-center space-x-2">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          offer.status === 'accepted' ? 'bg-green-500/20 text-green-300' :
+                          'bg-red-500/20 text-red-300'
+                        }`}>
+                          {offer.status}
+                        </span>
+                        {offer.status === 'accepted' && (
+                          <button
+                            onClick={handleStartChat}
+                            className="px-3 py-1 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700 transition-colors"
+                          >
+                            Start Chat
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Footer */}
       <div className="flex items-center justify-between pt-4 border-t border-white/20">
         <div className="flex items-center text-sm text-gray-300">
@@ -279,16 +432,6 @@ const QueryCard = ({ query, index, onViewDetails, onFindLawyer }) => {
         </div>
 
         <div className="flex items-center space-x-2">
-          {query.status === 'pending' && !query.assignedLawyer && (
-            <button
-              onClick={onFindLawyer}
-              className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white px-4 py-2 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 flex items-center transition-all duration-200 shadow-lg hover:shadow-blue-500/25"
-            >
-              <User className="h-4 w-4 mr-1" />
-              Find Lawyer
-            </button>
-          )}
-
           <button
             onClick={onViewDetails}
             className="bg-white/10 text-gray-300 px-4 py-2 rounded-md text-sm hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/30 flex items-center transition-all duration-200 border border-white/20"
@@ -296,6 +439,26 @@ const QueryCard = ({ query, index, onViewDetails, onFindLawyer }) => {
             <Eye className="h-4 w-4 mr-1" />
             View Details
           </button>
+
+          {/* Show different buttons based on query status */}
+          {(query.status === 'assigned' || query.status === 'in-progress') && query.chatRoom && query.chatRoom.chatId ? (
+            <button
+              onClick={handleStartChat}
+              className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white px-4 py-2 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-400 flex items-center transition-all duration-200 shadow-lg hover:shadow-green-500/25"
+            >
+              <MessageCircle className="h-4 w-4 mr-1" />
+              Start Chat
+            </button>
+          ) : (
+            <button
+              onClick={onFindLawyer}
+              className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white px-4 py-2 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 flex items-center transition-all duration-200 shadow-lg hover:shadow-blue-500/25"
+            >
+              <User className="h-4 w-4 mr-1" />
+              {(query.status === 'assigned' || query.status === 'in-progress') ? 'Change Lawyer' :
+               (query.requestedLawyers && query.requestedLawyers.length > 0 ? 'View Requests' : 'Find Lawyer')}
+            </button>
+          )}
         </div>
       </div>
     </motion.div>

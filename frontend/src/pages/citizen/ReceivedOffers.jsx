@@ -39,6 +39,12 @@ const ReceivedOffers = () => {
       if (response.ok) {
         const data = await response.json();
         setOffers(data.data?.offers || []);
+      } else if (response.status === 401) {
+        // Token expired, redirect to login
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+        return;
       } else {
         error('Failed to load received offers');
       }
@@ -116,7 +122,7 @@ const ReceivedOffers = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-800 pt-24 pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">

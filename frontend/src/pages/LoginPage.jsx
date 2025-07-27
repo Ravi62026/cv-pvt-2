@@ -136,7 +136,7 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex bg-[#0A0B1C]">
+    <div className="min-h-screen flex flex-col lg:flex-row bg-[#0A0B1C]">
       {/* Animated Glow Background */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[520px] h-[340px] bg-cyan-500/10 blur-3xl rounded-full animate-pulse" />
@@ -154,20 +154,22 @@ const LoginPage = () => {
         <div className="absolute bottom-1/3 right-1/3 w-24 h-24 bg-gradient-to-r from-purple-500/5 to-pink-500/5 rounded-full blur-xl animate-float delay-1500" />
       </div>
 
-      {/* Left Side */}
-      <AuthBackground />
-      <div className="absolute top-24 left-0 lg:left-1/4 transform lg:-translate-x-1/2 z-20 pointer-events-none">
-        <AuthContent
-          title="Welcome Back"
-          subtitle="Your trusted legal consultation platform"
-        />
+      {/* Left Side - Hidden on mobile, shown on lg+ */}
+      <div className="hidden lg:flex lg:w-1/2 relative">
+        <AuthBackground />
+        <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+          <AuthContent
+            title="Welcome Back"
+            subtitle="Your trusted legal consultation platform"
+          />
+        </div>
       </div>
 
       {/* Right Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-12 bg-[#0A0B1C] relative z-10">
-        <div className="w-full max-w-lg mt-30">
+      <div className="flex-1 lg:w-1/2 flex items-center justify-center p-4 sm:p-6 lg:p-12 bg-[#0A0B1C] relative z-10 min-h-screen lg:min-h-0">
+        <div className="w-full max-w-lg">
           {/* Logo and Navigation (Mobile Only) */}
-          <div className="lg:hidden flex items-center justify-between mb-12">
+          <div className="lg:hidden flex items-center justify-between mb-8 sm:mb-12">
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -200,23 +202,39 @@ const LoginPage = () => {
               </Link>
             </motion.div>
           </div>
-          {/* Welcome Header */}
-          <motion.div
+
+          {/* Mobile Welcome Header */}
+          {/* <div className="lg:hidden text-center mb-8">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.3 }}
+            >
+              <h1 className="text-3xl sm:text-4xl font-bold mb-3 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+                Welcome Back
+              </h1>
+              <p className="text-gray-400 text-base sm:text-lg">
+                Your trusted legal consultation platform
+              </p>
+            </motion.div>
+          </div> */}
+          {/* Welcome Header (Desktop Only) */}
+          {/* <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="text-center mb-8"
+            className="hidden lg:block text-center mb-8"
           >
             <h1 className="text-3xl font-bold text-white mb-2">Welcome Back</h1>
             <p className="text-gray-400">Sign in to continue your legal journey</p>
-          </motion.div>
+          </motion.div> */}
 
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             whileHover={{ y: -5, transition: { duration: 0.3 } }}
             transition={{ duration: 0.7, type: 'spring', delay: 0.2 }}
-            className="bg-white/10 backdrop-blur-xl rounded-2xl p-8 shadow-2xl border border-blue-900/30 relative overflow-hidden hover:shadow-cyan-500/10 hover:shadow-2xl transition-all duration-300"
+            className="bg-white/10 backdrop-blur-xl rounded-2xl p-6 sm:p-8 shadow-2xl border border-blue-900/30 relative overflow-hidden hover:shadow-cyan-500/10 hover:shadow-2xl transition-all duration-300"
           >
             {/* Animated border */}
             <div className="absolute inset-0 rounded-2xl pointer-events-none border-2 border-transparent bg-gradient-to-br from-blue-700/30 via-cyan-400/10 to-purple-500/10 animate-gradient-move" style={{zIndex:0}} />
@@ -268,7 +286,7 @@ const LoginPage = () => {
                 </motion.div>
               )}
             </AnimatePresence>
-            <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6 relative z-10">
               <AnimatePresence>
                 {apiError && (
                   <motion.div
@@ -306,7 +324,7 @@ const LoginPage = () => {
                     type="email"
                     value={formData.email}
                     onChange={handleChange}
-                    className={`block w-full pl-10 pr-3 py-3 bg-[#181B2E]/80 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-all duration-300 group-hover:border-blue-700/60 ${
+                    className={`block w-full pl-10 pr-3 py-3 sm:py-3.5 bg-[#181B2E]/80 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-all duration-300 group-hover:border-blue-700/60 text-sm sm:text-base ${
                       errors.email ? 'border-red-500 ring-red-500/20' : 'border-blue-900/40'
                     }`}
                     placeholder="Enter your email"
@@ -352,7 +370,7 @@ const LoginPage = () => {
                     type={showPassword ? 'text' : 'password'}
                     value={formData.password}
                     onChange={handleChange}
-                    className={`block w-full pl-10 pr-10 py-3 bg-[#181B2E]/80 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-all duration-300 group-hover:border-blue-700/60 ${
+                    className={`block w-full pl-10 pr-10 py-3 sm:py-3.5 bg-[#181B2E]/80 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-all duration-300 group-hover:border-blue-700/60 text-sm sm:text-base ${
                       errors.password ? 'border-red-500 ring-red-500/20' : 'border-blue-900/40'
                     }`}
                     placeholder="Enter your password"
@@ -425,16 +443,18 @@ const LoginPage = () => {
                 className="flex justify-center"
               >
                 {import.meta.env.VITE_RECAPTCHA_SITE_KEY ? (
-                  <ReCAPTCHA
-                    sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
-                    onChange={handleCaptchaChange}
-                    theme="dark"
-                  />
+                  <div className="transform scale-75 sm:scale-100 origin-center">
+                    <ReCAPTCHA
+                      sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
+                      onChange={handleCaptchaChange}
+                      theme="dark"
+                    />
+                  </div>
                 ) : (
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="text-center p-4 bg-yellow-500/20 border border-yellow-500/30 rounded-lg"
+                    className="text-center p-3 sm:p-4 bg-yellow-500/20 border border-yellow-500/30 rounded-lg w-full max-w-xs"
                   >
                     <p className="text-yellow-300 text-sm">
                       I'm not a robot ✓
@@ -454,7 +474,7 @@ const LoginPage = () => {
                   disabled={isLoading}
                   whileHover={!isLoading ? { scale: 1.02, y: -2 } : {}}
                   whileTap={!isLoading ? { scale: 0.98 } : {}}
-                  className={`w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-700 via-cyan-500 to-purple-500 text-white rounded-lg font-medium focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 focus:ring-offset-[#16182F] shadow-lg transition-all duration-300 relative overflow-hidden ${
+                  className={`w-full flex items-center justify-center gap-2 px-4 py-3 sm:py-3.5 bg-gradient-to-r from-blue-700 via-cyan-500 to-purple-500 text-white rounded-lg font-medium focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 focus:ring-offset-[#16182F] shadow-lg transition-all duration-300 relative overflow-hidden text-sm sm:text-base ${
                     isLoading ? 'opacity-70 cursor-not-allowed' : 'hover:shadow-2xl hover:shadow-cyan-500/25'
                   }`}
                 >
@@ -565,8 +585,8 @@ const LoginPage = () => {
         </div>
       </div>
       {/* Floating Legal Icon */}
-      <div className="absolute bottom-8 right-8 z-10 opacity-60 pointer-events-none">
-        <Scale className="w-16 h-16 text-cyan-900 animate-bounce-slow" />
+      <div className="hidden sm:block absolute bottom-8 right-8 z-10 opacity-60 pointer-events-none">
+        <Scale className="w-12 h-12 lg:w-16 lg:h-16 text-cyan-900 animate-bounce-slow" />
       </div>
     </div>
   );

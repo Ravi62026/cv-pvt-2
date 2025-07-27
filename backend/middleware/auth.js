@@ -87,13 +87,29 @@ export const requireVerifiedLawyer = (req, res, next) => {
         return res.status(403).json({
             success: false,
             message: "Access restricted to lawyers only",
+            code: "LAWYER_ROLE_REQUIRED"
         });
     }
 
     if (!req.user.isVerified) {
         return res.status(403).json({
             success: false,
-            message: "Lawyer verification required to access this feature",
+            message: "Your lawyer account is pending verification. Please wait for admin approval before accessing this feature.",
+            code: "LAWYER_NOT_VERIFIED",
+            data: {
+                verificationStatus: req.user.lawyerDetails?.verificationStatus || "pending",
+                isVerified: false,
+                role: "lawyer",
+                message: "Contact admin if verification is taking longer than expected."
+            }
+        });
+    }
+
+    if (!req.user.isActive) {
+        return res.status(403).json({
+            success: false,
+            message: "Your account has been deactivated. Please contact support.",
+            code: "ACCOUNT_DEACTIVATED"
         });
     }
 

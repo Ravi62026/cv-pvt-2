@@ -19,7 +19,7 @@ import { toast } from 'react-hot-toast';
 
 const PricingPage = () => {
   const { user } = useAuth();
-  const [selectedRole, setSelectedRole] = useState(user?.role || 'citizen');
+  const [selectedRole, setSelectedRole] = useState(user?.role || 'lawyer');
 
   const handleGetStarted = () => {
     if (!user) {
@@ -103,13 +103,13 @@ const PricingPage = () => {
 
   const lawyerPlans = [
     {
-      id: 'lawyer_professional',
-      name: 'Professional',
-      price: 'Free',
-      originalPrice: '₹999',
-      duration: 'Next 1 Month',
-      popular: true,
-      description: 'Perfect for individual practitioners',
+      id: 'lawyer_individual',
+      name: 'For Individual',
+      price: '₹999',
+      originalPrice: null,
+      duration: 'per month',
+      popular: false,
+      description: 'For individual lawyers and practitioners',
       icon: <Briefcase className="w-8 h-8" />,
       features: [
         { name: 'Unlimited Client Connections', included: true },
@@ -119,33 +119,57 @@ const PricingPage = () => {
         { name: 'Calendar & Scheduling', included: true },
         { name: 'Payment Processing', included: true },
         { name: 'Basic Analytics', included: true },
-        { name: 'Mobile App Access', included: true }
+        { name: 'Mobile App Access', included: true },
+        { name: 'Email Support', included: true }
       ],
-      futurePrice: '₹999/month',
-      buttonText: 'Start Professional Free',
-      buttonStyle: 'bg-gradient-to-r from-green-600 to-teal-600 text-white hover:from-green-700 hover:to-teal-700'
+      buttonText: 'Get Started',
+      buttonStyle: 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-700 hover:to-cyan-700'
     },
     {
-      id: 'lawyer_enterprise',
-      name: 'Enterprise',
-      price: 'Free',
-      originalPrice: '₹1999',
-      duration: 'Next 1 Month',
-      popular: false,
-      description: 'Advanced features for law firms',
-      icon: <Award className="w-8 h-8" />,
+      id: 'lawyer_enterprise_small',
+      name: 'Enterprise (Max 5)',
+      price: '₹2,999',
+      originalPrice: null,
+      duration: 'per month',
+      popular: true,
+      description: 'For small law firms with up to 5 individuals',
+      icon: <Users className="w-8 h-8" />,
       features: [
-        { name: 'Everything in Professional', included: true },
+        { name: 'Everything in Individual Plan', included: true },
+        { name: 'Up to 5 Team Members', included: true },
         { name: 'Team Collaboration Tools', included: true },
         { name: 'Advanced Analytics & Reports', included: true },
         { name: 'Custom Branding', included: true },
-        { name: 'Priority Listing', included: true },
-        { name: 'Marketing Tools', included: true },
-        { name: 'API Integration', included: true },
-        { name: 'Dedicated Account Manager', included: true }
+        { name: 'Priority Support', included: true },
+        { name: 'Bulk Document Processing', included: true },
+        { name: 'Team Calendar Management', included: true },
+        { name: 'Multi-user Dashboard', included: true }
       ],
-      futurePrice: '₹1999/month',
-      buttonText: 'Start Enterprise Free',
+      buttonText: 'Choose Enterprise',
+      buttonStyle: 'bg-gradient-to-r from-green-600 to-teal-600 text-white hover:from-green-700 hover:to-teal-700'
+    },
+    {
+      id: 'lawyer_enterprise_large',
+      name: 'Enterprise (5+ Users)',
+      price: '₹4,999',
+      originalPrice: null,
+      duration: 'per month',
+      popular: false,
+      description: 'For large law firms with more than 5 individuals',
+      icon: <Award className="w-8 h-8" />,
+      features: [
+        { name: 'Everything in Enterprise (Max 5)', included: true },
+        { name: 'Unlimited Team Members', included: true },
+        { name: 'Advanced Team Management', included: true },
+        { name: 'Custom Integrations', included: true },
+        { name: 'White-label Solutions', included: true },
+        { name: 'Dedicated Account Manager', included: true },
+        { name: 'API Access', included: true },
+        { name: 'Advanced Security Features', included: true },
+        { name: '24/7 Priority Support', included: true },
+        { name: 'Custom Training Sessions', included: true }
+      ],
+      buttonText: 'Contact Sales',
       buttonStyle: 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700'
     }
   ];
@@ -218,7 +242,7 @@ const PricingPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-gray-800">
       {/* Header */}
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20"></div>
@@ -230,11 +254,10 @@ const PricingPage = () => {
             className="text-center"
           >
             <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">
-              Simple, Transparent Pricing
+              View Pricing and Features
             </h1>
             <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
-              Get full access to ChainVerdict for the next month - completely free! 
-              No hidden fees, no credit card required.
+              For Lawyers
             </p>
             
             {/* Free Month Banner */}

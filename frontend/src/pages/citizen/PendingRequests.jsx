@@ -39,6 +39,12 @@ const PendingRequests = () => {
       if (response.ok) {
         const data = await response.json();
         setRequests(data.data?.requests || []);
+      } else if (response.status === 401) {
+        // Token expired, redirect to login
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+        return;
       } else {
         error('Failed to load pending requests');
       }
@@ -63,7 +69,7 @@ const PendingRequests = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-800 pt-24 pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
@@ -72,8 +78,8 @@ const PendingRequests = () => {
               <Send className="h-10 w-10 text-white" />
             </div>
             <div>
-              <h1 className="text-4xl font-bold text-gray-900 mb-2">My Requests</h1>
-              <p className="text-gray-600 text-lg">
+              <h1 className="text-4xl font-bold text-white mb-2">My Requests</h1>
+              <p className="text-gray-300 text-lg">
                 Requests you've sent to lawyers for your cases
               </p>
             </div>
@@ -81,8 +87,8 @@ const PendingRequests = () => {
         </div>
 
         {/* Tabs */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 mb-8">
-          <div className="border-b border-gray-200">
+        <div className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 mb-8">
+          <div className="border-b border-white/20">
             <nav className="flex space-x-8 px-8" aria-label="Tabs">
               {[
                 { id: 'all', name: 'All Requests', count: requests.length },
@@ -95,15 +101,15 @@ const PendingRequests = () => {
                   onClick={() => setActiveTab(tab.id)}
                   className={`py-5 px-2 border-b-3 font-semibold text-base transition-all ${
                     activeTab === tab.id
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      ? 'border-blue-400 text-blue-400'
+                      : 'border-transparent text-gray-400 hover:text-white hover:border-gray-500'
                   }`}
                 >
                   {tab.name}
                   <span className={`ml-3 py-1 px-3 rounded-full text-xs font-bold ${
                     activeTab === tab.id
-                      ? 'bg-blue-100 text-blue-700'
-                      : 'bg-gray-100 text-gray-600'
+                      ? 'bg-blue-500/20 text-blue-400'
+                      : 'bg-white/10 text-gray-300'
                   }`}>
                     {tab.count}
                   </span>
@@ -118,16 +124,16 @@ const PendingRequests = () => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-2xl shadow-lg border border-gray-200 p-16 text-center"
+            className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-16 text-center"
           >
-            <div className="bg-gray-100 rounded-full p-6 w-24 h-24 mx-auto mb-6">
+            <div className="bg-white/10 rounded-full p-6 w-24 h-24 mx-auto mb-6">
               <Send className="h-12 w-12 text-gray-400 mx-auto" />
             </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-3">
+            <h3 className="text-2xl font-bold text-white mb-3">
               {activeTab === 'all' ? 'No requests sent' : `No ${activeTab} requests`}
             </h3>
-            <p className="text-gray-600 text-lg">
-              {activeTab === 'all' 
+            <p className="text-gray-300 text-lg">
+              {activeTab === 'all'
                 ? 'When you request lawyers for your cases, they will appear here.'
                 : `You don't have any ${activeTab} requests at the moment.`
               }
@@ -182,7 +188,7 @@ const RequestCard = ({ request, index }) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1 }}
-      className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-lg transition-all duration-200"
+      className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-xl shadow-sm border border-white/20 p-6 hover:shadow-lg transition-all duration-200"
     >
       <div className="flex items-start justify-between">
         <div className="flex-1">
@@ -198,7 +204,7 @@ const RequestCard = ({ request, index }) => {
               )}
             </div>
             <div>
-              <h3 className="text-lg font-bold text-gray-900">{request.caseTitle}</h3>
+              <h3 className="text-lg font-bold text-white">{request.caseTitle}</h3>
               <span className={`text-xs font-semibold px-2 py-1 rounded-full ${
                 request.caseType === 'query' ? 'bg-blue-100 text-blue-700' : 'bg-red-100 text-red-700'
               }`}>
@@ -208,17 +214,17 @@ const RequestCard = ({ request, index }) => {
           </div>
 
           {/* Lawyer Info */}
-          <div className="flex items-center mb-4 p-4 bg-gray-50 rounded-lg">
-            <div className="bg-indigo-100 p-3 rounded-full mr-4">
-              <User className="h-6 w-6 text-indigo-600" />
+          <div className="flex items-center mb-4 p-4 bg-white/5 rounded-lg">
+            <div className="bg-indigo-500/20 p-3 rounded-full mr-4">
+              <User className="h-6 w-6 text-indigo-400" />
             </div>
             <div className="flex-1">
-              <h4 className="text-lg font-semibold text-gray-900">{request.lawyer.name}</h4>
-              <p className="text-sm text-gray-600">{request.lawyer.email}</p>
+              <h4 className="text-lg font-semibold text-white">{request.lawyer.name}</h4>
+              <p className="text-sm text-gray-300">{request.lawyer.email}</p>
               {request.lawyer.specialization && (
                 <div className="flex items-center mt-1">
                   <Award className="h-4 w-4 text-gray-400 mr-1" />
-                  <span className="text-sm text-gray-600">
+                  <span className="text-sm text-gray-300">
                     {request.lawyer.specialization.join(', ')}
                   </span>
                 </div>
@@ -226,7 +232,7 @@ const RequestCard = ({ request, index }) => {
               {request.lawyer.experience && (
                 <div className="flex items-center mt-1">
                   <Star className="h-4 w-4 text-gray-400 mr-1" />
-                  <span className="text-sm text-gray-600">
+                  <span className="text-sm text-gray-300">
                     {request.lawyer.experience} years experience
                   </span>
                 </div>
@@ -236,8 +242,8 @@ const RequestCard = ({ request, index }) => {
 
           {/* Message */}
           {request.message && (
-            <div className="mb-4 p-3 bg-blue-50 rounded-lg">
-              <p className="text-sm text-gray-700 italic">"{request.message}"</p>
+            <div className="mb-4 p-3 bg-blue-500/10 rounded-lg">
+              <p className="text-sm text-gray-300 italic">"{request.message}"</p>
             </div>
           )}
 
@@ -248,7 +254,7 @@ const RequestCard = ({ request, index }) => {
                 {getStatusIcon(request.status)}
                 <span className="ml-1.5 capitalize">{request.status}</span>
               </span>
-              <div className="flex items-center text-sm text-gray-500">
+              <div className="flex items-center text-sm text-gray-400">
                 <Calendar className="h-4 w-4 mr-1" />
                 <span>
                   {new Date(request.requestedAt).toLocaleDateString('en-IN', {
@@ -262,7 +268,7 @@ const RequestCard = ({ request, index }) => {
 
             {/* Response Date */}
             {request.respondedAt && (
-              <div className="flex items-center text-sm text-gray-500">
+              <div className="flex items-center text-sm text-gray-400">
                 <span className="mr-1">
                   {request.status === 'accepted' ? 'Accepted' : 'Rejected'} on:
                 </span>

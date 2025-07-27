@@ -1,0 +1,100 @@
+runtime: nodejs20
+
+env_variables:
+  NODE_ENV: production
+  PORT: 8080
+  CLIENT_URL: https://fluent-music-374010.web.app
+  FRONTEND_URL: https://fluent-music-374010.web.app
+
+  # Database Configuration
+  MONGODB_URI: mongodb+srv://cv-pvt:cv-pvt@cluster0.wh0zsdm.mongodb.net/cv-pvt?retryWrites=true&w=majority&appName=Cluster0
+
+  # Redis Configuration
+  REDIS_URL: redis://default:VASKYzGC0ZMziuNvphmTRk3yAZbo1hRy@redis-17449.c246.us-east-1-4.ec2.redns.redis-cloud.com:17449
+  REDIS_PASSWORD: VASKYzGC0ZMziuNvphmTRk3yAZbo1hRy
+  REDIS_DB: 0
+
+  # JWT Configuration
+  JWT_SECRET: your-super-secret-jwt-key-here-change-in-production
+  JWT_REFRESH_SECRET: your-super-secret-refresh-jwt-key-here-change-in-production
+  JWT_EXPIRE: 24h
+  JWT_REFRESH_EXPIRE: 7d
+
+  # reCAPTCHA Configuration
+  RECAPTCHA_SECRET_KEY: 6LcZX3QrAAAAAIzjeJht_a6Oa2KL_yyeEVECK8gf
+  RECAPTCHA_MIN_SCORE: 0.5
+  ALLOWED_HOSTNAMES: fluent-music-374010.el.r.appspot.com,fluent-music-374010.web.app
+  CAPTCHA_MAX_ATTEMPTS_PER_HOUR: 10
+
+  # Pinata Configuration (IPFS Storage)
+  PINATA_API_KEY: 22a938a7c02bd39b5cef
+  PINATA_SECRET_KEY: 6c5722a42b55ee7d05ed9a5cde9d9936f7ec07d196f43a5020d3707420106240
+  PINATA_JWT: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySW5mb3JtYXRpb24iOnsiaWQiOiIyYjkzMjZlZS05OWEwLTQzYjAtODhlMS1kNDg5ZmVkMzRkY2UiLCJlbWFpbCI6ImN1cnNvcmZyZWV0cmlhbHMxMDBAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsInBpbl9wb2xpY3kiOnsicmVnaW9ucyI6W3siZGVzaXJlZFJlcGxpY2F0aW9uQ291bnQiOjEsImlkIjoiRlJBMSJ9LHsiZGVzaXJlZFJlcGxpY2F0aW9uQ291bnQiOjEsImlkIjoiTllDMSJ9XSwidmVyc2lvbiI6MX0sIm1mYV9lbmFibGVkIjpmYWxzZSwic3RhdHVzIjoiQUNUSVZFIn0sImF1dGhlbnRpY2F0aW9uVHlwZSI6InNjb3BlZEtleSIsInNjb3BlZEtleUtleSI6IjIyYTkzOGE3YzAyYmQzOWI1Y2VmIiwic2NvcGVkS2V5U2VjcmV0IjoiNmM1NzIyYTQyYjU1ZWU3ZDA1ZWQ5YTVjZGU5ZDk5MzZmN2VjMDdkMTk2ZjQzYTUwMjBkMzcwNzQyMDEwNjI0MCIsImV4cCI6MTc3OTI3MDYxNX0.XRZB0stg1o7GwbO3TAjGR6GUXNWSZnyoAIyJvWW31XA
+
+  # Cloudinary Configuration
+  CLOUDINARY_CLOUD_NAME: dpyub2wl2
+  CLOUDINARY_API_KEY: 284494796633352
+  CLOUDINARY_API_SECRET: mpZ6vBDuzIEmXi8QPl3oag5IGTg
+
+  # Email Configuration
+  EMAIL_HOST: smtp.gmail.com
+  EMAIL_PORT: 587
+  EMAIL_USER: raviraunak18@gmail.com
+  EMAIL_PASS: cigkemmhgljuyfwv
+
+  # Rate Limiting
+  RATE_LIMIT_WINDOW_MS: 900000
+  RATE_LIMIT_MAX: 100
+  RATE_LIMIT_AUTH_MAX: 5
+  RATE_LIMIT_UPLOAD_MAX: 10
+  RATE_LIMIT_API_MAX: 1000
+
+  # API Keys
+  API_KEY_BASIC: chainverdict-basic-key-12345
+  API_KEY_PREMIUM: chainverdict-premium-key-67890
+  API_KEY_ENTERPRISE: chainverdict-enterprise-key-abcdef
+
+  # Security
+  BCRYPT_ROUNDS: 12
+  MAX_LOGIN_ATTEMPTS: 5
+  LOCK_TIME: 120000
+  SESSION_SECRET: your-session-secret-key-here
+
+  # File Upload Limits
+  MAX_FILE_SIZE: 10485760
+  MAX_FILES_PER_UPLOAD: 5
+
+  # Legal Configuration
+  DEFAULT_QUERY_LIMIT_FREE: 5
+  DEFAULT_QUERY_LIMIT_BASIC: 25
+  DEFAULT_QUERY_LIMIT_PREMIUM: 100
+  CONSULTATION_TIMEOUT: 3600000
+
+  # External Service URLs
+  PAYMENT_GATEWAY_URL: https://api.razorpay.com
+  LEGAL_DATABASE_URL: https://api.legaldatabase.com
+  AI_SERVICE_URL: https://api.openai.com
+
+  # Logging
+  LOG_LEVEL: info
+  LOG_FILE_MAX_SIZE: 20971520
+  LOG_FILE_MAX_FILES: 5
+
+  # Monitoring
+  HEALTH_CHECK_INTERVAL: 60000
+  METRICS_COLLECTION: true
+
+  # Development Tools
+  DEBUG_MODE: false
+  ENABLE_CORS: true
+  ENABLE_SWAGGER: true
+
+automatic_scaling:
+  min_instances: 1
+  max_instances: 10
+  target_cpu_utilization: 0.6
+
+resources:
+  cpu: 1
+  memory_gb: 2
+  disk_size_gb: 10

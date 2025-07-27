@@ -15,15 +15,34 @@ import {
 import { callAPI } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
+import { useSocket, useSocketEvent } from '../../hooks/useSocket';
 
 const CallHistoryCard = ({ limit = 5 }) => {
   const [calls, setCalls] = useState([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const { error } = useToast();
+  const { socket } = useSocket();
 
   useEffect(() => {
     fetchCallHistory();
+  }, []);
+
+  // Real-time updates for new calls
+  useSocketEvent('call_ended', (callData) => {
+    console.log('📞 Call ended, updating history:', callData);
+    // Add new call to the beginning of the list and keep only the limit
+    setCalls(prev => [callData, ...prev.slice(0, limit - 1)]);
+  }, [limit]);
+
+  // Real-time updates for call status changes
+  useSocketEvent('call_status_updated', (updateData) => {
+    console.log('📞 Call status updated:', updateData);
+    setCalls(prev => prev.map(call =>
+      call._id === updateData.callId
+        ? { ...call, status: updateData.newStatus, duration: updateData.duration }
+        : call
+    ));
   }, []);
 
   const fetchCallHistory = async () => {

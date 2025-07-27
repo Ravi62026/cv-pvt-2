@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import {
   Users,
   UserCheck,
@@ -14,6 +15,9 @@ import {
   PieChart,
   Activity,
   DollarSign,
+  Bot,
+  FolderOpen,
+  ArrowRight,
 } from 'lucide-react';
 import { adminAPI } from '../services/api';
 import { useToast } from '../contexts/ToastContext';
@@ -25,6 +29,7 @@ const AdminDashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState({});
   const { success, error } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchDashboardData();
@@ -130,6 +135,38 @@ const AdminDashboard = () => {
           </div>
         </div>
 
+        {/* Quick Actions */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <QuickActionCard
+            title="AI Legal Tools"
+            description="Access AI-powered legal assistance"
+            icon={Bot}
+            color="blue"
+            onClick={() => navigate('/ai-tools')}
+          />
+          <QuickActionCard
+            title="Documents"
+            description="Manage legal documents"
+            icon={FolderOpen}
+            color="green"
+            onClick={() => navigate('/documents')}
+          />
+          <QuickActionCard
+            title="Pending Lawyers"
+            description="Review lawyer verifications"
+            icon={UserCheck}
+            color="orange"
+            onClick={() => navigate('/admin/pending-lawyers')}
+          />
+          <QuickActionCard
+            title="System Analytics"
+            description="View platform analytics"
+            icon={BarChart3}
+            color="purple"
+            onClick={() => document.getElementById('analytics-section')?.scrollIntoView({ behavior: 'smooth' })}
+          />
+        </div>
+
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <StatsCard
@@ -159,6 +196,13 @@ const AdminDashboard = () => {
             icon={Clock}
             color="orange"
             trend="0%"
+            showViewAll={true}
+            onClick={() => {
+              // Scroll to pending verifications section
+              document.getElementById('pending-verifications')?.scrollIntoView({
+                behavior: 'smooth'
+              });
+            }}
           />
         </div>
 
@@ -192,7 +236,8 @@ const AdminDashboard = () => {
 };
 
 // Stats Card Component
-const StatsCard = ({ title, value = 0, icon: Icon, color, trend = "0%" }) => {
+const StatsCard = ({ title, value = 0, icon: Icon, color, trend = "0%", onClick, showViewAll = false }) => {
+  const navigate = useNavigate();
   const colorClasses = {
     blue: 'from-blue-500 to-cyan-500',
     green: 'from-emerald-500 to-teal-500',
@@ -208,7 +253,10 @@ const StatsCard = ({ title, value = 0, icon: Icon, color, trend = "0%" }) => {
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -2, scale: 1.02 }}
       transition={{ duration: 0.2 }}
-      className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-2xl border border-white/20 hover:border-white/30 p-6 group cursor-pointer"
+      className={`bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-2xl border border-white/20 hover:border-white/30 p-6 group transition-all duration-300 ${
+        onClick ? 'cursor-pointer hover:shadow-lg hover:shadow-orange-500/20' : ''
+      }`}
+      onClick={onClick}
     >
       <div className="flex items-center justify-between mb-4">
         <div className={`p-3 rounded-xl bg-gradient-to-r ${colorClasses[color]} shadow-lg group-hover:shadow-xl transition-all duration-300`}>
@@ -227,6 +275,22 @@ const StatsCard = ({ title, value = 0, icon: Icon, color, trend = "0%" }) => {
           {(value || 0).toLocaleString()}
         </p>
         <p className="text-xs text-gray-500 mt-1">from last month</p>
+
+        {/* View All Button for Pending Verifications */}
+        {showViewAll && value > 0 && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate('/admin/pending-lawyers');
+            }}
+            className="mt-3 bg-orange-500/20 hover:bg-orange-500/30 text-orange-400 hover:text-orange-300 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 flex items-center space-x-1"
+          >
+            <span>View All</span>
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        )}
       </div>
     </motion.div>
   );
@@ -234,8 +298,12 @@ const StatsCard = ({ title, value = 0, icon: Icon, color, trend = "0%" }) => {
 
 // Pending Lawyers Section Component
 const PendingLawyersSection = ({ lawyers = [], onVerify, isProcessing = {} }) => {
+  const navigate = useNavigate();
+  const displayedLawyers = lawyers.slice(0, 3);
+
   return (
     <motion.div
+      id="pending-verifications"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-2xl border border-white/20 hover:border-white/30 transition-all duration-300"
@@ -248,8 +316,21 @@ const PendingLawyersSection = ({ lawyers = [], onVerify, isProcessing = {} }) =>
             </div>
             Pending Verifications
           </h2>
-          <div className="bg-orange-500/20 text-orange-400 px-3 py-1 rounded-full text-sm font-medium">
-            {lawyers.length} pending
+          <div className="flex items-center space-x-3">
+            <div className="bg-orange-500/20 text-orange-400 px-3 py-1 rounded-full text-sm font-medium">
+              {lawyers.length} pending
+            </div>
+            {lawyers.length > 3 && (
+              <button
+                onClick={() => navigate('/admin/pending-lawyers')}
+                className="bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 hover:text-blue-300 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center space-x-2"
+              >
+                <span>View All</span>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -265,7 +346,7 @@ const PendingLawyersSection = ({ lawyers = [], onVerify, isProcessing = {} }) =>
           </div>
         ) : (
           <div className="space-y-4">
-            {lawyers.map((lawyer) => (
+            {displayedLawyers.map((lawyer) => (
               <LawyerVerificationCard
                 key={lawyer._id}
                 lawyer={lawyer}
@@ -273,6 +354,19 @@ const PendingLawyersSection = ({ lawyers = [], onVerify, isProcessing = {} }) =>
                 isProcessing={isProcessing}
               />
             ))}
+            {lawyers.length > 3 && (
+              <div className="text-center pt-4">
+                <p className="text-gray-400 text-sm">
+                  Showing {displayedLawyers.length} of {lawyers.length} pending verifications
+                </p>
+                <button
+                  onClick={() => navigate('/admin/pending-lawyers')}
+                  className="mt-2 text-blue-400 hover:text-blue-300 text-sm font-medium underline"
+                >
+                  View all pending lawyers →
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -288,28 +382,34 @@ const LawyerVerificationCard = ({ lawyer, onVerify, isProcessing = {} }) => {
   const isRejecting = isProcessing[`${lawyer._id}-reject`] || false;
 
   return (
-    <div className="border border-white/20 rounded-lg p-4 bg-gradient-to-br from-white/5 to-white/2 backdrop-blur-sm hover:border-white/30 transition-all">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="border border-white/20 rounded-xl p-6 bg-gradient-to-br from-white/8 to-white/3 backdrop-blur-sm hover:border-white/40 transition-all duration-300 hover:shadow-lg hover:shadow-white/5"
+    >
       <div className="flex items-start justify-between">
         <div className="flex-1">
-          <div className="flex items-center mb-2">
-            <div className="h-10 w-10 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center mr-3">
-              <UserCheck className="h-5 w-5 text-white" />
+          <div className="flex items-center mb-4">
+            <div className="h-12 w-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center mr-4 shadow-lg">
+              <UserCheck className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h3 className="font-semibold text-white">{lawyer.name}</h3>
+              <h3 className="font-semibold text-white text-lg">{lawyer.name}</h3>
               <p className="text-sm text-gray-300">{lawyer.email}</p>
-              <div className="flex items-center space-x-2 mt-1">
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+              <div className="flex items-center space-x-3 mt-2">
+                <span className={`px-3 py-1 rounded-full text-xs font-medium border ${
                   lawyer.lawyerDetails?.verificationStatus === 'verified'
-                    ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                    ? 'bg-green-500/20 text-green-400 border-green-500/40'
                     : lawyer.lawyerDetails?.verificationStatus === 'rejected'
-                    ? 'bg-red-500/20 text-red-400 border border-red-500/30'
-                    : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
+                    ? 'bg-red-500/20 text-red-400 border-red-500/40'
+                    : 'bg-yellow-500/20 text-yellow-400 border-yellow-500/40'
                 }`}>
                   {lawyer.lawyerDetails?.verificationStatus || 'pending'}
                 </span>
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                  lawyer.isVerified ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-gray-500/20 text-gray-400 border border-gray-500/30'
+                <span className={`px-3 py-1 rounded-full text-xs font-medium border ${
+                  lawyer.isVerified
+                    ? 'bg-green-500/20 text-green-400 border-green-500/40'
+                    : 'bg-gray-500/20 text-gray-400 border-gray-500/40'
                 }`}>
                   {lawyer.isVerified ? 'Verified' : 'Not Verified'}
                 </span>
@@ -317,51 +417,75 @@ const LawyerVerificationCard = ({ lawyer, onVerify, isProcessing = {} }) => {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 text-sm text-gray-300 mb-3">
-            <div>
-              <span className="font-medium">Phone:</span> {lawyer.phone}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-300 mb-4 mt-4">
+            <div className="bg-white/5 rounded-lg p-3">
+              <span className="font-medium text-gray-400">Phone:</span>
+              <p className="text-white mt-1">{lawyer.phone}</p>
             </div>
-            <div>
-              <span className="font-medium">Experience:</span> {lawyer.lawyerDetails?.experience || 'N/A'}
+            <div className="bg-white/5 rounded-lg p-3">
+              <span className="font-medium text-gray-400">Experience:</span>
+              <p className="text-white mt-1">{lawyer.lawyerDetails?.experience || 'N/A'}</p>
             </div>
-            <div>
-              <span className="font-medium">Bar ID:</span> {lawyer.lawyerDetails?.barId || 'N/A'}
+            <div className="bg-white/5 rounded-lg p-3">
+              <span className="font-medium text-gray-400">Bar ID:</span>
+              <p className="text-white mt-1">{lawyer.lawyerDetails?.barId || 'N/A'}</p>
             </div>
-            <div>
-              <span className="font-medium">Specialization:</span>
-              {lawyer.lawyerDetails?.specialization?.join(', ') || 'N/A'}
+            <div className="bg-white/5 rounded-lg p-3">
+              <span className="font-medium text-gray-400">Specialization:</span>
+              <p className="text-white mt-1">{lawyer.lawyerDetails?.specialization?.join(', ') || 'N/A'}</p>
             </div>
           </div>
 
           <button
             onClick={() => setShowDetails(!showDetails)}
-            className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+            className="text-blue-400 hover:text-blue-300 text-sm font-medium bg-blue-500/10 hover:bg-blue-500/20 px-3 py-1 rounded-lg transition-all duration-200 flex items-center space-x-2"
           >
-            {showDetails ? 'Hide Details' : 'Show Details'}
+            <span>{showDetails ? 'Hide Details' : 'Show Details'}</span>
+            <motion.div
+              animate={{ rotate: showDetails ? 180 : 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </motion.div>
           </button>
 
           {showDetails && (
-            <div className="mt-3 p-3 bg-gray-50 rounded-lg text-sm">
-              <div className="grid grid-cols-1 gap-2">
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3 }}
+              className="mt-4 p-4 bg-white/5 rounded-lg border border-white/10"
+            >
+              <div className="grid grid-cols-1 gap-3">
                 <div>
-                  <span className="font-medium">Education:</span> {lawyer.lawyerDetails?.education || 'N/A'}
+                  <span className="font-medium text-gray-400">Education:</span>
+                  <p className="text-white mt-1">{lawyer.lawyerDetails?.education || 'N/A'}</p>
                 </div>
                 <div>
-                  <span className="font-medium">Address:</span> {lawyer.address || 'N/A'}
+                  <span className="font-medium text-gray-400">Address:</span>
+                  <p className="text-white mt-1">{
+                    lawyer.address
+                      ? `${lawyer.address.street || ''}, ${lawyer.address.city || ''}, ${lawyer.address.state || ''} ${lawyer.address.pincode || ''}`.replace(/^,\s*/, '').replace(/,\s*$/, '')
+                      : 'N/A'
+                  }</p>
                 </div>
                 <div>
-                  <span className="font-medium">Registered:</span> {new Date(lawyer.createdAt).toLocaleDateString()}
+                  <span className="font-medium text-gray-400">Registered:</span>
+                  <p className="text-white mt-1">{new Date(lawyer.createdAt).toLocaleDateString()}</p>
                 </div>
               </div>
-            </div>
+            </motion.div>
           )}
         </div>
 
-        <div className="flex space-x-2 ml-4">
+        <div className="flex flex-col space-y-3 ml-6">
           <button
             onClick={() => onVerify(lawyer._id, 'approve')}
             disabled={isApproving || isRejecting}
-            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center text-sm"
+            className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl hover:from-green-600 hover:to-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-sm font-medium shadow-lg hover:shadow-green-500/25 transition-all duration-200"
           >
             {isApproving ? (
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
@@ -374,7 +498,7 @@ const LawyerVerificationCard = ({ lawyer, onVerify, isProcessing = {} }) => {
           <button
             onClick={() => onVerify(lawyer._id, 'reject', 'Documents verification failed')}
             disabled={isApproving || isRejecting}
-            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center text-sm"
+            className="px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-sm font-medium shadow-lg hover:shadow-red-500/25 transition-all duration-200"
           >
             {isRejecting ? (
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
@@ -385,7 +509,7 @@ const LawyerVerificationCard = ({ lawyer, onVerify, isProcessing = {} }) => {
           </button>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
@@ -458,28 +582,28 @@ const RecentActivitiesCard = ({ activities = {} }) => {
         Recent Activities
       </h3>
 
-      <div className="space-y-3">
+      <div className="space-y-4">
         {allActivities.length === 0 ? (
           <p className="text-gray-300 text-sm">No recent activities</p>
         ) : (
           allActivities.map((activity, index) => (
-            <div key={`${activity.type}-${activity._id}`} className="flex items-start space-x-3">
-              <div className={`p-1 rounded-full ${
-                activity.type === 'query' ? 'bg-blue-100' : 'bg-purple-100'
+            <div key={`${activity.type}-${activity._id}`} className="flex items-start space-x-3 p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-all duration-200">
+              <div className={`p-2 rounded-full ${
+                activity.type === 'query' ? 'bg-blue-500/20' : 'bg-purple-500/20'
               }`}>
                 {activity.type === 'query' ? (
-                  <FileText className={`h-3 w-3 ${
-                    activity.type === 'query' ? 'text-blue-600' : 'text-purple-600'
+                  <FileText className={`h-4 w-4 ${
+                    activity.type === 'query' ? 'text-blue-400' : 'text-purple-400'
                   }`} />
                 ) : (
-                  <Scale className="h-3 w-3 text-purple-600" />
+                  <Scale className="h-4 w-4 text-purple-400" />
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm text-gray-900 truncate">
+                <p className="text-sm text-white truncate">
                   New {activity.type} by {activity.citizen?.name || 'Unknown'}
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-400">
                   {new Date(activity.createdAt).toLocaleDateString()}
                 </p>
               </div>
@@ -497,26 +621,52 @@ const MonthlyStatsChart = ({ data }) => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
+      className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-2xl border border-white/20 p-6"
     >
-      <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-        <PieChart className="h-5 w-5 mr-2 text-purple-500" />
+      <h3 className="text-lg font-semibold text-white mb-6 flex items-center">
+        <PieChart className="h-5 w-5 mr-2 text-purple-400" />
         Monthly Case Statistics
       </h3>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
         {data.map((month, index) => (
-          <div key={index} className="text-center">
-            <div className="text-sm font-medium text-gray-600 mb-2">{month.month}</div>
-            <div className="space-y-1">
-              <div className="text-lg font-bold text-blue-600">{month.queries}</div>
-              <div className="text-xs text-gray-500">Queries</div>
-              <div className="text-lg font-bold text-purple-600">{month.disputes}</div>
-              <div className="text-xs text-gray-500">Disputes</div>
+          <div key={index} className="text-center bg-white/5 rounded-xl p-4 hover:bg-white/10 transition-all duration-200">
+            <div className="text-sm font-medium text-gray-300 mb-3">{month.month}</div>
+            <div className="space-y-2">
+              <div className="text-2xl font-bold text-blue-400">{month.queries}</div>
+              <div className="text-xs text-gray-400">Queries</div>
+              <div className="text-2xl font-bold text-purple-400">{month.disputes}</div>
+              <div className="text-xs text-gray-400">Disputes</div>
             </div>
           </div>
         ))}
       </div>
+    </motion.div>
+  );
+};
+
+// Quick Action Card Component
+const QuickActionCard = ({ title, description, icon: Icon, color, onClick }) => {
+  const colorClasses = {
+    blue: 'bg-blue-500 hover:bg-blue-600',
+    green: 'bg-green-500 hover:bg-green-600',
+    purple: 'bg-purple-500 hover:bg-purple-600',
+    orange: 'bg-orange-500 hover:bg-orange-600',
+  };
+
+  return (
+    <motion.div
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+      className={`${colorClasses[color]} text-white p-6 rounded-lg shadow-lg cursor-pointer transition-colors`}
+      onClick={onClick}
+    >
+      <div className="flex items-center justify-between mb-4">
+        <Icon className="h-8 w-8" />
+        <ArrowRight className="h-5 w-5" />
+      </div>
+      <h3 className="text-lg font-semibold mb-2">{title}</h3>
+      <p className="text-sm opacity-90">{description}</p>
     </motion.div>
   );
 };

@@ -46,8 +46,12 @@ app.use(
 // CORS configuration
 app.use(
     cors({
-        // origin: process.env.CLIENT_URL || "http://localhost:5173",
-        origin: "*",
+        origin: [
+            process.env.CLIENT_URL || "http://localhost:5173",
+            process.env.FRONTEND_URL || "http://localhost:5173",
+            "https://fluent-music-374010.web.app",
+            "http://localhost:5173" // for development
+        ],
         credentials: true,
         methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
         allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],

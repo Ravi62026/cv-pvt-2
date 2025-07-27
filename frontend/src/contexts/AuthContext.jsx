@@ -254,10 +254,36 @@ export const AuthProvider = ({ children }) => {
   const isCitizen = () => hasRole('citizen');
   const isAdmin = () => hasRole('admin');
 
+  // Check if lawyer is verified
+  const isVerifiedLawyer = () => {
+    return hasRole('lawyer') && state.user?.isVerified === true;
+  };
+
+  // Get verification status for lawyers
+  const getVerificationStatus = () => {
+    if (!hasRole('lawyer')) return null;
+    return {
+      isVerified: state.user?.isVerified || false,
+      verificationStatus: state.user?.lawyerDetails?.verificationStatus || 'pending'
+    };
+  };
+
   const canAccess = (allowedRoles) => {
     if (!state.isAuthenticated) return false;
     if (!allowedRoles || allowedRoles.length === 0) return true;
-    return allowedRoles.includes(state.user?.role);
+
+    const userRole = state.user?.role;
+    const hasRequiredRole = allowedRoles.includes(userRole);
+
+    // If user doesn't have the required role, deny access
+    if (!hasRequiredRole) return false;
+
+    // Special check for lawyers - they must be verified to access lawyer features
+    if (userRole === 'lawyer' && allowedRoles.includes('lawyer')) {
+      return state.user?.isVerified === true;
+    }
+
+    return true;
   };
 
   // Context value
@@ -277,6 +303,8 @@ export const AuthProvider = ({ children }) => {
     isLawyer,
     isCitizen,
     isAdmin,
+    isVerifiedLawyer,
+    getVerificationStatus,
     canAccess,
 
     // Token for API calls

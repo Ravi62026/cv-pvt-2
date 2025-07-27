@@ -4,6 +4,7 @@ import { verifyCaptcha } from "../utils/captcha.js";
 import { validationResult } from "express-validator";
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
+import emailService from "../utils/emailService.js";
 
 // Helper function to clean user data based on role
 const cleanUserData = (user) => {
@@ -140,6 +141,23 @@ export const register = async (req, res) => {
 
         // Create user
         const user = await User.create(userData);
+
+        // Send welcome email for lawyers
+        if (user.role === "lawyer") {
+            try {
+                console.log(`📧 Sending welcome email to new lawyer: ${user.email}`);
+                const emailResult = await emailService.sendLawyerWelcomeEmail(user.email, user.name);
+
+                if (emailResult.success) {
+                    console.log(`✅ Welcome email sent successfully to ${user.email}`);
+                } else {
+                    console.error(`❌ Failed to send welcome email to ${user.email}:`, emailResult.error);
+                }
+            } catch (emailError) {
+                console.error(`❌ Email service error for new lawyer ${user.email}:`, emailError);
+                // Don't fail registration if email fails
+            }
+        }
 
         // Generate tokens
         const { accessToken, refreshToken } = generateTokenPair({

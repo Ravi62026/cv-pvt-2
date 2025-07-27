@@ -1,4 +1,5 @@
 import Dispute from '../models/Dispute.js';
+import Query from '../models/Query.js';
 import { validationResult } from 'express-validator';
 
 // Create a new dispute (citizen only)
@@ -45,6 +46,48 @@ export const createDispute = async (req, res) => {
 
     // Populate citizen details
     await dispute.populate('citizen', 'name email');
+
+    // Emit real-time dashboard update
+    const io = req.app.get("socketio");
+    if (io) {
+      const activityData = {
+        id: dispute._id,
+        type: 'dispute',
+        title: dispute.title,
+        description: 'Legal dispute filed',
+        status: dispute.status,
+        timestamp: dispute.createdAt,
+        category: dispute.category,
+        priority: dispute.priority,
+        disputeType: dispute.disputeType
+      };
+
+      console.log("📡 Emitting new_activity for dispute creation:", activityData);
+      io.to(`user_${req.user._id}`).emit("new_activity", activityData);
+
+      // Emit updated stats
+      try {
+        const [totalQueries, totalDisputes, resolvedQueries, resolvedDisputes] = await Promise.all([
+          Query.countDocuments({ citizen: req.user._id }),
+          Dispute.countDocuments({ citizen: req.user._id }),
+          Query.countDocuments({ citizen: req.user._id, status: 'resolved' }),
+          Dispute.countDocuments({ citizen: req.user._id, status: 'resolved' })
+        ]);
+
+        const updatedStats = {
+          totalCases: totalQueries + totalDisputes,
+          activeCases: totalQueries + totalDisputes - resolvedQueries - resolvedDisputes,
+          resolvedCases: resolvedQueries + resolvedDisputes,
+          connectedLawyers: 0, // Would need DirectConnection count
+          pendingRequests: 0 // Would need pending request count
+        };
+
+        io.to(`user_${req.user._id}`).emit("dashboard_stats_updated", updatedStats);
+        io.to(`user_${req.user._id}`).emit("quick_stats_updated", updatedStats);
+      } catch (statsError) {
+        console.error("Error calculating stats:", statsError);
+      }
+    }
 
     res.status(201).json({
       success: true,
