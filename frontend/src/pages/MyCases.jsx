@@ -44,7 +44,7 @@ const MyCases = () => {
     setIsLoading(true);
     try {
       // Fetch real data from the correct API endpoint
-      const response = await fetch('/api/citizens/my-cases', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/citizens/my-cases`, {
         headers: {
           'Authorization': `Bearer ${getToken()}`,
           'Content-Type': 'application/json'

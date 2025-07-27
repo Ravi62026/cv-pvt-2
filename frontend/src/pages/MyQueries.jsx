@@ -46,7 +46,7 @@ const MyQueries = () => {
       }
 
       // Use the same endpoint as My Cases page
-      const response = await fetch('/api/citizens/my-cases', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/citizens/my-cases`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

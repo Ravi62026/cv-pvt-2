@@ -1530,7 +1530,7 @@ export const aiAPI = {
   },
 
   // Legal Advisor - Comprehensive case analysis with optional debate
-  async analyzeLegalCase(caseDescription, evidence = null, verify = true, includeDebate = false, chatId = null) {
+  async analyzeLegalCase(caseDescription, evidence = null, verify = true, includeDebate = true, chatId = null) {
     try {
       const requestData = {
         case_description: caseDescription,

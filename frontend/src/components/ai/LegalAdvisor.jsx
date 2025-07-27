@@ -59,7 +59,7 @@ Please describe your case or legal matter to get started!`,
         message,
         evidence,
         true, // verify
-        advancedSettings.includeDebate,
+        true,
         currentChatId
       );
       
