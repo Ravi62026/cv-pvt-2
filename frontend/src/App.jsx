@@ -146,7 +146,8 @@ const CallManagerComponent = () => {
 };
 
 function App() {
-  const { updateAvailable, updateApp } = usePWA();
+  // Removed PWA update functionality
+  // const { updateAvailable, updateApp } = usePWA();
 
   return (
     <AuthProvider>
@@ -158,32 +159,7 @@ function App() {
               <ScrollToTop />
               <CallManagerComponent />
               <PWAInstallPrompt />
-              {updateAvailable && (
-                <div className="fixed top-4 right-4 z-50">
-                  <div className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white p-4 rounded-lg shadow-lg border border-white/20 backdrop-blur-sm">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-semibold mb-1">New version available!</p>
-                        <p className="text-sm text-blue-100">Update for the latest features</p>
-                      </div>
-                      <div className="flex space-x-2 ml-4">
-                        <button
-                          onClick={updateApp}
-                          className="bg-white text-blue-600 px-3 py-1.5 rounded-md font-medium text-sm hover:bg-blue-50 transition-colors"
-                        >
-                          Update Now
-                        </button>
-                        <button
-                          onClick={() => window.location.reload()}
-                          className="text-white/80 hover:text-white text-sm"
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
+
               <div className="min-h-screen">
               <Routes>
                 {/* Public Routes */}

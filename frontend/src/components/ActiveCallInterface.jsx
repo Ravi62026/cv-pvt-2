@@ -26,8 +26,7 @@ const ActiveCallInterface = ({
   isMuted = false,
   isVideoEnabled = true,
   isSpeakerOn = false,
-  participantInfo,
-  callDuration = 0
+  participantInfo
 }) => {
   const [isMinimized, setIsMinimized] = useState(false);
   const localVideoRef = useRef(null);
@@ -46,12 +45,7 @@ const ActiveCallInterface = ({
     }
   }, [remoteStream]);
 
-  // Format call duration
-  const formatDuration = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
+
 
   if (!isVisible) return null;
 
@@ -77,7 +71,7 @@ const ActiveCallInterface = ({
             <h3 className="participant-name">
               {participantInfo?.name || callData?.targetUserId || 'Unknown'}
             </h3>
-            <p className="call-duration">{formatDuration(callDuration)}</p>
+            <p className="call-status">Connected</p>
           </div>
         </div>
         

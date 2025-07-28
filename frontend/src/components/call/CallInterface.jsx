@@ -10,15 +10,14 @@ import {
   SpeakerXMarkIcon
 } from '@heroicons/react/24/solid';
 
-const CallInterface = ({ 
-  isIncoming = false, 
-  callerName = "Ravi Shankar", 
+const CallInterface = ({
+  isIncoming = false,
+  callerName = "Ravi Shankar",
   callerRole = "Citizen",
-  onAccept, 
-  onDecline, 
+  onAccept,
+  onDecline,
   onEndCall,
-  isVideoCall = false,
-  callDuration = 0
+  isVideoCall = false
 }) => {
   const [isMuted, setIsMuted] = useState(false);
   const [isSpeakerOn, setIsSpeakerOn] = useState(false);
@@ -28,12 +27,7 @@ const CallInterface = ({
   const remoteVideoRef = useRef(null);
   const remoteAudioRef = useRef(null);
 
-  // Format call duration
-  const formatDuration = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
+
 
   const handleAcceptCall = () => {
     setCallStatus('connected');
@@ -58,16 +52,7 @@ const CallInterface = ({
     setIsSpeakerOn(!isSpeakerOn);
   };
 
-  // Call duration timer
-  useEffect(() => {
-    let interval;
-    if (callStatus === 'connected') {
-      interval = setInterval(() => {
-        setCallDuration(prev => prev + 1);
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [callStatus]);
+
 
   // Simulate remote video stream availability
   useEffect(() => {
@@ -222,7 +207,7 @@ const CallInterface = ({
               </div>
             </div>
             <div className="text-right">
-              <p className="text-lg font-mono">{formatDuration(callDuration)}</p>
+              <p className="text-lg font-semibold">Connected</p>
               <p className="text-xs text-gray-300">{isVideoCall ? 'Video Call' : 'Voice Call'}</p>
             </div>
           </div>

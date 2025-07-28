@@ -5,7 +5,7 @@ const callSchema = new mongoose.Schema({
         type: String,
         required: true,
         unique: true,
-    },
+    },   
     participants: [
         {
             user: {

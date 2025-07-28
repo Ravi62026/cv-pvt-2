@@ -16,12 +16,10 @@ export const useWebRTC = () => {
   const [isConnected, setIsConnected] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoEnabled, setIsVideoEnabled] = useState(true);
-  const [callDuration, setCallDuration] = useState(0);
+
   
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
-  const callStartTimeRef = useRef(null);
-  const durationIntervalRef = useRef(null);
 
   // Initialize WebRTC service when socket is available
   useEffect(() => {
@@ -94,7 +92,6 @@ export const useWebRTC = () => {
     }
 
     setIsConnected(true);
-    startCallTimer();
   }, []);
 
   // Handle call end
@@ -104,7 +101,6 @@ export const useWebRTC = () => {
     setIncomingCallData(null);
     setIsConnected(false);
     setCallType(null);
-    stopCallTimer();
     
     if (localVideoRef.current) {
       localVideoRef.current.srcObject = null;
@@ -154,26 +150,7 @@ export const useWebRTC = () => {
     }
   }, [isCallActive, localVideoRef.current]);
 
-  // Start call timer
-  const startCallTimer = useCallback(() => {
-    callStartTimeRef.current = Date.now();
-    durationIntervalRef.current = setInterval(() => {
-      if (callStartTimeRef.current) {
-        const duration = Math.floor((Date.now() - callStartTimeRef.current) / 1000);
-        setCallDuration(duration);
-      }
-    }, 1000);
-  }, []);
 
-  // Stop call timer
-  const stopCallTimer = useCallback(() => {
-    if (durationIntervalRef.current) {
-      clearInterval(durationIntervalRef.current);
-      durationIntervalRef.current = null;
-    }
-    callStartTimeRef.current = null;
-    setCallDuration(0);
-  }, []);
 
   // Start a new call
   const startCall = useCallback(async (targetUserId, type = 'voice', chatId = null) => {
@@ -285,8 +262,7 @@ export const useWebRTC = () => {
     webrtcService.endCall();
     setIsCallActive(false);
     setCallType(null);
-    stopCallTimer();
-  }, [stopCallTimer]);
+  }, []);
 
   // Toggle audio mute
   const toggleMute = useCallback(() => {
@@ -304,12 +280,7 @@ export const useWebRTC = () => {
     return enabled;
   }, []);
 
-  // Format call duration
-  const formatDuration = useCallback((seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  }, []);
+
 
   // Cleanup on unmount
   useEffect(() => {
@@ -318,9 +289,8 @@ export const useWebRTC = () => {
         console.log('Cleanup: ending call (simplified)');
         // webrtcService.endCall();
       }
-      stopCallTimer();
     };
-  }, [isCallActive, stopCallTimer]);
+  }, [isCallActive]);
 
   return {
     // State
@@ -331,7 +301,7 @@ export const useWebRTC = () => {
     isConnected,
     isMuted,
     isVideoEnabled,
-    callDuration: formatDuration(callDuration),
+    callDuration: 0, // Timer removed
     
     // Refs for video elements
     localVideoRef,

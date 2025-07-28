@@ -28,7 +28,6 @@ const VideoCallInterface = ({
     isConnected,
     isMuted,
     isVideoEnabled,
-    callDuration,
     localVideoRef,
     remoteVideoRef,
     answerCall,
@@ -250,7 +249,7 @@ const VideoCallInterface = ({
       case 'connecting':
         return 'Connecting...';
       case 'connected':
-        return `${Math.floor(callDuration / 60)}:${(callDuration % 60).toString().padStart(2, '0')}`;
+        return 'Connected';
       case 'ended':
         return 'Call ended';
       default:
@@ -283,23 +282,28 @@ const VideoCallInterface = ({
         className="fixed inset-0 bg-black z-50"
         onMouseMove={handleMouseMove}
       >
+        {/* TEST DEPLOYMENT INDICATOR */}
+        <div className="absolute top-2 left-2 bg-green-500 text-white px-2 py-1 rounded text-xs z-50">
+          DEPLOYMENT TEST v2.0
+        </div>
+
         {/* Top bar with user info and call duration */}
         <div className="absolute top-0 left-0 right-0 z-20 bg-black bg-opacity-50 p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
+              {/* <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
                 {targetUser?.role === 'lawyer' ? (
                   <Shield className="h-6 w-6 text-white" />
                 ) : (
                   <User className="h-6 w-6 text-white" />
                 )}
-              </div>
+              </div> */}
               <div>
                 <h3 className="text-white font-medium">
                   {targetUser?.name || 'Unknown User'}
                 </h3>
-                <p className="text-gray-300 text-sm">
-                  {callDuration > 0 ? `${Math.floor(callDuration / 60)}:${(callDuration % 60).toString().padStart(2, '0')}` : '00:00'}
+                <p className="text-white text-sm opacity-75">
+                  Video Call • Connected
                 </p>
               </div>
             </div>
