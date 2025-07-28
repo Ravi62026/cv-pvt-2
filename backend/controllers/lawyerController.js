@@ -754,14 +754,14 @@ export const getMyDirectClients = async (req, res) => {
             const citizen = chat.participants.find(p => p.user.role === "citizen");
             if (citizen && !clientsMap.has(citizen.user._id.toString())) {
                 clientsMap.set(citizen.user._id.toString(), {
-                    _id: citizen.user._id,
+                    _id: citizen.user._id.toString(), // Convert ObjectId to string
                     name: citizen.user.name,
                     email: citizen.user.email,
                     phone: citizen.user.phone,
                     role: citizen.user.role,
                     connectedAt: citizen.joinedAt,
                     lastChatUpdate: chat.updatedAt,
-                    chatId: chat.chatId
+                    chatId: chat.chatId.toString()
                 });
             }
         });
@@ -1094,7 +1094,7 @@ export const getMyConnectedCitizens = async (req, res) => {
                     console.log('🔍 BACKEND: Found chat:', chat ? 'YES' : 'NO');
                     if (chat) {
                         chatInfo = {
-                            chatId: chat.chatId,
+                            chatId: chat.chatId.toString(),
                             status: chat.status,
                             lastMessage: chat.lastMessage,
                             unreadCount: chat.getUnreadCount ? chat.getUnreadCount(lawyerId) : 0,

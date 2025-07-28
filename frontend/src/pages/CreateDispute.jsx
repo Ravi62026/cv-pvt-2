@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Scale, 
-  AlertCircle, 
-  CheckCircle, 
+import {
+  Scale,
+  AlertCircle,
+  CheckCircle,
   ArrowLeft,
   DollarSign,
   User
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
+import { citizenAPI } from '../services/api';
 
 const CreateDispute = () => {
   const navigate = useNavigate();
@@ -136,23 +137,14 @@ const CreateDispute = () => {
         ...formData,
         disputeValue: formData.disputeValue ? parseFloat(formData.disputeValue) : undefined
       };
-      
-      const response = await fetch('/api/disputes', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('cv_access_token')}`
-        },
-        body: JSON.stringify(submitData)
-      });
-      
-      const result = await response.json();
-      
+
+      const result = await citizenAPI.createDispute(submitData);
+
       if (result.success) {
         success('Dispute filed successfully!');
         navigate('/citizen/my-disputes');
       } else {
-        error(result.message || 'Failed to file dispute');
+        error(result.error || 'Failed to file dispute');
       }
     } catch (err) {
       console.error('Submit dispute error:', err);

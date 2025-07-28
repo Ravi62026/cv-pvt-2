@@ -23,12 +23,12 @@ import { authLimiter } from "../middleware/rateLimiter.js";
 
 const router = express.Router();
 
-// Public routes
-router.post("/register", authLimiter, validateRegister, register);
-router.post("/login", authLimiter, validateLogin, login);
+// Public routes - Rate limiting disabled for better UX
+router.post("/register", validateRegister, register);
+router.post("/login", validateLogin, login);
 router.post("/refresh-token", refreshToken);
-router.post("/forgot-password", authLimiter, validateForgotPassword, forgotPassword);
-router.post("/reset-password", authLimiter, validateResetPassword, resetPassword);
+router.post("/forgot-password", validateForgotPassword, forgotPassword);
+router.post("/reset-password", validateResetPassword, resetPassword);
 
 // Protected routes
 router.use(protect); // All routes below require authentication

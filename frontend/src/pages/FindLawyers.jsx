@@ -198,12 +198,12 @@ const FindLawyers = () => {
                     Specialization
                   </label>
                   <select
-                    className="w-full p-2 bg-white/10 border border-white/20 rounded-lg focus:ring-2 focus:ring-blue-400 text-white backdrop-blur-sm"
+                    className="w-full p-2 bg-white/10 border border-white/20 rounded-lg focus:ring-2 focus:ring-blue-400 text-white backdrop-blur-sm [&>option]:bg-gray-900 [&>option]:text-white"
                     value={filters.specialization}
                     onChange={(e) => handleFilterChange('specialization', e.target.value)}
                   >
                     {specializations.map((spec, index) => (
-                      <option key={index} value={index === 0 ? 'all' : spec} className="bg-slate-800 text-white">
+                      <option key={index} value={index === 0 ? 'all' : spec} className="bg-gray-900 text-white">
                         {spec}
                       </option>
                     ))}
@@ -215,12 +215,12 @@ const FindLawyers = () => {
                     Experience
                   </label>
                   <select
-                    className="w-full p-2 bg-white/10 border border-white/20 rounded-lg focus:ring-2 focus:ring-blue-400 text-white backdrop-blur-sm"
+                    className="w-full p-2 bg-white/10 border border-white/20 rounded-lg focus:ring-2 focus:ring-blue-400 text-white backdrop-blur-sm [&>option]:bg-gray-900 [&>option]:text-white"
                     value={filters.experience}
                     onChange={(e) => handleFilterChange('experience', e.target.value)}
                   >
                     {experienceRanges.map((exp, index) => (
-                      <option key={index} value={index === 0 ? 'all' : exp} className="bg-slate-800 text-white">
+                      <option key={index} value={index === 0 ? 'all' : exp} className="bg-gray-900 text-white">
                         {exp}
                       </option>
                     ))}
@@ -232,13 +232,13 @@ const FindLawyers = () => {
                     Sort By
                   </label>
                   <select
-                    className="w-full p-2 bg-white/10 border border-white/20 rounded-lg focus:ring-2 focus:ring-blue-400 text-white backdrop-blur-sm"
+                    className="w-full p-2 bg-white/10 border border-white/20 rounded-lg focus:ring-2 focus:ring-blue-400 text-white backdrop-blur-sm [&>option]:bg-gray-900 [&>option]:text-white"
                     value={filters.sortBy}
                     onChange={(e) => handleFilterChange('sortBy', e.target.value)}
                   >
-                    <option value="createdAt" className="bg-slate-800 text-white">Newest First</option>
-                    <option value="name" className="bg-slate-800 text-white">Name</option>
-                    <option value="experience" className="bg-slate-800 text-white">Experience</option>
+                    <option value="createdAt" className="bg-gray-900 text-white">Newest First</option>
+                    <option value="name" className="bg-gray-900 text-white">Name</option>
+                    <option value="experience" className="bg-gray-900 text-white">Experience</option>
                   </select>
                 </div>
               </div>

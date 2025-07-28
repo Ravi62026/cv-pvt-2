@@ -195,7 +195,9 @@ const CallInterface = ({
               {/* Caller Info */}
               <h2 className="text-3xl font-semibold mb-2">{callerName}</h2>
               <p className="text-purple-200 mb-2">{callerRole}</p>
-              <p className="text-purple-300 text-lg">Voice call active</p>
+              <p className="text-purple-300 text-lg">
+                {isVideoCall ? 'Video call active' : 'Voice call active'}
+              </p>
 
               {/* Audio Visualization */}
               <div className="audio-wave">

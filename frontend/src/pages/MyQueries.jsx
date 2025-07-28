@@ -215,7 +215,7 @@ const QueryCard = ({ query, index, onViewDetails, onFindLawyer }) => {
 
     if (query.chatRoom && query.chatRoom.chatId) {
       console.log('✅ Navigating to chat:', `/chat/${query.chatRoom.chatId}`);
-      navigate(`/chat/${query.chatRoom.chatId}`);
+      navigate(`/chat/${encodeURIComponent(query.chatRoom.chatId)}`);
     } else {
       console.log('❌ No chat room or chat ID available');
       console.log('   Available query properties:', Object.keys(query));

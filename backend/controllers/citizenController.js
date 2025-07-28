@@ -408,7 +408,7 @@ export const getMyCases = async (req, res) => {
 
                     if (chat) {
                         chatRoom = {
-                            chatId: chat.chatId,
+                            chatId: chat.chatId.toString(),
                             status: chat.status,
                             lastMessage: chat.lastMessage,
                             unreadCount: chat.getUnreadCount ? chat.getUnreadCount(citizenId) : 0
@@ -448,7 +448,7 @@ export const getMyCases = async (req, res) => {
 
                     if (chat) {
                         chatRoom = {
-                            chatId: chat.chatId,
+                            chatId: chat.chatId.toString(),
                             status: chat.status,
                             lastMessage: chat.lastMessage,
                             unreadCount: chat.getUnreadCount ? chat.getUnreadCount(citizenId) : 0
@@ -1375,7 +1375,7 @@ export const getMyConnectedLawyers = async (req, res) => {
 
                     if (chat) {
                         chatInfo = {
-                            chatId: chat.chatId,
+                            chatId: chat.chatId.toString(),
                             status: chat.status,
                             lastMessage: chat.lastMessage,
                             unreadCount: chat.getUnreadCount ? chat.getUnreadCount(citizenId) : 0,
@@ -1435,7 +1435,7 @@ export const getMyDirectChats = async (req, res) => {
 
                 return {
                     connectionId: connection._id,
-                    chatId: chat.chatId,
+                    chatId: chat.chatId.toString(),
                     lawyer: connection.lawyer,
                     status: chat.status,
                     lastMessage: chat.lastMessage,

@@ -12,13 +12,30 @@ const OutgoingCallInterface = ({
 }) => {
   const [ringCount, setRingCount] = useState(0);
 
-  // Ring animation effect
+  // Ring animation effect and sound
   useEffect(() => {
     if (callState === 'ringing') {
       const interval = setInterval(() => {
         setRingCount(prev => prev + 1);
       }, 1000);
-      return () => clearInterval(interval);
+
+      // Play ringing sound for caller
+      const audio = new Audio('/sounds/ringtone.mp3');
+      audio.loop = true;
+      audio.volume = 0.5; // Lower volume for caller
+
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(error => {
+          console.log('Caller audio play failed:', error);
+        });
+      }
+
+      return () => {
+        clearInterval(interval);
+        audio.pause();
+        audio.currentTime = 0;
+      };
     }
   }, [callState]);
 
@@ -89,7 +106,7 @@ const OutgoingCallInterface = ({
             {/* Participant info */}
             <div className="participant-details">
               <h2 className="participant-name">
-                {participantInfo?.name || callData?.targetUserId || 'Unknown'}
+                {participantInfo?.name || callData?.targetUserName || callData?.targetUserId || 'Unknown'}
               </h2>
               <p className="call-status">
                 {getStatusText()}

@@ -50,11 +50,14 @@ export const getChatById = async (req, res) => {
             chatId,
             "participants.user": req.user._id,
         })
-            .populate(
-                "participants.user",
-                "name email role lawyerDetails.specialization"
-            )
-            .populate("messages.sender", "name role")
+            .populate({
+                path: "participants.user",
+                select: "name email role lawyerDetails.specialization profilePicture isOnline lastSeen"
+            })
+            .populate({
+                path: "messages.sender",
+                select: "name role profilePicture"
+            })
             .populate("relatedCase.caseId");
 
         if (!chat) {
@@ -128,10 +131,10 @@ export const createDirectChat = async (req, res) => {
         const chatId = `direct_${[req.user._id, userId].sort().join("_")}`;
 
         // Check if chat already exists
-        let chat = await Chat.findOne({ chatId }).populate(
-            "participants.user",
-            "name email role lawyerDetails.specialization"
-        );
+        let chat = await Chat.findOne({ chatId }).populate({
+            path: "participants.user",
+            select: "name email role lawyerDetails.specialization profilePicture isOnline lastSeen"
+        });
 
         if (!chat) {
             // Create new chat

@@ -1,6 +1,6 @@
 // API Configuration
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://fluent-music-374010.el.r.appspot.com/api';
-const AI_API_BASE_URL = import.meta.env.VITE_AI_API_URL || 'http://localhost:3000/api';
+const AI_API_BASE_URL = import.meta.env.VITE_AI_API_URL || 'https://ai-backend-dot-fluent-music-374010.el.r.appspot.com';
 
 // API Client class
 class ApiClient {
@@ -33,7 +33,7 @@ class ApiClient {
     return headers;
   }
 
-  // Generic request method
+  // Generic request method with automatic token refresh
   async request(endpoint, options = {}) {
     const url = `${this.baseURL}${endpoint}`;
     const config = {
@@ -46,16 +46,41 @@ class ApiClient {
       const data = await response.json();
 
       if (!response.ok) {
-        // Handle token expiry - auto logout on 401
+        // Handle token expiry - try to refresh token first
         if (response.status === 401 && data.message?.includes('token')) {
-          // Clear stored auth data
-          localStorage.removeItem('cv_access_token');
-          localStorage.removeItem('cv_user_data');
+          console.log('🔄 Token expired, attempting refresh...');
 
-          // Redirect to login page
-          window.location.href = '/login';
+          // Try to refresh token
+          const refreshResult = await this.attemptTokenRefresh();
 
-          throw new Error('Session expired. Please login again.');
+          if (refreshResult.success) {
+            console.log('✅ Token refreshed successfully, retrying request...');
+            // Retry the original request with new token
+            const newConfig = {
+              ...config,
+              headers: this.getHeaders(options.headers),
+            };
+
+            const retryResponse = await fetch(url, newConfig);
+            const retryData = await retryResponse.json();
+
+            if (!retryResponse.ok) {
+              throw new Error(retryData.message || `HTTP error! status: ${retryResponse.status}`);
+            }
+
+            return retryData;
+          } else {
+            console.log('❌ Token refresh failed, logging out...');
+            // Clear stored auth data
+            localStorage.removeItem('cv_access_token');
+            localStorage.removeItem('cv_refresh_token');
+            localStorage.removeItem('cv_user_data');
+
+            // Redirect to login page
+            window.location.href = '/login';
+
+            throw new Error('Session expired. Please login again.');
+          }
         }
 
         throw new Error(data.message || `HTTP error! status: ${response.status}`);
@@ -65,6 +90,46 @@ class ApiClient {
     } catch (error) {
       console.error('API request error:', error);
       throw error;
+    }
+  }
+
+  // Attempt to refresh the access token
+  async attemptTokenRefresh() {
+    try {
+      console.log('🔄 Attempting token refresh...');
+
+      // Try with refresh token from localStorage first
+      const storedRefreshToken = localStorage.getItem('cv_refresh_token');
+
+      const requestBody = storedRefreshToken ? { refreshToken: storedRefreshToken } : {};
+
+      // Don't use this.request to avoid infinite recursion
+      const response = await fetch(`${this.baseURL}/auth/refresh-token`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include', // Include cookies for refresh token
+        body: JSON.stringify(requestBody),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        // Update stored tokens
+        localStorage.setItem('cv_access_token', data.data.accessToken);
+        if (data.data.refreshToken) {
+          localStorage.setItem('cv_refresh_token', data.data.refreshToken);
+        }
+        console.log('✅ Access token refreshed successfully');
+        return { success: true };
+      } else {
+        console.error('❌ Token refresh failed:', data.message);
+        return { success: false, error: data.message };
+      }
+    } catch (error) {
+      console.error('❌ Token refresh error:', error);
+      return { success: false, error: error.message };
     }
   }
 
@@ -103,13 +168,14 @@ class ApiClient {
 
   // File upload method
   async uploadFile(endpoint, formData, options = {}) {
-    const headers = { ...options.headers };
-    delete headers['Content-Type']; // Let browser set content-type for FormData
-    
+    // Get auth headers first, then remove Content-Type for FormData
+    const authHeaders = this.getHeaders(options.headers);
+    delete authHeaders['Content-Type']; // Let browser set content-type for FormData
+
     return this.request(endpoint, {
       method: 'POST',
       body: formData,
-      headers,
+      headers: authHeaders,
       ...options,
     });
   }
@@ -679,6 +745,40 @@ export const citizenAPI = {
   async rejectCaseOffer(offerId, data = {}) {
     try {
       const response = await apiClient.post(`/citizens/reject-case-offer/${offerId}`, data);
+      return {
+        success: true,
+        data: response.data,
+        message: response.message,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
+
+  // Create query
+  async createQuery(queryData) {
+    try {
+      const response = await apiClient.post('/queries', queryData);
+      return {
+        success: true,
+        data: response.data,
+        message: response.message,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
+
+  // Create dispute
+  async createDispute(disputeData) {
+    try {
+      const response = await apiClient.post('/disputes', disputeData);
       return {
         success: true,
         data: response.data,
@@ -1495,7 +1595,7 @@ export const aiAPI = {
   // BNS Advisor - Analyze case using BNS/BNSS/BSA framework
   async analyzeBNSCase(caseDescription, verify = true) {
     try {
-      const response = await aiApiClient.post('/bns-advisor', {
+      const response = await aiApiClient.post('/api/bns-advisor', {
         case_description: caseDescription,
         verify: verify
       });
@@ -1523,7 +1623,7 @@ export const aiAPI = {
 
   // BNS Advisor - Streaming version
   async analyzeBNSCaseStream(caseDescription, verify = true, onChunk, onComplete, onError) {
-    return this.streamResponse('/bns-advisor', {
+    return this.streamResponse('/api/bns-advisor', {
       case_description: caseDescription,
       verify: verify
     }, onChunk, onComplete, onError);
@@ -1546,7 +1646,7 @@ export const aiAPI = {
         requestData.chat_id = chatId;
       }
 
-      const response = await aiApiClient.post('/legal-advisor', requestData);
+      const response = await aiApiClient.post('/api/legal-advisor', requestData);
       return {
         success: true,
         data: response,
@@ -1562,7 +1662,7 @@ export const aiAPI = {
   // Judgement Analyser - Analyze court judgements
   async analyzeJudgement(judgementDetails, crimeDetails = "", evidenceDetails = "", verify = true, includeDetailedAnalysis = false) {
     try {
-      const response = await aiApiClient.post('/judgement-analyser', {
+      const response = await aiApiClient.post('/api/judgement-analyser', {
         judgement_details: judgementDetails,
         crime_details: crimeDetails,
         evidence_details: evidenceDetails,
@@ -1588,7 +1688,7 @@ export const aiAPI = {
       formData.append('pdf_file', pdfFile);
       formData.append('include_detailed_analysis', includeDetailedAnalysis.toString());
 
-      const response = await apiClient.request('/judgement-analyser/upload', {
+      const response = await aiApiClient.request('/api/judgement-analyser/upload', {
         method: 'POST',
         body: formData,
         headers: {
@@ -1615,7 +1715,7 @@ export const aiAPI = {
       const formData = new FormData();
       formData.append('pdf_file', pdfFile);
 
-      const response = await apiClient.request('/judgement-analyser/validate', {
+      const response = await aiApiClient.request('/api/judgement-analyser/validate', {
         method: 'POST',
         body: formData,
         headers: {
@@ -1647,7 +1747,7 @@ export const aiAPI = {
         requestData.conversation_id = conversationId;
       }
 
-      const response = await aiApiClient.post('/legal-research', requestData);
+      const response = await aiApiClient.post('/api/legal-research', requestData);
       return {
         success: true,
         data: response,
@@ -1663,7 +1763,7 @@ export const aiAPI = {
   // Legal Research Tool - Follow-up questions
   async researchFollowUp(conversationId, query, answer, questionNumber) {
     try {
-      const response = await aiApiClient.post('/legal-research/follow-up', {
+      const response = await aiApiClient.post('/api/legal-research/follow-up', {
         conversation_id: conversationId,
         query: query,
         answer: answer,

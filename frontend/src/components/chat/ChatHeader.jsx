@@ -4,7 +4,6 @@ import {
   User,
   Shield,
   MoreVertical,
-  Phone,
   Video,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
@@ -32,53 +31,38 @@ const ChatHeader = ({ otherParticipant, isOnline, onBack, chatId }) => {
     }
   };
 
-  // Handle voice call initiation
-  const handleVoiceCall = async () => {
-    console.log('Voice call button clicked!');
-    console.log('otherParticipant:', otherParticipant);
 
-    if (!otherParticipant?.user?._id) {
-      console.log('No user ID available');
-      if (error) error('Cannot start call: User information not available');
-      return;
-    }
-
-    try {
-      console.log('Starting voice call with:', otherParticipant.user.name);
-      setCallType('voice');
-      setShowCallInterface(true);
-      setCallDuration(0);
-
-      const result = await startCall(otherParticipant.user._id, 'voice', chatId);
-      console.log('✅ Voice call started successfully:', result);
-      if (success) success(`Voice call started with ${otherParticipant.user.name}`);
-    } catch (err) {
-      console.error('Failed to start voice call:', err);
-      if (error) error('Failed to start voice call: ' + err.message);
-      setShowCallInterface(false);
-    }
-  };
 
   // Handle video call/consultation request
   const handleVideoCall = async () => {
     console.log('Video call button clicked!');
     console.log('otherParticipant:', otherParticipant);
 
-    if (!otherParticipant?.user?._id) {
+    // More flexible user ID check
+    const userId = otherParticipant?.user?._id || otherParticipant?.user?.id || otherParticipant?._id || otherParticipant?.id;
+    const userName = otherParticipant?.user?.name || otherParticipant?.name || 'Unknown User';
+
+    if (!userId) {
       console.log('No user ID available');
       if (error) error('Cannot start consultation: User information not available');
       return;
     }
 
     try {
-      console.log('Starting video consultation with:', otherParticipant.user.name);
+      console.log('Starting video consultation with:', userName);
       setCallType('video');
       setShowCallInterface(true);
       setCallDuration(0);
 
-      const result = await startCall(otherParticipant.user._id, 'video', chatId);
+      const userInfo = {
+        _id: userId,
+        name: userName,
+        role: otherParticipant?.user?.role || otherParticipant?.role || 'user'
+      };
+
+      const result = await startCall(userId, 'video', chatId, userInfo);
       console.log('✅ Video call started successfully:', result);
-      if (success) success(`Video call started with ${otherParticipant.user.name}`);
+      if (success) success(`Video call started with ${userName}`);
     } catch (err) {
       console.error('Failed to start video consultation:', err);
       if (error) error('Failed to start video consultation: ' + err.message);
@@ -185,15 +169,6 @@ const ChatHeader = ({ otherParticipant, isOnline, onBack, chatId }) => {
 
         {/* Action Buttons */}
         <div className="flex items-center space-x-1 sm:space-x-2">
-          {/* Voice Call Button */}
-          <button
-            onClick={handleVoiceCall}
-            className="p-1.5 sm:p-2 rounded-full transition-all duration-200 hover:bg-green-100 text-green-600 hover:scale-110 active:scale-95"
-            title="Start voice call"
-          >
-            <Phone className="h-4 w-4 sm:h-5 sm:w-5" />
-          </button>
-
           {/* Video Call/Consultation Button */}
           <button
             onClick={handleVideoCall}

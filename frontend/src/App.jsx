@@ -160,14 +160,27 @@ function App() {
               <PWAInstallPrompt />
               {updateAvailable && (
                 <div className="fixed top-4 right-4 z-50">
-                  <div className="bg-blue-600 text-white p-4 rounded-lg shadow-lg">
-                    <p className="mb-2">New version available!</p>
-                    <button
-                      onClick={updateApp}
-                      className="bg-white text-blue-600 px-4 py-2 rounded font-medium"
-                    >
-                      Update Now
-                    </button>
+                  <div className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white p-4 rounded-lg shadow-lg border border-white/20 backdrop-blur-sm">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-semibold mb-1">New version available!</p>
+                        <p className="text-sm text-blue-100">Update for the latest features</p>
+                      </div>
+                      <div className="flex space-x-2 ml-4">
+                        <button
+                          onClick={updateApp}
+                          className="bg-white text-blue-600 px-3 py-1.5 rounded-md font-medium text-sm hover:bg-blue-50 transition-colors"
+                        >
+                          Update Now
+                        </button>
+                        <button
+                          onClick={() => window.location.reload()}
+                          className="text-white/80 hover:text-white text-sm"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}

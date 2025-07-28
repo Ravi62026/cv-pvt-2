@@ -2,8 +2,8 @@ import { useEffect, useState, useRef } from 'react';
 import { io } from 'socket.io-client';
 import { useAuth } from '../contexts/AuthContext';
 
-// Use the backend URL directly for socket connection
-const SOCKET_URL = 'https://cv-pvt-2-be.onrender.com';
+// Use the backend URL from environment variable
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'https://fluent-music-374010.el.r.appspot.com';
 
 console.log('🔌 SOCKET_URL configured as:', SOCKET_URL);
 

@@ -78,8 +78,17 @@ class WebRTCService {
 
       // Get user media
       const constraints = {
-        audio: true,
-        video: callType === 'video'
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        },
+        video: callType === 'video' ? {
+          width: { ideal: 1280, min: 640 },
+          height: { ideal: 720, min: 480 },
+          frameRate: { ideal: 30, min: 15 },
+          facingMode: 'user'
+        } : false
       };
 
       console.log('🎥 WebRTC: Requesting media permissions...', constraints);
@@ -90,15 +99,26 @@ class WebRTCService {
       console.log('🎵 WebRTC: Local stream tracks:', this.localStream.getTracks().map(track => ({
         kind: track.kind,
         enabled: track.enabled,
-        readyState: track.readyState
+        readyState: track.readyState,
+        settings: track.getSettings()
       })));
 
-      // Log local stream details for debugging
-      console.log('🎵 WebRTC: Local stream tracks:', this.localStream.getTracks().map(track => ({
-        kind: track.kind,
-        enabled: track.enabled,
-        readyState: track.readyState
-      })));
+      // Ensure video tracks are properly configured
+      if (callType === 'video') {
+        const videoTracks = this.localStream.getVideoTracks();
+        if (videoTracks.length === 0) {
+          console.warn('⚠️ WebRTC: No video tracks found in local stream');
+        } else {
+          videoTracks.forEach((track, index) => {
+            console.log(`📹 WebRTC: Video track ${index}:`, {
+              enabled: track.enabled,
+              readyState: track.readyState,
+              muted: track.muted,
+              settings: track.getSettings()
+            });
+          });
+        }
+      }
 
       // Create peer connection using native WebRTC
       console.log('🔗 WebRTC: Creating peer connection...');
@@ -155,8 +175,17 @@ class WebRTCService {
 
       // Get user media
       const constraints = {
-        audio: true,
-        video: this.callType === 'video'
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        },
+        video: this.callType === 'video' ? {
+          width: { ideal: 1280, min: 640 },
+          height: { ideal: 720, min: 480 },
+          frameRate: { ideal: 30, min: 15 },
+          facingMode: 'user'
+        } : false
       };
 
       console.log('🎥 WebRTC: Requesting media permissions for answer...', constraints);
@@ -167,8 +196,26 @@ class WebRTCService {
       console.log('🎵 WebRTC: Local stream tracks (answer):', this.localStream.getTracks().map(track => ({
         kind: track.kind,
         enabled: track.enabled,
-        readyState: track.readyState
+        readyState: track.readyState,
+        settings: track.getSettings()
       })));
+
+      // Ensure video tracks are properly configured
+      if (this.callType === 'video') {
+        const videoTracks = this.localStream.getVideoTracks();
+        if (videoTracks.length === 0) {
+          console.warn('⚠️ WebRTC: No video tracks found in local stream (answer)');
+        } else {
+          videoTracks.forEach((track, index) => {
+            console.log(`📹 WebRTC: Video track ${index} (answer):`, {
+              enabled: track.enabled,
+              readyState: track.readyState,
+              muted: track.muted,
+              settings: track.getSettings()
+            });
+          });
+        }
+      }
 
       // Create peer connection using native WebRTC
       this.peerConnection = new RTCPeerConnection({
@@ -254,8 +301,61 @@ class WebRTCService {
       console.log('🎵 WebRTC: Remote stream tracks:', this.remoteStream.getTracks().map(track => ({
         kind: track.kind,
         enabled: track.enabled,
-        readyState: track.readyState
+        readyState: track.readyState,
+        muted: track.muted
       })));
+
+      // Ensure audio tracks are enabled and properly configured
+      this.remoteStream.getAudioTracks().forEach((track, index) => {
+        console.log(`🔊 WebRTC: Audio track ${index} details:`, {
+          enabled: track.enabled,
+          readyState: track.readyState,
+          muted: track.muted,
+          settings: track.getSettings()
+        });
+
+        // Ensure audio track is enabled
+        if (!track.enabled) {
+          console.warn(`🔊 WebRTC: Enabling audio track ${index}`);
+          track.enabled = true;
+        }
+
+        // Add event listeners to track
+        track.addEventListener('ended', () => {
+          console.log(`🔊 WebRTC: Audio track ${index} ended`);
+        });
+
+        track.addEventListener('mute', () => {
+          console.log(`🔊 WebRTC: Audio track ${index} muted`);
+        });
+
+        track.addEventListener('unmute', () => {
+          console.log(`🔊 WebRTC: Audio track ${index} unmuted`);
+        });
+      });
+
+      // Ensure video tracks are enabled and add event listeners
+      this.remoteStream.getVideoTracks().forEach((track, index) => {
+        console.log(`📹 WebRTC: Video track ${index} details:`, {
+          enabled: track.enabled,
+          readyState: track.readyState,
+          muted: track.muted,
+          settings: track.getSettings()
+        });
+
+        // Add event listeners to track
+        track.addEventListener('ended', () => {
+          console.log(`📹 WebRTC: Video track ${index} ended`);
+        });
+
+        track.addEventListener('mute', () => {
+          console.log(`📹 WebRTC: Video track ${index} muted`);
+        });
+
+        track.addEventListener('unmute', () => {
+          console.log(`📹 WebRTC: Video track ${index} unmuted`);
+        });
+      });
 
       if (this.onRemoteStream) {
         this.onRemoteStream(event.streams[0]);
@@ -377,16 +477,57 @@ class WebRTCService {
 
   // Get remote stream
   getRemoteStream() {
+    console.log('🔊 WebRTC: Getting remote stream:', this.remoteStream);
     return this.remoteStream;
+  }
+
+  // Check if remote stream has audio
+  hasRemoteAudio() {
+    return this.remoteStream && this.remoteStream.getAudioTracks().length > 0;
+  }
+
+  // Get remote audio tracks
+  getRemoteAudioTracks() {
+    return this.remoteStream ? this.remoteStream.getAudioTracks() : [];
+  }
+
+  // Check if remote stream has video
+  hasRemoteVideo() {
+    return this.remoteStream && this.remoteStream.getVideoTracks().length > 0;
+  }
+
+  // Get remote video tracks
+  getRemoteVideoTracks() {
+    return this.remoteStream ? this.remoteStream.getVideoTracks() : [];
+  }
+
+  // Check if remote video is enabled
+  isRemoteVideoEnabled() {
+    const videoTracks = this.getRemoteVideoTracks();
+    return videoTracks.length > 0 && videoTracks[0].enabled;
   }
 
   // Set up audio element for remote stream
   setupAudioElement(audioElement) {
     if (this.remoteStream && audioElement) {
+      console.log('🔊 WebRTC: Setting up audio element with remote stream');
       audioElement.srcObject = this.remoteStream;
+      audioElement.volume = 1.0;
+      audioElement.muted = false;
+
+      // Log audio tracks for debugging
+      const audioTracks = this.remoteStream.getAudioTracks();
+      console.log('🔊 WebRTC: Audio tracks in remote stream:', audioTracks.map(track => ({
+        enabled: track.enabled,
+        readyState: track.readyState,
+        muted: track.muted
+      })));
+
       audioElement.play().catch(error => {
-        console.error('Failed to play remote audio:', error);
+        console.error('🔊 WebRTC: Failed to play remote audio:', error);
       });
+    } else {
+      console.warn('🔊 WebRTC: Cannot setup audio element - missing stream or element');
     }
   }
 

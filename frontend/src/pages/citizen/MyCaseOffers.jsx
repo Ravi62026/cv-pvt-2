@@ -120,7 +120,7 @@ const MyCaseOffers = () => {
     // For accepted offers, we need to get the chat info from the backend
     // The chat ID format is: {caseType}_{caseId}
     const chatId = `${offer.caseType}_${offer.caseId}`;
-    navigate(`/chat/${chatId}`);
+    navigate(`/chat/${encodeURIComponent(chatId)}`);
   };
 
   if (isLoading) {

@@ -1,37 +1,31 @@
-import axios from 'axios';
+import pinataSDK from '@pinata/sdk';
 import fs from 'fs';
 import path from 'path';
-import FormData from 'form-data';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Pinata API configuration
-const PINATA_API_URL = 'https://api.pinata.cloud';
+// Pinata SDK configuration
 const PINATA_GATEWAY_URL = 'https://gateway.pinata.cloud/ipfs';
 
-const pinataAxios = axios.create({
-    baseURL: PINATA_API_URL,
-    headers: {
-        'pinata_api_key': process.env.PINATA_API_KEY,
-        'pinata_secret_api_key': process.env.PINATA_SECRET_KEY
-    }
-});
+// Initialize Pinata SDK
+const pinata = new pinataSDK(process.env.PINATA_API_KEY, process.env.PINATA_SECRET_KEY);
 
 /**
- * Upload file to Pinata IPFS
+ * Upload file to Pinata IPFS using SDK
  * @param {Object} file - Multer file object
  * @param {Object} metadata - Additional metadata for the file
  * @returns {Promise<Object>} - Upload result with IPFS hash
  */
 export const uploadToPinata = async (file, metadata = {}) => {
     try {
-        // Create form data
-        const formData = new FormData();
-        formData.append('file', fs.createReadStream(file.path));
+        console.log('🔄 Starting Pinata upload for file:', file.originalname);
 
-        // Add metadata
+        // Create readable stream from file
+        const readableStreamForFile = fs.createReadStream(file.path);
+
+        // Prepare metadata for Pinata (limited to 10 key-value pairs max)
         const pinataMetadata = {
             name: file.originalname,
             keyvalues: {
@@ -39,31 +33,38 @@ export const uploadToPinata = async (file, metadata = {}) => {
                 mimeType: file.mimetype,
                 size: file.size.toString(),
                 uploadedAt: new Date().toISOString(),
-                ...metadata
+                customId: `chat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                // Only include essential metadata to stay under 10 key limit
+                uploadedBy: metadata.uploadedBy || 'unknown',
+                uploadedByRole: metadata.uploadedByRole || 'unknown',
+                messageType: metadata.messageType || 'file'
             }
         };
 
-        formData.append('pinataMetadata', JSON.stringify(pinataMetadata));
-        formData.append('pinataOptions', JSON.stringify({ cidVersion: 0 }));
-
-        // Upload to Pinata
-        const response = await pinataAxios.post('/pinning/pinFileToIPFS', formData, {
-            headers: {
-                ...formData.getHeaders(),
-                'pinata_api_key': process.env.PINATA_API_KEY,
-                'pinata_secret_api_key': process.env.PINATA_SECRET_KEY
+        const options = {
+            pinataMetadata,
+            pinataOptions: {
+                cidVersion: 0
             }
-        });
+        };
+
+        console.log('📤 Uploading to Pinata with metadata:', pinataMetadata);
+
+        // Upload to Pinata using SDK
+        const result = await pinata.pinFileToIPFS(readableStreamForFile, options);
+
+        console.log('✅ Successfully uploaded to Pinata!');
+        console.log('📄 IPFS Hash:', result.IpfsHash);
 
         // Clean up temporary file
         fs.unlinkSync(file.path);
 
         return {
             success: true,
-            ipfsHash: response.data.IpfsHash,
-            pinSize: response.data.PinSize,
-            timestamp: response.data.Timestamp,
-            url: `${PINATA_GATEWAY_URL}/${response.data.IpfsHash}`,
+            ipfsHash: result.IpfsHash,
+            pinSize: result.PinSize,
+            timestamp: result.Timestamp,
+            url: `${PINATA_GATEWAY_URL}/${result.IpfsHash}`,
             metadata: pinataMetadata
         };
     } catch (error) {
@@ -72,8 +73,8 @@ export const uploadToPinata = async (file, metadata = {}) => {
             fs.unlinkSync(file.path);
         }
 
-        console.error('Error uploading to Pinata:', error);
-        throw new Error(`Failed to upload file to IPFS: ${error.response?.data?.error || error.message}`);
+        console.error('❌ Error uploading to Pinata:', error);
+        throw new Error(`Failed to upload file to IPFS: ${error.message}`);
     }
 };
 
@@ -85,18 +86,23 @@ export const uploadToPinata = async (file, metadata = {}) => {
  */
 export const uploadMultipleToPinata = async (files, metadata = {}) => {
     try {
-        const uploadPromises = files.map((file, index) => 
-            uploadToPinata(file, { 
-                ...metadata, 
+        console.log(`🔄 Starting batch upload of ${files.length} files to Pinata`);
+
+        const uploadPromises = files.map((file, index) =>
+            uploadToPinata(file, {
+                uploadedBy: metadata.uploadedBy || 'unknown',
+                uploadedByRole: metadata.uploadedByRole || 'unknown',
+                messageType: metadata.messageType || 'file',
                 fileIndex: index.toString(),
                 totalFiles: files.length.toString()
             })
         );
-        
+
         const results = await Promise.all(uploadPromises);
+        console.log(`✅ Successfully uploaded ${results.length} files to Pinata`);
         return results;
     } catch (error) {
-        console.error('Error uploading multiple files to Pinata:', error);
+        console.error('❌ Error uploading multiple files to Pinata:', error);
         throw error;
     }
 };
@@ -108,19 +114,20 @@ export const uploadMultipleToPinata = async (files, metadata = {}) => {
  */
 export const getFileMetadata = async (ipfsHash) => {
     try {
-        const response = await pinataAxios.get('/data/pinList', {
-            params: {
-                hashContains: ipfsHash
-            }
+        console.log('🔍 Getting file metadata for hash:', ipfsHash);
+
+        const response = await pinata.pinList({
+            hashContains: ipfsHash
         });
 
-        if (response.data.count === 0) {
+        if (response.count === 0) {
             throw new Error('File not found');
         }
 
-        return response.data.rows[0];
+        console.log('✅ Found file metadata');
+        return response.rows[0];
     } catch (error) {
-        console.error('Error getting file metadata:', error);
+        console.error('❌ Error getting file metadata:', error);
         throw error;
     }
 };
@@ -132,15 +139,15 @@ export const getFileMetadata = async (ipfsHash) => {
  */
 export const searchFilesByMetadata = async (searchCriteria) => {
     try {
-        const response = await pinataAxios.get('/data/pinList', {
-            params: {
-                metadata: JSON.stringify({
-                    keyvalues: searchCriteria
-                })
+        console.log('🔍 Searching files by metadata:', searchCriteria);
+
+        const response = await pinata.pinList({
+            metadata: {
+                keyvalues: searchCriteria
             }
         });
 
-        return response.data.rows.map(row => ({
+        const results = response.rows.map(row => ({
             ipfsHash: row.ipfs_pin_hash,
             name: row.metadata.name,
             keyvalues: row.metadata.keyvalues,
@@ -148,8 +155,11 @@ export const searchFilesByMetadata = async (searchCriteria) => {
             dateUploaded: row.date_pinned,
             url: `${PINATA_GATEWAY_URL}/${row.ipfs_pin_hash}`
         }));
+
+        console.log(`✅ Found ${results.length} files matching criteria`);
+        return results;
     } catch (error) {
-        console.error('Error searching files:', error);
+        console.error('❌ Error searching files:', error);
         throw error;
     }
 };
@@ -161,10 +171,12 @@ export const searchFilesByMetadata = async (searchCriteria) => {
  */
 export const unpinFile = async (ipfsHash) => {
     try {
-        await pinataAxios.delete(`/pinning/unpin/${ipfsHash}`);
+        console.log('🗑️ Unpinning file:', ipfsHash);
+        await pinata.unpin(ipfsHash);
+        console.log('✅ File unpinned successfully');
         return true;
     } catch (error) {
-        console.error('Error unpinning file:', error);
+        console.error('❌ Error unpinning file:', error);
         throw error;
     }
 };

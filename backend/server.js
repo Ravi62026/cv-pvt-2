@@ -47,11 +47,10 @@ app.use(
 app.use(
     cors({
         origin: [
-            process.env.CLIENT_URL || "http://localhost:5173",
-            process.env.FRONTEND_URL || "http://localhost:5173",
+            process.env.CLIENT_URL || "https://fluent-music-374010.web.app",
+            process.env.FRONTEND_URL || "https://fluent-music-374010.web.app",
             "https://fluent-music-374010.web.app",
             "https://cv-pvt-2-frontend.vercel.app",
-            "http://localhost:5173" // for development
         ],
         credentials: true,
         methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
@@ -69,8 +68,8 @@ if (process.env.NODE_ENV !== "production") {
     app.use(morgan("dev"));
 }
 
-// Rate limiting
-app.use("/api", apiLimiter);
+// Rate limiting - Disabled for better user experience
+// app.use("/api", apiLimiter);
 
 // Routes
 app.use("/api/auth", authRoutes);

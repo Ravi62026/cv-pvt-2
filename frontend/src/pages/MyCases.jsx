@@ -348,7 +348,7 @@ const CaseCard = ({ item, index, onViewDetails, onFindLawyer, getStatusIcon, get
 
     if (item.chatRoom && item.chatRoom.chatId) {
       console.log('✅ Navigating to chat:', `/chat/${item.chatRoom.chatId}`);
-      navigate(`/chat/${item.chatRoom.chatId}`);
+      navigate(`/chat/${encodeURIComponent(item.chatRoom.chatId)}`);
     } else {
       console.log('❌ No chat room or chat ID available');
       console.log('   Available item properties:', Object.keys(item));

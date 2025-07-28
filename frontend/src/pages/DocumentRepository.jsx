@@ -45,7 +45,8 @@ const DocumentRepository = () => {
         return;
       }
 
-      const response = await fetch('/api/documents/repository/my-documents', {
+      const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://fluent-music-374010.el.r.appspot.com/api';
+      const response = await fetch(`${API_BASE_URL}/documents/repository/my-documents`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -72,7 +73,8 @@ const DocumentRepository = () => {
         return;
       }
 
-      const response = await fetch('/api/documents/stats/overview', {
+      const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://fluent-music-374010.el.r.appspot.com/api';
+      const response = await fetch(`${API_BASE_URL}/documents/stats/overview`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -89,8 +91,9 @@ const DocumentRepository = () => {
 
   const handleViewDocument = (document) => {
     // Use masked URL if we have IPFS hash, otherwise fallback to original URL
+    const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://fluent-music-374010.el.r.appspot.com/api';
     const url = document.ipfsHash
-      ? `/api/chats/file/${document.ipfsHash}`
+      ? `${API_BASE_URL}/chats/file/${document.ipfsHash}`
       : document.url;
     console.log('🔗 Opening document with masked URL:', url);
     window.open(url, '_blank');
@@ -108,7 +111,8 @@ const DocumentRepository = () => {
         return;
       }
 
-      const response = await fetch(`/api/documents/${documentId}`, {
+      const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://fluent-music-374010.el.r.appspot.com/api';
+      const response = await fetch(`${API_BASE_URL}/documents/${documentId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`

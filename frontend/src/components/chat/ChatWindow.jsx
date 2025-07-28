@@ -51,6 +51,15 @@ const ChatWindow = ({
     p => p.user._id !== user._id
   );
 
+  // Debug logging for otherParticipant
+  useEffect(() => {
+    if (chat && otherParticipant) {
+      console.log('🔍 Chat data:', chat);
+      console.log('🔍 Other participant:', otherParticipant);
+      console.log('🔍 Other participant user:', otherParticipant.user);
+    }
+  }, [chat, otherParticipant]);
+
   useEffect(() => {
     if (chatId) {
       fetchChatData();

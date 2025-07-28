@@ -15,6 +15,7 @@ import {
   MessageSquare,
 } from 'lucide-react';
 import { useToast } from '../contexts/ToastContext';
+import { useAuth } from '../contexts/AuthContext';
 import { citizenAPI } from '../services/api';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 
@@ -27,6 +28,7 @@ const ConnectedLawyers = () => {
     total: 0,
   });
   const { success, error } = useToast();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -57,11 +59,17 @@ const ConnectedLawyers = () => {
   };
 
   const handleStartChat = (connection) => {
-    if (connection.chatInfo?.chatId) {
-      navigate(`/chat/${connection.chatInfo.chatId}`);
-    } else {
-      error('Chat room not available');
-    }
+    // Generate consistent chat ID like lawyer side does
+    const currentUserId = user._id;
+    const lawyerId = connection.lawyer._id;
+    const chatId = `direct_${[currentUserId, lawyerId].sort().join('_')}`;
+
+    console.log('🚀 CITIZEN: Starting direct chat');
+    console.log('   Current User ID:', currentUserId);
+    console.log('   Lawyer ID:', lawyerId);
+    console.log('   Generated Chat ID:', chatId);
+
+    navigate(`/chat/${encodeURIComponent(chatId)}`);
   };
 
   if (isLoading) {

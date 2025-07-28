@@ -121,10 +121,10 @@ const LawyerClients = () => {
   const handleStartChat = (client) => {
     if (client.clientType === 'direct' && client.chatId) {
       // Direct client chat
-      navigate(`/chat/${client.chatId}`);
+      navigate(`/chat/${encodeURIComponent(client.chatId)}`);
     } else if (client.chatRoom && client.chatRoom.chatId) {
       // Case-based chat (query/dispute)
-      navigate(`/chat/${client.chatRoom.chatId}`);
+      navigate(`/chat/${encodeURIComponent(client.chatRoom.chatId)}`);
     } else if (client.caseId) {
       // Fallback: navigate to case page if no chat available
       navigate(`/${client.clientType}s/${client.caseId}`);

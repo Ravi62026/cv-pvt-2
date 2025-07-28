@@ -40,9 +40,59 @@ export const useWebRTC = () => {
 
   // Handle remote stream
   const handleRemoteStream = useCallback((stream) => {
+    console.log('🎥 useWebRTC: Handling remote stream', stream);
+
+    // Log stream details for debugging
+    console.log('🔊 useWebRTC: Remote stream details:', {
+      id: stream.id,
+      active: stream.active,
+      audioTracks: stream.getAudioTracks().length,
+      videoTracks: stream.getVideoTracks().length,
+      tracks: stream.getTracks().map(track => ({
+        kind: track.kind,
+        enabled: track.enabled,
+        readyState: track.readyState,
+        muted: track.muted
+      }))
+    });
+
     if (remoteVideoRef.current) {
       remoteVideoRef.current.srcObject = stream;
+
+      // Force video to play for video calls
+      if (stream.getVideoTracks().length > 0) {
+        remoteVideoRef.current.play().catch(error => {
+          console.error('Failed to play remote video:', error);
+        });
+      }
+
+      // Add event listeners for video element
+      const videoElement = remoteVideoRef.current;
+
+      const handleCanPlay = () => {
+        console.log('🎥 Remote video can play');
+      };
+
+      const handleLoadedData = () => {
+        console.log('🎥 Remote video data loaded');
+      };
+
+      const handleError = (e) => {
+        console.error('🎥 Remote video error:', e);
+      };
+
+      videoElement.addEventListener('canplay', handleCanPlay);
+      videoElement.addEventListener('loadeddata', handleLoadedData);
+      videoElement.addEventListener('error', handleError);
+
+      // Cleanup listeners
+      return () => {
+        videoElement.removeEventListener('canplay', handleCanPlay);
+        videoElement.removeEventListener('loadeddata', handleLoadedData);
+        videoElement.removeEventListener('error', handleError);
+      };
     }
+
     setIsConnected(true);
     startCallTimer();
   }, []);
@@ -89,6 +139,20 @@ export const useWebRTC = () => {
     setIncomingCallData(callData);
     setCallType(callData.callType);
   }, []);
+
+  // Ensure local stream is properly set
+  useEffect(() => {
+    if (isCallActive && localVideoRef.current) {
+      const localStream = webrtcService.getLocalStream();
+      if (localStream && localVideoRef.current.srcObject !== localStream) {
+        console.log('🎥 useWebRTC: Ensuring local stream is set:', localStream);
+        localVideoRef.current.srcObject = localStream;
+        localVideoRef.current.play().catch(error => {
+          console.error('Failed to play local video in effect:', error);
+        });
+      }
+    }
+  }, [isCallActive, localVideoRef.current]);
 
   // Start call timer
   const startCallTimer = useCallback(() => {
@@ -140,10 +204,25 @@ export const useWebRTC = () => {
       console.log('📞 useWebRTC: Calling webrtcService.startCall...');
       const callId = await webrtcService.startCall(targetUserId, type, chatId);
 
-      // Set local stream
+      // Set local stream with better handling
       const localStream = webrtcService.getLocalStream();
       if (localVideoRef.current && localStream) {
+        console.log('🎥 useWebRTC: Setting local stream to localVideoRef:', localStream);
         localVideoRef.current.srcObject = localStream;
+
+        // Force play for local video
+        localVideoRef.current.play().catch(error => {
+          console.error('Failed to play local video:', error);
+        });
+
+        // Log local stream tracks
+        console.log('🎥 useWebRTC: Local stream tracks:', localStream.getTracks().map(track => ({
+          kind: track.kind,
+          enabled: track.enabled,
+          readyState: track.readyState
+        })));
+      } else {
+        console.warn('🎥 useWebRTC: localVideoRef or localStream not available');
       }
 
       console.log('✅ useWebRTC: Call started successfully, callId:', callId);
@@ -168,10 +247,18 @@ export const useWebRTC = () => {
 
       await webrtcService.answerCall(incomingCallData);
 
-      // Set local stream
+      // Set local stream with better handling
       const localStream = webrtcService.getLocalStream();
       if (localVideoRef.current && localStream) {
+        console.log('🎥 useWebRTC: Setting local stream in answerCall:', localStream);
         localVideoRef.current.srcObject = localStream;
+
+        // Force play for local video
+        localVideoRef.current.play().catch(error => {
+          console.error('Failed to play local video in answerCall:', error);
+        });
+      } else {
+        console.warn('🎥 useWebRTC: localVideoRef or localStream not available in answerCall');
       }
     } catch (err) {
       console.error('Failed to answer call:', err);

@@ -61,7 +61,7 @@ const ConnectedClients = () => {
 
   const handleStartChat = (connection) => {
     if (connection.chatInfo?.chatId) {
-      navigate(`/chat/${connection.chatInfo.chatId}`);
+      navigate(`/chat/${encodeURIComponent(connection.chatInfo.chatId)}`);
     } else {
       error('Chat room not available');
     }

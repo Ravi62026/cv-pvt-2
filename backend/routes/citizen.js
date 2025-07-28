@@ -39,10 +39,9 @@ router.get("/available-lawyers", getAvailableLawyers);
 // Case management
 router.get("/my-cases", getMyCases);
 
-// Direct messaging (for general consultation)
+// Direct messaging (for general consultation) - Rate limiting disabled
 router.post(
     "/message-request/:lawyerId",
-    messageLimiter,
     sendDirectMessageRequest
 );
 

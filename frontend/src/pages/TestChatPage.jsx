@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import Layout from '../components/Layout';
 import ChatWindow from '../components/chat/ChatWindow';
 import CallInterface from '../components/call/CallInterface';
+import VideoCallInterface from '../components/calls/VideoCallInterface';
+import VoiceCallInterface from '../components/calls/VoiceCallInterface';
 
 const TestChatPage = () => {
   const [showCallInterface, setShowCallInterface] = useState(false);
@@ -19,6 +21,12 @@ const TestChatPage = () => {
 
   const handleStartVideoCall = () => {
     setCallType('video');
+    setShowCallInterface(true);
+    setCallDuration(0);
+  };
+
+  const handleStartLegacyCall = () => {
+    setCallType('legacy');
     setShowCallInterface(true);
     setCallDuration(0);
   };
@@ -87,7 +95,13 @@ const TestChatPage = () => {
                   onClick={handleStartVideoCall}
                   className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-3 px-6 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95 font-medium"
                 >
-                  Test Video Call
+                  Test Video Call (New UI)
+                </button>
+                <button
+                  onClick={handleStartLegacyCall}
+                  className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white py-3 px-6 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95 font-medium"
+                >
+                  Test Legacy Call UI
                 </button>
               </div>
             </div>
@@ -143,7 +157,36 @@ const TestChatPage = () => {
       </div>
 
       {/* Call Interface Overlay */}
-      {showCallInterface && (
+      {showCallInterface && callType === 'video' && (
+        <VideoCallInterface
+          isOpen={showCallInterface}
+          onClose={handleCallEnd}
+          targetUser={{
+            name: "Ravi Shankar",
+            role: "citizen",
+            id: "test-user-123"
+          }}
+          chatId="test-chat-123"
+          isIncoming={false}
+        />
+      )}
+
+      {showCallInterface && callType === 'voice' && (
+        <VoiceCallInterface
+          isOpen={showCallInterface}
+          onClose={handleCallEnd}
+          targetUser={{
+            name: "Ravi Shankar",
+            role: "citizen",
+            id: "test-user-123"
+          }}
+          chatId="test-chat-123"
+          isIncoming={false}
+        />
+      )}
+
+      {/* Legacy Call Interface for comparison */}
+      {showCallInterface && callType === 'legacy' && (
         <CallInterface
           isIncoming={false}
           callerName="Ravi Shankar"

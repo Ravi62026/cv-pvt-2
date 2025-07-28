@@ -75,7 +75,7 @@ const MyCaseRequests = () => {
     const chatId = `${request.caseType}_${request.caseId}`;
     console.log('🚀 CITIZEN: Starting chat with ID:', chatId);
     console.log('   Request data:', request);
-    navigate(`/chat/${chatId}`);
+    navigate(`/chat/${encodeURIComponent(chatId)}`);
   };
 
   if (isLoading) {

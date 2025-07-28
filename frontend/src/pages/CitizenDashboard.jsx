@@ -318,7 +318,8 @@ const RecentActivitySection = () => {
   const fetchRecentActivity = async () => {
     try {
       const token = localStorage.getItem('cv_access_token');
-      const response = await fetch('/api/citizens/recent-activity?limit=5', {
+      const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://fluent-music-374010.el.r.appspot.com/api';
+      const response = await fetch(`${API_BASE_URL}/citizens/recent-activity?limit=5`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -694,16 +695,49 @@ const AIToolsSection = () => {
     >
       <div className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-2xl border border-white/20">
         <div className="p-6 border-b border-white/20">
-          <div className="flex items-center">
-            <Cpu className="h-6 w-6 text-blue-400 mr-3" />
-            <div>
-              <h2 className="text-2xl font-bold text-white">AI Legal Tools</h2>
-              <p className="text-gray-300">Powered by advanced AI to assist with your legal needs</p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <Cpu className="h-6 w-6 text-blue-400 mr-3" />
+              <div>
+                <h2 className="text-2xl font-bold text-white">AI Legal Tools</h2>
+                <p className="text-gray-300">Powered by advanced AI to assist with your legal needs</p>
+              </div>
+            </div>
+            <div className="bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border border-blue-400/30 rounded-lg px-4 py-2">
+              <p className="text-blue-300 text-sm font-medium">
+                📚 Students: Use BNS Advisor & Legal Research tools for free!
+              </p>
             </div>
           </div>
         </div>
 
         <div className="p-6">
+          {/* Student Information Banner */}
+          <div className="mb-6 bg-gradient-to-r from-blue-600/20 to-cyan-600/20 border border-blue-400/30 rounded-xl p-4">
+            <div className="flex items-start space-x-4">
+              <div className="bg-blue-500 p-2 rounded-lg">
+                <BookOpen className="h-5 w-5 text-white" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-white font-semibold mb-1">📚 For Students & Researchers</h3>
+                <p className="text-blue-200 text-sm mb-3">
+                  Access our AI-powered legal tools for free! Perfect for law students, researchers, and academic purposes.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <span className="bg-blue-500/30 text-blue-200 px-3 py-1 rounded-full text-xs">
+                    ✅ BNS Advisor - Free Access
+                  </span>
+                  <span className="bg-green-500/30 text-green-200 px-3 py-1 rounded-full text-xs">
+                    ✅ Legal Research - Free Access
+                  </span>
+                  <span className="bg-purple-500/30 text-purple-200 px-3 py-1 rounded-full text-xs">
+                    🔜 Student Dashboard Coming Soon
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {aiTools.map((tool, index) => {
               const IconComponent = tool.icon;

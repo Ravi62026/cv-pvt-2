@@ -46,7 +46,8 @@ const CaseDocuments = () => {
         return;
       }
 
-      const response = await fetch(`/api/documents/${documentType}/${relatedId}`, {
+      const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://fluent-music-374010.el.r.appspot.com/api';
+      const response = await fetch(`${API_BASE_URL}/documents/${documentType}/${relatedId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -87,7 +88,8 @@ const CaseDocuments = () => {
         return;
       }
 
-      const response = await fetch('/api/documents/upload', {
+      const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://fluent-music-374010.el.r.appspot.com/api';
+      const response = await fetch(`${API_BASE_URL}/documents/upload`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -123,7 +125,8 @@ const CaseDocuments = () => {
         return;
       }
 
-      const response = await fetch(`/api/documents/${documentId}`, {
+      const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://fluent-music-374010.el.r.appspot.com/api';
+      const response = await fetch(`${API_BASE_URL}/documents/${documentId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`

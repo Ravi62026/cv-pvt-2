@@ -29,7 +29,8 @@ const PendingRequests = () => {
   const fetchPendingRequests = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/citizens/my-case-requests', {
+      const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://fluent-music-374010.el.r.appspot.com/api';
+      const response = await fetch(`${API_BASE_URL}/citizens/my-case-requests`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'

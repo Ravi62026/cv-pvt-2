@@ -12,8 +12,8 @@ export const initializeSocket = (server) => {
     const io = new Server(server, {
         cors: {
             origin: [
-                process.env.CLIENT_URL || "http://localhost:5173",
-                process.env.FRONTEND_URL || "http://localhost:5173",
+                process.env.CLIENT_URL || "https://fluent-music-374010.web.app",
+                process.env.FRONTEND_URL || "https://fluent-music-374010.web.app",
                 "https://fluent-music-374010.web.app",
                 "https://cv-pvt-2-frontend.vercel.app",
                 "http://localhost:5173", // for development

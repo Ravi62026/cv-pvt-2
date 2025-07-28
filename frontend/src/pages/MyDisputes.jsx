@@ -35,7 +35,8 @@ const MyDisputes = () => {
   const fetchDisputes = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/disputes', {
+      const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://fluent-music-374010.el.r.appspot.com/api';
+      const response = await fetch(`${API_BASE_URL}/disputes`, {
         headers: {
           'Authorization': `Bearer ${getToken()}`
         }

@@ -51,8 +51,54 @@ const DirectClients = () => {
 
   const handleStartChat = (client) => {
     // Generate direct chat ID in the format: direct_userId1_userId2 (sorted)
-    const currentUserId = user?.id || user?._id;
-    const clientId = client._id;
+
+    // Helper function to extract MongoDB ObjectId string
+    const extractObjectId = (value) => {
+      if (!value) return null;
+
+      // If it's already a string and looks like ObjectId, return it
+      if (typeof value === 'string' && /^[a-f\d]{24}$/i.test(value)) {
+        return value;
+      }
+
+      // If it's an object with toString method
+      if (typeof value === 'object' && value !== null) {
+        const str = value.toString();
+        // Check if toString gives us a valid ObjectId
+        if (/^[a-f\d]{24}$/i.test(str)) {
+          return str;
+        }
+      }
+
+      // Convert to string and try to extract ObjectId pattern
+      const str = String(value);
+      const objectIdMatch = str.match(/[a-f\d]{24}/i);
+      return objectIdMatch ? objectIdMatch[0] : null;
+    };
+
+    // Extract user ID more robustly
+    const currentUserId = extractObjectId(user?.id || user?._id);
+
+    // Extract client ID more robustly
+    const clientId = extractObjectId(client._id || client.id);
+
+    // Debug logging to identify the issue
+    console.log('🔍 DEBUG: User object:', user);
+    console.log('🔍 DEBUG: Current User ID (extracted):', currentUserId);
+    console.log('🔍 DEBUG: Client object:', client);
+    console.log('🔍 DEBUG: Client ID (extracted):', clientId);
+
+    // Validate that we have proper IDs
+    if (!currentUserId || !clientId) {
+      console.error('❌ Could not extract valid ObjectIds:', {
+        userRaw: user?.id || user?._id,
+        clientRaw: client._id,
+        userExtracted: currentUserId,
+        clientExtracted: clientId
+      });
+      return;
+    }
+
     const chatId = `direct_${[currentUserId, clientId].sort().join('_')}`;
 
     console.log('🚀 LAWYER: Starting direct chat');
@@ -60,7 +106,8 @@ const DirectClients = () => {
     console.log('   Client ID:', clientId);
     console.log('   Generated Chat ID:', chatId);
 
-    navigate(`/chat/${chatId}`);
+    // Navigate to chat
+    navigate(`/chat/${encodeURIComponent(chatId)}`);
   };
 
   const filteredClients = clients.filter(client => {

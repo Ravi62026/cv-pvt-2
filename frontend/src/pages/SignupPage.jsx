@@ -276,8 +276,12 @@ const SignupPage = () => {
       const response = await authAPI.register(userData);
 
       if (response.success) {
-        // Auto-login after successful registration
-        await login(response.data.tokens.accessToken, response.data.user);
+        // Auto-login after successful registration with both tokens
+        await login(
+          response.data.tokens.accessToken,
+          response.data.user,
+          response.data.tokens.refreshToken
+        );
 
         success('Registration successful! Welcome to CV-PVT.');
 

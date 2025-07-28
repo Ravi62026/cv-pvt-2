@@ -14,10 +14,19 @@ const IncomingCallModal = ({
   useEffect(() => {
     if (isVisible) {
       setIsRinging(true);
-      // Play ringtone (you can add audio file here)
+      // Play ringtone
       const audio = new Audio('/sounds/ringtone.mp3');
       audio.loop = true;
-      audio.play().catch(console.error);
+      audio.volume = 0.7; // Set volume to 70%
+
+      // Try to play the audio
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(error => {
+          console.log('Audio play failed:', error);
+          // Auto-play was prevented, user interaction required
+        });
+      }
 
       return () => {
         audio.pause();
@@ -49,10 +58,10 @@ const IncomingCallModal = ({
           
           <div className="caller-details">
             <h2 className="caller-name">
-              {callerInfo?.name || callData.fromUserId}
+              {callerInfo?.name || callData.fromUserName || callData.fromUserId || 'Unknown User'}
             </h2>
             <p className="call-type">
-              {isVideoCall ? 'Video Call' : 'Voice Call'}
+              Call
             </p>
             <p className="call-status">
               Incoming call...
@@ -63,7 +72,7 @@ const IncomingCallModal = ({
         {/* Call Actions */}
         <div className="call-actions">
           {/* Reject Button */}
-          <button 
+          <button
             className="call-button reject-button"
             onClick={() => onReject(callData)}
             aria-label="Reject call"
@@ -72,7 +81,7 @@ const IncomingCallModal = ({
           </button>
 
           {/* Accept Voice Button */}
-          <button 
+          <button
             className="call-button accept-button voice-accept"
             onClick={() => onAccept(callData, 'voice')}
             aria-label="Accept voice call"
@@ -80,28 +89,20 @@ const IncomingCallModal = ({
             <Phone size={24} />
           </button>
 
-          {/* Accept Video Button (only for video calls) */}
-          {isVideoCall && (
-            <button 
-              className="call-button accept-button video-accept"
-              onClick={() => onAccept(callData, 'video')}
-              aria-label="Accept video call"
-            >
-              <Video size={24} />
-            </button>
-          )}
+          {/* Accept Video Button */}
+          <button
+            className="call-button accept-button video-accept"
+            onClick={() => onAccept(callData, 'video')}
+            aria-label="Accept video call"
+          >
+            <Video size={24} />
+          </button>
         </div>
 
-        {/* Additional Options */}
+        {/* Accept Call Button */}
         <div className="call-options">
           <button
-            className="option-button"
-            onClick={() => onReject(callData)}
-          >
-            <span>Message</span>
-          </button>
-          <button
-            className="option-button"
+            className="option-button accept-main-button"
             onClick={() => onAccept(callData, isVideoCall ? 'video' : 'voice')}
           >
             <span>Accept Call</span>

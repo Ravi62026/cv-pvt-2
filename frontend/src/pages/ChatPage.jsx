@@ -4,13 +4,15 @@ import { useAuth } from '../contexts/AuthContext';
 import { useSocket, useSocketEvent } from '../hooks/useSocket';
 import { useCall } from '../contexts/CallContext';
 import { useToast } from '../contexts/ToastContext';
-import { Send, ArrowLeft, Phone, Video, MoreVertical } from 'lucide-react';
+import { Send, ArrowLeft, Video, MoreVertical } from 'lucide-react';
 import MessageInput from '../components/chat/MessageInput';
 import MessageBubble from '../components/chat/MessageBubble';
 import { authAPI, chatAPI } from '../services/api';
 
 const ChatPage = () => {
-  const { chatId } = useParams();
+  const { chatId: rawChatId } = useParams();
+  // Decode the URL-encoded chatId
+  const chatId = decodeURIComponent(rawChatId);
   const navigate = useNavigate();
   const { user, getToken } = useAuth();
   const { socket, isConnected } = useSocket();
@@ -159,12 +161,17 @@ const ChatPage = () => {
           p => (p.user._id || p.user.id) !== currentUserId
         );
 
+        console.log('👥 FRONTEND: Chat participants:', data.chat.participants);
+        console.log('👤 FRONTEND: Current user ID:', currentUserId);
+        console.log('👤 FRONTEND: Other participant:', otherParticipant);
+
         // Add otherUser to the data for easier access
         const chatData = {
           ...data.chat,
           otherUser: otherParticipant?.user
         };
 
+        console.log('💬 FRONTEND: Final chat data:', chatData);
         setChatInfo({ ...data, chat: chatData });
       } else if (result.error.includes('not found') && chatId.startsWith('direct_')) {
         // If it's a direct chat that doesn't exist, try to create it
@@ -414,17 +421,17 @@ const ChatPage = () => {
             <div className="flex items-center space-x-3">
               <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center shadow-lg">
                 <span className="text-white font-semibold text-lg">
-                  {chatInfo?.data?.chat?.otherUser?.name?.charAt(0) || 'U'}
+                  {chatInfo?.chat?.otherUser?.name?.charAt(0) || 'U'}
                 </span>
               </div>
               <div>
                 <h3 className="font-semibold text-white text-lg">
-                  {chatInfo?.data?.chat?.otherUser?.name || 'User'}
+                  {chatInfo?.chat?.otherUser?.name || 'User'}
                 </h3>
                 <div className="space-y-1">
                   <p className="text-sm text-gray-300 flex items-center">
                     <span className="capitalize">
-                      {chatInfo?.data?.chat?.otherUser?.role === 'lawyer' ? '⚖️ Lawyer' : '👤 Citizen'}
+                      {chatInfo?.chat?.otherUser?.role === 'lawyer' ? '⚖️ Lawyer' : '👤 Citizen'}
                     </span>
                     {!isConnected && (
                       <span className="ml-2 text-red-400 flex items-center">
@@ -446,63 +453,37 @@ const ChatPage = () => {
           </div>
 
           <div className="flex items-center space-x-2">
-            {/* Voice Call Button */}
-            <button
-              onClick={async () => {
-                if (!chatInfo?.data?.chat?.otherUser?._id) {
-                  console.log('❌ No user ID available for voice call');
-                  if (error) error('Cannot start call: User information not available');
-                  return;
-                }
-                try {
-                  console.log('📞 Starting voice call from header...');
-                  const result = await startCall(chatInfo.data.chat.otherUser._id, 'voice', chatId);
-                  console.log('✅ Voice call started successfully:', result);
-                  if (success) success(`Voice call started with ${chatInfo.data.chat.otherUser.name}`);
-                } catch (err) {
-                  console.error('❌ Failed to start voice call:', err);
-                  if (error) error('Failed to start voice call: ' + err.message);
-                }
-              }}
-              disabled={!chatInfo?.data?.chat?.otherUser?._id || !socket || !isConnected}
-              className={`p-3 hover:bg-blue-500/20 rounded-full transition-colors border border-blue-400/50 backdrop-blur-sm ${
-                (!chatInfo?.data?.chat?.otherUser?._id || !socket || !isConnected) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
-              }`}
-              title={
-                !socket || !isConnected ? 'Connection not available' :
-                !chatInfo?.data?.chat?.otherUser?._id ? 'Voice call not available' :
-                `Start voice call with ${chatInfo.data.chat.otherUser.name}`
-              }
-            >
-              <Phone className="h-5 w-5 text-blue-400" />
-            </button>
-
             {/* Video Call Button */}
             <button
               onClick={async () => {
-                if (!chatInfo?.data?.chat?.otherUser?._id) {
+                if (!chatInfo?.chat?.otherUser?._id) {
                   console.log('❌ No user ID available for video call');
                   if (error) error('Cannot start call: User information not available');
                   return;
                 }
                 try {
                   console.log('📹 Starting video call from header...');
-                  const result = await startCall(chatInfo.data.chat.otherUser._id, 'video', chatId);
+                  const userInfo = {
+                    _id: chatInfo.chat.otherUser._id,
+                    name: chatInfo.chat.otherUser.name,
+                    role: chatInfo.chat.otherUser.role || 'user'
+                  };
+                  const result = await startCall(chatInfo.chat.otherUser._id, 'video', chatId, userInfo);
                   console.log('✅ Video call started successfully:', result);
-                  if (success) success(`Video call started with ${chatInfo.data.chat.otherUser.name}`);
+                  if (success) success(`Video call started with ${chatInfo.chat.otherUser.name}`);
                 } catch (err) {
                   console.error('❌ Failed to start video call:', err);
                   if (error) error('Failed to start video call: ' + err.message);
                 }
               }}
-              disabled={!chatInfo?.data?.chat?.otherUser?._id || !socket || !isConnected}
+              disabled={!chatInfo?.chat?.otherUser?._id || !socket || !isConnected}
               className={`p-3 hover:bg-purple-500/20 rounded-full transition-colors border border-purple-400/50 backdrop-blur-sm ${
-                (!chatInfo?.data?.chat?.otherUser?._id || !socket || !isConnected) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                (!chatInfo?.chat?.otherUser?._id || !socket || !isConnected) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
               }`}
               title={
                 !socket || !isConnected ? 'Connection not available' :
-                !chatInfo?.data?.chat?.otherUser?._id ? 'Video call not available' :
-                `Start video call with ${chatInfo.data.chat.otherUser.name}`
+                !chatInfo?.chat?.otherUser?._id ? 'Video call not available' :
+                `Start video call with ${chatInfo.chat.otherUser.name}`
               }
             >
               <Video className="h-5 w-5 text-purple-400" />

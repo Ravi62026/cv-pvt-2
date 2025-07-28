@@ -24,9 +24,22 @@ const __dirname = path.dirname(__filename);
 const router = express.Router();
 
 // Configure multer for chat file uploads
+import os from 'os';
+import fs from 'fs';
+
+// Create temp directory if it doesn't exist
+const tempDir = process.env.NODE_ENV === 'production'
+    ? path.join(os.tmpdir(), 'uploads')
+    : path.join(__dirname, '../temp/uploads/');
+
+// Ensure directory exists
+if (!fs.existsSync(tempDir)) {
+    fs.mkdirSync(tempDir, { recursive: true });
+}
+
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, path.join(__dirname, '../temp/uploads/'));
+        cb(null, tempDir);
     },
     filename: function (req, file, cb) {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);

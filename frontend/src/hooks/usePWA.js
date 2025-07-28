@@ -45,8 +45,10 @@ export const usePWA = () => {
         
         newWorker.addEventListener('statechange', () => {
           if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            // New content is available
-            setUpdateAvailable(true);
+            // New content is available - only show in production
+            if (import.meta.env.PROD) {
+              setUpdateAvailable(true);
+            }
           }
         });
       });

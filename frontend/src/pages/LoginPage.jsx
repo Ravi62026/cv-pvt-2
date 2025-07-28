@@ -103,8 +103,12 @@ const LoginPage = () => {
       });
 
       if (response.success) {
-        // Login to context
-        await login(response.data.tokens.accessToken, response.data.user);
+        // Login to context with both tokens
+        await login(
+          response.data.tokens.accessToken,
+          response.data.user,
+          response.data.tokens.refreshToken
+        );
 
         // Show success message
         success('Login successful! Welcome back.');

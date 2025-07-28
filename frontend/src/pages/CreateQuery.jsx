@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { 
-  FileText, 
-  AlertCircle, 
-  CheckCircle, 
+import {
+  FileText,
+  AlertCircle,
+  CheckCircle,
   ArrowLeft,
   Upload,
   X
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
+import { citizenAPI } from '../services/api';
 
 const CreateQuery = () => {
   const navigate = useNavigate();
@@ -94,22 +95,13 @@ const CreateQuery = () => {
     setIsSubmitting(true);
     
     try {
-      const response = await fetch('/api/queries', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('cv_access_token')}`
-        },
-        body: JSON.stringify(formData)
-      });
-      
-      const result = await response.json();
-      
+      const result = await citizenAPI.createQuery(formData);
+
       if (result.success) {
         success('Legal query submitted successfully!');
         navigate('/citizen/my-queries');
       } else {
-        error(result.message || 'Failed to submit query');
+        error(result.error || 'Failed to submit query');
       }
     } catch (err) {
       console.error('Submit query error:', err);

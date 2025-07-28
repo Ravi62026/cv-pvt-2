@@ -69,13 +69,27 @@ const CallPage = () => {
 
   useEffect(() => {
     if (remoteStream) {
+      console.log('🔊 CallPage: Setting up remote stream:', {
+        callType,
+        hasAudioTracks: remoteStream.getAudioTracks().length > 0,
+        hasVideoTracks: remoteStream.getVideoTracks().length > 0,
+        audioTracks: remoteStream.getAudioTracks().map(track => ({
+          enabled: track.enabled,
+          readyState: track.readyState,
+          kind: track.kind
+        }))
+      });
+
       if (remoteVideoRef.current && callType === 'video') {
         remoteVideoRef.current.srcObject = remoteStream;
       }
       if (remoteAudioRef.current) {
         remoteAudioRef.current.srcObject = remoteStream;
+        remoteAudioRef.current.volume = 1.0;
         // Ensure audio plays
-        remoteAudioRef.current.play().catch(console.error);
+        remoteAudioRef.current.play().catch(error => {
+          console.error('Failed to play remote audio:', error);
+        });
       }
     }
   }, [remoteStream, callType]);
@@ -140,7 +154,13 @@ const CallPage = () => {
         />
 
         {/* Remote Audio */}
-        <audio ref={remoteAudioRef} autoPlay />
+        <audio
+          ref={remoteAudioRef}
+          autoPlay
+          playsInline
+          controls={false}
+          style={{ display: 'none' }}
+        />
 
         {/* Call Controls Overlay */}
         <div className={`absolute inset-0 bg-black/20 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
@@ -227,7 +247,13 @@ const CallPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-purple-800 flex items-center justify-center">
       {/* Remote Audio */}
-      <audio ref={remoteAudioRef} autoPlay />
+      <audio
+        ref={remoteAudioRef}
+        autoPlay
+        playsInline
+        controls={false}
+        style={{ display: 'none' }}
+      />
       
       <div className="text-center text-white max-w-md mx-auto px-6">
         {/* User Avatar */}
@@ -249,7 +275,7 @@ const CallPage = () => {
 
         {/* Call Info */}
         <h2 className="text-3xl font-bold mb-2">{participantInfo?.name || 'Unknown'}</h2>
-        <p className="text-xl text-white/80 mb-2">Voice call active</p>
+        <p className="text-xl text-white/80 mb-2">{callType === 'video' ? 'Video call active' : 'Voice call active'}</p>
         <p className="text-lg text-white/60 mb-12">{formatDuration(callDuration)}</p>
 
         {/* Call Controls */}

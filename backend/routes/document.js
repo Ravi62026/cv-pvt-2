@@ -1,6 +1,8 @@
 import express from 'express';
 import multer from 'multer';
 import path from 'path';
+import os from 'os';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { body } from 'express-validator';
 import { protect } from '../middleware/auth.js';
@@ -18,10 +20,20 @@ const __dirname = path.dirname(__filename);
 
 const router = express.Router();
 
+// Create temp directory if it doesn't exist
+const tempDir = process.env.NODE_ENV === 'production'
+    ? path.join(os.tmpdir(), 'uploads')
+    : path.join(__dirname, '../temp/uploads/');
+
+// Ensure directory exists
+if (!fs.existsSync(tempDir)) {
+    fs.mkdirSync(tempDir, { recursive: true });
+}
+
 // Configure multer for temporary file storage
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, path.join(__dirname, '../temp/uploads/'));
+        cb(null, tempDir);
     },
     filename: function (req, file, cb) {
         // Create unique filename

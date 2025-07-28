@@ -130,37 +130,55 @@ export const CallProvider = ({ children }) => {
 
       // Get participant info (you might want to fetch from API)
       const participantInfo = {
-        name: callData.fromUserName || callData.fromUserId,
-        profilePicture: callData.fromUserAvatar || null
+        name: callData.fromUserName || callData.fromUserId || 'Unknown User',
+        role: callData.fromUserRole || 'user',
+        profilePicture: callData.fromUserAvatar || null,
+        _id: callData.fromUserId
       };
 
       dispatch({
         type: CALL_ACTIONS.SET_INCOMING_CALL,
         payload: { callData, participantInfo }
       });
+
+      // Show browser notification if permission granted
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification(`Incoming ${callData.callType || 'voice'} call`, {
+          body: `${participantInfo.name} is calling you`,
+          icon: '/favicon.ico',
+          tag: 'incoming-call'
+        });
+      }
     };
 
     // Handle call accepted
     const handleCallAccepted = (callData) => {
       console.log('✅ Call accepted:', callData);
 
-      const participantInfo = {
-        name: callData.targetUserName || callData.targetUserId,
+      // Get participant info from the outgoing call state (since this is the caller receiving acceptance)
+      const participantInfo = state.outgoingCall?.participantInfo || {
+        name: callData.targetUserName || callData.fromUserId || 'Unknown User',
         profilePicture: callData.targetUserAvatar || null
       };
 
+      // Update call data with the accepted type
+      const updatedCallData = {
+        ...callData,
+        callType: callData.acceptType || callData.callType || 'voice'
+      };
+
       // Add call connected message to chat
-      if (callData.chatId) {
-        addCallMessageToChat(callData.chatId, `✅ Call connected`, callData.callType || 'voice');
+      if (updatedCallData.chatId) {
+        addCallMessageToChat(updatedCallData.chatId, `✅ Call connected`, updatedCallData.callType);
       }
 
       dispatch({
         type: CALL_ACTIONS.SET_ACTIVE_CALL,
-        payload: { callData, participantInfo }
+        payload: { callData: updatedCallData, participantInfo }
       });
 
       // Navigate to call page for the caller
-      const callUrl = `/call/${callData.callId}?type=${callData.acceptType || callData.callType || 'voice'}`;
+      const callUrl = `/call/${updatedCallData.callId}?type=${updatedCallData.callType}`;
       window.history.pushState(null, '', callUrl);
     };
 
@@ -208,11 +226,11 @@ export const CallProvider = ({ children }) => {
   };
 
   // Call Actions
-  const startCall = async (targetUserId, callType = 'voice', chatId = null) => {
+  const startCall = async (targetUserId, callType = 'voice', chatId = null, targetUserInfo = null) => {
     try {
       const participantInfo = {
-        name: targetUserId, // You might want to fetch actual user info
-        profilePicture: null
+        name: targetUserInfo?.name || 'Unknown User',
+        profilePicture: targetUserInfo?.profilePicture || null
       };
 
       // Set outgoing call state first

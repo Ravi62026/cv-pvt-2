@@ -90,6 +90,7 @@ const AuthContext = createContext();
 
 // Token management utilities
 const TOKEN_KEY = 'cv_access_token';
+const REFRESH_TOKEN_KEY = 'cv_refresh_token';
 const USER_KEY = 'cv_user_data';
 
 const getStoredToken = () => {
@@ -110,6 +111,27 @@ const setStoredToken = (token) => {
     }
   } catch (error) {
     console.error('Error storing token:', error);
+  }
+};
+
+const getStoredRefreshToken = () => {
+  try {
+    return localStorage.getItem(REFRESH_TOKEN_KEY);
+  } catch (error) {
+    console.error('Error getting stored refresh token:', error);
+    return null;
+  }
+};
+
+const setStoredRefreshToken = (token) => {
+  try {
+    if (token) {
+      localStorage.setItem(REFRESH_TOKEN_KEY, token);
+    } else {
+      localStorage.removeItem(REFRESH_TOKEN_KEY);
+    }
+  } catch (error) {
+    console.error('Error setting stored refresh token:', error);
   }
 };
 
@@ -169,19 +191,24 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   // Auth actions
-  const login = async (token, user) => {
+  const login = async (accessToken, user, refreshToken = null) => {
     try {
       dispatch({ type: AUTH_ACTIONS.LOGIN_START });
-      
-      // Store token and user data
-      setStoredToken(token);
+
+      // Store tokens and user data
+      setStoredToken(accessToken);
       setStoredUser(user);
-      
+
+      // Store refresh token if provided
+      if (refreshToken) {
+        setStoredRefreshToken(refreshToken);
+      }
+
       dispatch({
         type: AUTH_ACTIONS.LOGIN_SUCCESS,
-        payload: { token, user },
+        payload: { token: accessToken, user },
       });
-      
+
       return { success: true };
     } catch (error) {
       dispatch({
@@ -196,10 +223,11 @@ export const AuthProvider = ({ children }) => {
     try {
       // Clear stored data
       setStoredToken(null);
+      setStoredRefreshToken(null);
       setStoredUser(null);
-      
+
       dispatch({ type: AUTH_ACTIONS.LOGOUT });
-      
+
       return { success: true };
     } catch (error) {
       console.error('Logout error:', error);
