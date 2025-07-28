@@ -1191,7 +1191,7 @@ export const chatAPI = {
   // Get chat details and messages
   async getChatDetails(chatId) {
     try {
-      const response = await apiClient.get(`/chat/${chatId}`);
+      const response = await apiClient.get(`/chats/${chatId}`);
       return {
         success: true,
         data: response.data,
@@ -1207,7 +1207,7 @@ export const chatAPI = {
   // Send a message
   async sendMessage(chatId, messageData) {
     try {
-      const response = await apiClient.post(`/chat/${chatId}/messages`, messageData);
+      const response = await apiClient.post(`/chats/${chatId}/messages`, messageData);
       return {
         success: true,
         data: response.data,
@@ -1223,7 +1223,7 @@ export const chatAPI = {
   // Mark message as read
   async markMessageAsRead(chatId, messageId) {
     try {
-      const response = await apiClient.post(`/chat/${chatId}/messages/${messageId}/read`);
+      const response = await apiClient.post(`/chats/${chatId}/messages/${messageId}/read`);
       return {
         success: true,
         data: response.data,
@@ -1240,7 +1240,7 @@ export const chatAPI = {
   async getChatHistory(chatId, params = {}) {
     try {
       const queryString = new URLSearchParams(params).toString();
-      const response = await apiClient.get(`/chat/${chatId}/history?${queryString}`);
+      const response = await apiClient.get(`/chats/${chatId}/history?${queryString}`);
       return {
         success: true,
         data: response.data,

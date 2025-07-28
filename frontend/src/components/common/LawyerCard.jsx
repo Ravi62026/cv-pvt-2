@@ -21,11 +21,11 @@ import {
   AccessTime,
   TrendingUp
 } from '@mui/icons-material';
-import { useSocket } from '../../context/SocketContext';
-import { useAuth } from '../../hooks/useAuth';
+import { useSocket } from '../../hooks/useSocket';
+import { useAuth } from '../../contexts/AuthContext';
 import ChatWindow from '../chat/ChatWindow';
 import { useNavigate } from 'react-router-dom';
-import RequestMessageModal from '../chat/RequestMessageModal';
+import LawyerRequestModal from '../LawyerRequestModal';
 
 const LawyerCard = ({ lawyer, onSelect, variant = 'full', existingRoom }) => {
   const { socket } = useSocket();
@@ -258,8 +258,8 @@ const LawyerCard = ({ lawyer, onSelect, variant = 'full', existingRoom }) => {
 
       {/* Modals */}
       {showModal && (
-        <RequestMessageModal
-          open={showModal}
+        <LawyerRequestModal
+          lawyer={lawyer}
           onClose={() => setShowModal(false)}
           onSubmit={handleSendRequest}
         />

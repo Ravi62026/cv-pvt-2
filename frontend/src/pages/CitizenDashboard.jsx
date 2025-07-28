@@ -27,7 +27,7 @@ import { useToast } from '../contexts/ToastContext';
 import { useSocket, useSocketEvent } from '../hooks/useSocket';
 import { citizenAPI } from '../services/api';
 import LoadingSpinner from '../components/common/LoadingSpinner';
-import CallNotificationWidget from '../components/dashboard/CallNotificationWidget';
+
 import {
   ModernStatsCard,
   ModernActionCard,
@@ -280,8 +280,7 @@ const CitizenDashboard = () => {
         </div>
       </div>
 
-      {/* Call Notification Widget */}
-      <CallNotificationWidget />
+
     </ModernDashboardLayout>
   );
 };

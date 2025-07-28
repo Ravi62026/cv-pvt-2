@@ -223,7 +223,7 @@ class EmailService {
                     
                     <p>Once you've addressed the requirements, our team will review your application again. We appreciate your patience and look forward to having you as part of our legal community.</p>
                     
-                    <p>If you have any questions, please contact our support team at support@chainverdict.com</p>
+                    <p>If you have any questions, please contact our support team at admin@chainverdict.in./p>
                     
                     <p>Best regards,<br>
                     <strong>ChainVerdict Team</strong></p>

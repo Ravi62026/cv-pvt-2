@@ -3,9 +3,10 @@ import { io } from 'socket.io-client';
 import { useAuth } from '../contexts/AuthContext';
 
 // Use the backend URL from environment variable
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'https://fluent-music-374010.el.r.appspot.com';
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000';
 
 console.log('🔌 SOCKET_URL configured as:', SOCKET_URL);
+console.log('🔌 Environment VITE_SOCKET_URL:', import.meta.env.VITE_SOCKET_URL);
 
 export const useSocket = () => {
   const [socket, setSocket] = useState(null);
@@ -26,8 +27,8 @@ export const useSocket = () => {
         auth: {
           token: token,
         },
-        // Use WebSockets for Render, polling for App Engine
-        transports: SOCKET_URL.includes('appspot.com') ? ['polling'] : ['websocket', 'polling'],
+        // Use WebSockets for localhost, polling for production
+        transports: SOCKET_URL.includes('localhost') ? ['websocket', 'polling'] : ['polling'],
         forceNew: true,
         // Additional options for better connection stability
         timeout: 20000,
@@ -43,6 +44,7 @@ export const useSocket = () => {
         console.log('🔌 FRONTEND: Socket connected:', newSocket.id);
         console.log('   User:', user.name, '(' + user._id + ')');
         console.log('   Role:', user.role);
+        console.log('   Socket URL:', SOCKET_URL);
         setIsConnected(true);
         setConnectionAttempts(0); // Reset connection attempts on successful connection
 

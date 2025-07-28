@@ -22,6 +22,9 @@ import LoadingSpinner from '../common/LoadingSpinner';
 import ChatHeader from './ChatHeader';
 import MessageBubble from './MessageBubble';
 import MessageInput from './MessageInput';
+import CallNotification from '../calls/CallNotification';
+import VideoCall from '../calls/VideoCall';
+import AudioCall from '../calls/AudioCall';
 
 const ChatWindow = ({ 
   chatId, 
@@ -42,6 +45,8 @@ const ChatWindow = ({
   const [isTyping, setIsTyping] = useState(false);
   const [typingUser, setTypingUser] = useState(null);
   const [onlineUsers, setOnlineUsers] = useState(new Set());
+  const [incomingCall, setIncomingCall] = useState(null);
+  const [activeCall, setActiveCall] = useState(null);
   
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
@@ -88,6 +93,10 @@ const ChatWindow = ({
       socket.on('typing_stop', handleTypingStop);
       socket.on('user_online', handleUserOnline);
       socket.on('user_offline', handleUserOffline);
+      socket.on('incoming-call', handleIncomingCall);
+      socket.on('call-accepted', handleCallAccepted);
+      socket.on('call-rejected', handleCallRejected);
+      socket.on('call-ended', handleCallEnded);
 
       return () => {
         socket.off('new_message');
@@ -96,6 +105,10 @@ const ChatWindow = ({
         socket.off('typing_stop');
         socket.off('user_online');
         socket.off('user_offline');
+        socket.off('incoming-call');
+        socket.off('call-accepted');
+        socket.off('call-rejected');
+        socket.off('call-ended');
       };
     }
   }, [socket]);
@@ -199,6 +212,63 @@ const ChatWindow = ({
     } catch (err) {
       console.error('Failed to mark message as read:', err);
     }
+  };
+
+  // Call handlers
+  const handleIncomingCall = (callData) => {
+    console.log('📞 FRONTEND: Incoming call:', callData);
+    if (callData.chatId === chatId) {
+      setIncomingCall(callData);
+    }
+  };
+
+  const handleCallAccepted = (callData) => {
+    console.log('✅ FRONTEND: Call accepted:', callData);
+    setIncomingCall(null);
+    setActiveCall(callData);
+  };
+
+  const handleCallRejected = (callData) => {
+    console.log('❌ FRONTEND: Call rejected:', callData);
+    setIncomingCall(null);
+    setActiveCall(null);
+  };
+
+  const handleCallEnded = (callData) => {
+    console.log('📞 FRONTEND: Call ended:', callData);
+    setIncomingCall(null);
+    setActiveCall(null);
+  };
+
+  const acceptCall = (callData) => {
+    if (socket) {
+      socket.emit('accept-call', {
+        chatId: callData.chatId,
+        callType: callData.type
+      });
+    }
+    setIncomingCall(null);
+    setActiveCall(callData);
+  };
+
+  const rejectCall = (callData) => {
+    if (socket) {
+      socket.emit('reject-call', {
+        chatId: callData.chatId,
+        callType: callData.type
+      });
+    }
+    setIncomingCall(null);
+  };
+
+  const endCall = () => {
+    if (socket && activeCall) {
+      socket.emit('end-call', {
+        chatId: activeCall.chatId,
+        callType: activeCall.type
+      });
+    }
+    setActiveCall(null);
   };
 
   const sendMessage = async () => {
@@ -321,6 +391,7 @@ const ChatWindow = ({
           isOnline={isUserOnline(otherParticipant?.user._id)}
           onBack={onBack}
           chatId={chatId}
+          socket={socket}
         />
       )}
 
@@ -370,6 +441,33 @@ const ChatWindow = ({
         otherParticipant={otherParticipant}
         chatId={chatId}
       />
+
+      {/* Call Notification */}
+      {incomingCall && (
+        <CallNotification
+          incomingCall={incomingCall}
+          onAccept={acceptCall}
+          onReject={rejectCall}
+          socket={socket}
+        />
+      )}
+
+      {/* Active Call Components */}
+      {activeCall && activeCall.type === 'video' && (
+        <VideoCall
+          call={activeCall}
+          onEndCall={endCall}
+          socket={socket}
+        />
+      )}
+
+      {activeCall && activeCall.type === 'audio' && (
+        <AudioCall
+          call={activeCall}
+          onEndCall={endCall}
+          socket={socket}
+        />
+      )}
     </div>
   );
 };

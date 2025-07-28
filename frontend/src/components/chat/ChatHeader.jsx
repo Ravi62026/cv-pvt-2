@@ -5,116 +5,124 @@ import {
   Shield,
   MoreVertical,
   Video,
+  Phone,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
-import { useCall } from '../../contexts/CallContext';
 import { useToast } from '../../contexts/ToastContext';
-import CallInterface from '../call/CallInterface';
+import VideoCall from '../calls/VideoCall';
+import AudioCall from '../calls/AudioCall';
 
-const ChatHeader = ({ otherParticipant, isOnline, onBack, chatId }) => {
-  console.log('ChatHeader rendering with props:', { otherParticipant, isOnline, onBack, chatId });
+const ChatHeader = ({ otherParticipant, isOnline, onBack, chatId, socket }) => {
+  console.log('ChatHeader rendering with props:', { otherParticipant, isOnline, onBack, chatId, socket: !!socket });
 
   const { user } = useAuth();
-  const { startCall } = useCall();
   const { success, error } = useToast();
 
-  const [showCallInterface, setShowCallInterface] = useState(false);
-  const [callType, setCallType] = useState('voice');
-  const [callDuration, setCallDuration] = useState(0);
+  const [activeCall, setActiveCall] = useState(null);
+  const [callType, setCallType] = useState(null);
 
-  // Simple test function
-  const testFunction = () => {
-    console.log('TEST BUTTON CLICKED - This should always work!');
-    alert('Test button clicked!');
-    if (success) {
-      success('Test button works!');
-    }
-  };
+  // Start video call
+  const startVideoCall = () => {
+    console.log('🎥 Video call button clicked!');
+    console.log('Socket available:', !!socket);
+    console.log('Other participant:', otherParticipant);
+    console.log('Current user:', user);
+    console.log('Receiver ID:', otherParticipant?.user?._id);
+    console.log('Caller ID:', user?._id);
 
-
-
-  // Handle video call/consultation request
-  const handleVideoCall = async () => {
-    console.log('Video call button clicked!');
-    console.log('otherParticipant:', otherParticipant);
-
-    // More flexible user ID check
-    const userId = otherParticipant?.user?._id || otherParticipant?.user?.id || otherParticipant?._id || otherParticipant?.id;
-    const userName = otherParticipant?.user?.name || otherParticipant?.name || 'Unknown User';
-
-    if (!userId) {
-      console.log('No user ID available');
-      if (error) error('Cannot start consultation: User information not available');
+    if (!socket) {
+      error('Socket connection not available');
       return;
     }
 
-    try {
-      console.log('Starting video consultation with:', userName);
-      setCallType('video');
-      setShowCallInterface(true);
-      setCallDuration(0);
-
-      const userInfo = {
-        _id: userId,
-        name: userName,
-        role: otherParticipant?.user?.role || otherParticipant?.role || 'user'
-      };
-
-      const result = await startCall(userId, 'video', chatId, userInfo);
-      console.log('✅ Video call started successfully:', result);
-      if (success) success(`Video call started with ${userName}`);
-    } catch (err) {
-      console.error('Failed to start video consultation:', err);
-      if (error) error('Failed to start video consultation: ' + err.message);
-      setShowCallInterface(false);
+    if (!otherParticipant) {
+      error('No participant to call');
+      return;
     }
-  };
 
-  // Handle consultation scheduling
-  const handleScheduleConsultation = async (consultationData) => {
-    // Temporarily disabled
-    console.log('Consultation scheduling temporarily disabled');
-    /*
-    try {
-      const response = await consultationAPI.createRequest(consultationData);
-      if (response.success) {
-        success('Consultation request sent successfully');
-        setShowConsultationModal(false);
-      } else {
-        error(response.error || 'Failed to send consultation request');
+    console.log('Starting video call with:', otherParticipant.user.name);
+
+    setCallType('video');
+    setActiveCall({
+      type: 'video',
+      caller: user,
+      receiver: otherParticipant.user,
+      chatId: chatId
+    });
+
+    // Emit call initiation to server
+    const callData = {
+      type: 'video',
+      receiverId: otherParticipant.user._id,
+      chatId: chatId,
+      caller: {
+        id: user._id,
+        name: user.name,
+        role: user.role
       }
-    } catch (err) {
-      console.error('Failed to schedule consultation:', err);
-      error('Failed to schedule consultation');
+    };
+
+    console.log('🚀 Emitting initiate-call event:', callData);
+    socket.emit('initiate-call', callData);
+
+    success('Video call initiated');
+  };
+
+  // Start audio call
+  const startAudioCall = () => {
+    console.log('📞 Audio call button clicked!');
+    console.log('Socket available:', !!socket);
+    console.log('Other participant:', otherParticipant);
+
+    if (!socket) {
+      error('Socket connection not available');
+      return;
     }
-    */
+
+    if (!otherParticipant) {
+      error('No participant to call');
+      return;
+    }
+
+    console.log('Starting audio call with:', otherParticipant.user.name);
+
+    setCallType('audio');
+    setActiveCall({
+      type: 'audio',
+      caller: user,
+      receiver: otherParticipant.user,
+      chatId: chatId
+    });
+
+    // Emit call initiation to server
+    const callData = {
+      type: 'audio',
+      receiverId: otherParticipant.user._id,
+      chatId: chatId,
+      caller: {
+        id: user._id,
+        name: user.name,
+        role: user.role
+      }
+    };
+
+    console.log('🚀 Emitting initiate-call event:', callData);
+    socket.emit('initiate-call', callData);
+
+    success('Audio call initiated');
   };
 
-  // For testing - make buttons always enabled
-  const canMakeVoiceCall = true;
-  const canRequestConsultation = true;
+  // End call
+  const endCall = () => {
+    if (socket && activeCall) {
+      socket.emit('end-call', {
+        chatId: chatId,
+        callType: callType
+      });
+    }
 
-  // Debug logging
-  console.log('ChatHeader Debug:', {
-    isOnline,
-    otherParticipant: otherParticipant?.user,
-    canMakeVoiceCall,
-    canRequestConsultation
-  });
-
-  const handleCallEnd = () => {
-    setShowCallInterface(false);
-    setCallDuration(0);
-  };
-
-  const handleCallAccept = () => {
-    // Start call timer
-    const timer = setInterval(() => {
-      setCallDuration(prev => prev + 1);
-    }, 1000);
-
-    // Store timer reference for cleanup
-    return () => clearInterval(timer);
+    setActiveCall(null);
+    setCallType(null);
   };
 
   return (
@@ -169,40 +177,60 @@ const ChatHeader = ({ otherParticipant, isOnline, onBack, chatId }) => {
 
         {/* Action Buttons */}
         <div className="flex items-center space-x-1 sm:space-x-2">
-          {/* Video Call/Consultation Button */}
+          {/* Audio Call Button */}
           <button
-            onClick={handleVideoCall}
-            className="p-1.5 sm:p-2 rounded-full transition-all duration-200 hover:bg-blue-100 text-blue-600 hover:scale-110 active:scale-95"
-            title="Start video call"
+            onClick={startAudioCall}
+            className="p-2 hover:bg-white/10 rounded-full transition-colors border border-white/20 backdrop-blur-sm"
+            title="Start audio call"
           >
-            <Video className="h-4 w-4 sm:h-5 sm:w-5" />
+            <Phone className="h-5 w-5 text-gray-300" />
           </button>
 
-          {/* More Options Button */}
+          {/* Video Call Button */}
+          <button
+            onClick={startVideoCall}
+            className="p-2 hover:bg-white/10 rounded-full transition-colors border border-white/20 backdrop-blur-sm"
+            title="Start video call"
+          >
+            <Video className="h-5 w-5 text-gray-300" />
+          </button>
+
+          {/* Test Socket Button */}
           <button
             onClick={() => {
-              console.log('More options clicked!');
-              if (success) success('More options clicked!');
+              console.log('🧪 Testing socket connection...');
+              if (socket) {
+                console.log('Socket exists, emitting test event');
+                socket.emit('test-event', { message: 'Hello from frontend!' });
+                success('Test event sent!');
+              } else {
+                console.log('❌ No socket available');
+                error('No socket connection!');
+              }
             }}
-            className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-full transition-colors"
+            className="p-2 hover:bg-white/10 rounded-full transition-colors border border-white/20 backdrop-blur-sm"
+            title="Test Socket"
           >
-            <MoreVertical className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" />
+            <MoreVertical className="h-5 w-5 text-gray-300" />
           </button>
         </div>
       </div>
       </div>
 
-      {/* Call Interface */}
-      {showCallInterface && (
-        <CallInterface
-          isIncoming={false}
-          callerName={otherParticipant?.user.name || 'Unknown User'}
-          callerRole={otherParticipant?.user.role || 'User'}
-          onAccept={handleCallAccept}
-          onDecline={handleCallEnd}
-          onEndCall={handleCallEnd}
-          isVideoCall={callType === 'video'}
-          callDuration={callDuration}
+      {/* Call Components */}
+      {activeCall && callType === 'video' && (
+        <VideoCall
+          call={activeCall}
+          onEndCall={endCall}
+          socket={socket}
+        />
+      )}
+
+      {activeCall && callType === 'audio' && (
+        <AudioCall
+          call={activeCall}
+          onEndCall={endCall}
+          socket={socket}
         />
       )}
     </>

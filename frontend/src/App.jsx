@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
 import { AuthProvider } from './contexts/AuthContext';
 import { ToastProvider } from './contexts/ToastContext';
-import { CallProvider, useCall } from './contexts/CallContext';
+
 import Layout from './components/Layout';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
@@ -56,13 +56,7 @@ import OurVisionPage from './pages/OurVisionPage';
 import ScrollToTop from './components/ScrollToTop';
 import PWAInstallPrompt from './components/PWAInstallPrompt';
 import { usePWA } from './hooks/usePWA';
-import IncomingCallModal from './components/IncomingCallModal';
-import ActiveCallInterface from './components/ActiveCallInterface';
-import OutgoingCallInterface from './components/OutgoingCallInterface';
-import CallTestComponent from './components/calls/CallTestComponent';
-import CallTestPage from './pages/CallTestPage';
-import TestChatPage from './pages/TestChatPage';
-import CallPage from './pages/CallPage';
+
 import DemoPage from './pages/DemoPage';
 import PricingPage from './pages/PricingPage';
 import AISection from './pages/AISection';
@@ -86,64 +80,7 @@ const theme = createTheme({
   }
 });
 
-// Call Manager Component using the new call system
-const CallManagerComponent = () => {
-  const {
-    callState,
-    incomingCall,
-    currentCall,
-    participantInfo,
-    localStream,
-    remoteStream,
-    callControls,
-    callDuration,
-    acceptCall,
-    rejectCall,
-    endCall,
-    toggleMute,
-    toggleVideo,
-    toggleSpeaker
-  } = useCall();
 
-  return (
-    <>
-      {/* Outgoing Call Interface */}
-      <OutgoingCallInterface
-        isVisible={callState === 'outgoing' || callState === 'ringing'}
-        callData={currentCall}
-        participantInfo={participantInfo}
-        callState={callState}
-        onEndCall={endCall}
-      />
-
-      {/* Incoming Call Modal */}
-      <IncomingCallModal
-        isVisible={callState === 'incoming'}
-        callData={incomingCall}
-        callerInfo={participantInfo}
-        onAccept={acceptCall}
-        onReject={rejectCall}
-      />
-
-      {/* Active Call Interface */}
-      <ActiveCallInterface
-        isVisible={callState === 'active'}
-        callData={currentCall}
-        localStream={localStream}
-        remoteStream={remoteStream}
-        participantInfo={participantInfo}
-        onEndCall={endCall}
-        onToggleMute={toggleMute}
-        onToggleVideo={toggleVideo}
-        onToggleSpeaker={toggleSpeaker}
-        isMuted={callControls.isMuted}
-        isVideoEnabled={callControls.isVideoEnabled}
-        isSpeakerOn={callControls.isSpeakerOn}
-        callDuration={callDuration}
-      />
-    </>
-  );
-};
 
 function App() {
   // Removed PWA update functionality
@@ -152,13 +89,11 @@ function App() {
   return (
     <AuthProvider>
       <ToastProvider>
-        <CallProvider>
-          <ThemeProvider theme={theme}>
-            <CssBaseline />
-            <Router>
-              <ScrollToTop />
-              <CallManagerComponent />
-              <PWAInstallPrompt />
+        <ThemeProvider theme={theme}>
+          <CssBaseline />
+          <Router>
+            <ScrollToTop />
+            <PWAInstallPrompt />
 
               <div className="min-h-screen">
               <Routes>
@@ -241,13 +176,9 @@ function App() {
                 {/* Chat Routes */}
                 <Route path="/chat/:chatId" element={<Layout showNavbar={false} showFooter={false} showNotificationSystem={false}><ChatPage /></Layout>} />
 
-                {/* Call Routes */}
-                <Route path="/call/:callId" element={<CallPage />} />
 
-                {/* Test Routes */}
-                <Route path="/test/calls" element={<Layout><CallTestComponent /></Layout>} />
-                <Route path="/test/call-system" element={<Layout><CallTestPage /></Layout>} />
-                <Route path="/test/chat" element={<TestChatPage />} />
+
+
 
                 {/* Document Routes */}
                 <Route path="/documents" element={<Layout><DocumentRepository /></Layout>} />
@@ -259,9 +190,8 @@ function App() {
             </div>
           </Router>
         </ThemeProvider>
-      </CallProvider>
-    </ToastProvider>
-  </AuthProvider>
+      </ToastProvider>
+    </AuthProvider>
   );
 }
 

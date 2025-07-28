@@ -38,18 +38,16 @@ const Footer = () => {
   ];
 
   const socialLinks = [
-    { icon: Facebook, href: '#', name: 'Facebook' },
-    { icon: Twitter, href: '#', name: 'Twitter' },
-    { icon: Instagram, href: '#', name: 'Instagram' },
-    { icon: Linkedin, href: '#', name: 'LinkedIn' }
+    { icon: Instagram, href: 'https://www.instagram.com/chainverdict?igsh=MTA1dWU5YndpNGd2ZA==', name: 'Instagram', target: '_blank' },
+    { icon: Linkedin, href: 'https://www.linkedin.com/company/chainverdict/', name: 'LinkedIn', target: '_blank' }
   ];
 
   return (
-    <footer className="relative bg-gradient-to-br from-gray-950 via-blue-950 to-gray-900 overflow-hidden">
+    <footer className="relative bg-gradient-to-br from-black via-gray-900 to-gray-800 overflow-hidden">
       {/* Animated Background */}
       <div className="absolute inset-0">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-800/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-cyan-700/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-800/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-800/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
       </div>
 
       {/* Main Footer Content */}
@@ -158,19 +156,19 @@ const Footer = () => {
                   <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center group-hover:bg-gradient-to-r group-hover:from-blue-500 group-hover:to-cyan-500 transition-all duration-300">
                     <Mail className="w-4 h-4" />
                   </div>
-                  <span>support@chainverdict.com</span>
+                  <span>admin@chainverdict.in</span>
                 </div>
                 <div className="flex items-center space-x-3 text-gray-400 hover:text-white transition-colors group">
                   <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center group-hover:bg-gradient-to-r group-hover:from-blue-500 group-hover:to-cyan-500 transition-all duration-300">
                     <Phone className="w-4 h-4" />
                   </div>
-                  <span>+1 (555) 123-4567</span>
+                  <span>+91 6203004830</span>
                 </div>
                 <div className="flex items-center space-x-3 text-gray-400 hover:text-white transition-colors group">
                   <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center group-hover:bg-gradient-to-r group-hover:from-blue-500 group-hover:to-cyan-500 transition-all duration-300">
                     <MapPin className="w-4 h-4" />
                   </div>
-                  <span>123 Legal Street, Justice City</span>
+                  <span>Cuttack, Odisha-754100</span>
                 </div>
               </div>
 

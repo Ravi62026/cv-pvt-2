@@ -103,7 +103,7 @@ const VerificationGuard = ({
           </button>
           
           <a 
-            href="mailto:support@chainverdict.com"
+            href="admin@chainverdict.in"
             className="flex items-center space-x-2 bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
           >
             <Mail className="h-4 w-4" />

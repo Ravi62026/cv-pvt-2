@@ -88,6 +88,12 @@ export const initializeSocket = (server) => {
         socket.join(`user_${socket.userId}`);
         console.log(`   ✅ Joined personal room: user_${socket.userId}`);
 
+        // Test event handler
+        socket.on('test-event', (data) => {
+            console.log('🧪 Test event received:', data);
+            console.log(`   From user: ${socket.userName} (${socket.userId})`);
+        });
+
         // Handle joining chat rooms
         socket.on("join_chat", async (chatId) => {
             console.log(`🏠 JOIN_CHAT EVENT:`);
@@ -661,7 +667,100 @@ export const initializeSocket = (server) => {
             console.log(`   📡 Broadcasted offline status`);
         });
 
-        // WebRTC Signaling Handlers
+        // Call Initiation Handlers (Simple WhatsApp-like calls)
+
+        // Handle call initiation
+        socket.on("initiate-call", (data) => {
+            const { type, receiverId, chatId, caller } = data;
+            console.log(`📞 Call initiated by ${socket.userName} to ${receiverId} (${type})`);
+
+            // Send incoming call notification to receiver
+            socket.to(`user_${receiverId}`).emit("incoming-call", {
+                type,
+                chatId,
+                caller: {
+                    id: socket.userId,
+                    name: socket.userName,
+                    role: socket.userRole
+                },
+                timestamp: new Date()
+            });
+        });
+
+        // Handle call acceptance
+        socket.on("accept-call", (data) => {
+            const { chatId, callType } = data;
+            console.log(`📞 Call accepted by ${socket.userName} for chat ${chatId}`);
+
+            // Notify the caller that call was accepted
+            socket.to(chatId).emit("call-accepted", {
+                chatId,
+                callType,
+                acceptedBy: {
+                    id: socket.userId,
+                    name: socket.userName,
+                    role: socket.userRole
+                },
+                timestamp: new Date()
+            });
+        });
+
+        // Handle call rejection
+        socket.on("reject-call", (data) => {
+            const { chatId, callType } = data;
+            console.log(`📞 Call rejected by ${socket.userName} for chat ${chatId}`);
+
+            // Notify the caller that call was rejected
+            socket.to(chatId).emit("call-rejected", {
+                chatId,
+                callType,
+                rejectedBy: {
+                    id: socket.userId,
+                    name: socket.userName,
+                    role: socket.userRole
+                },
+                timestamp: new Date()
+            });
+        });
+
+        // Handle call end
+        socket.on("end-call", (data) => {
+            const { chatId, callType } = data;
+            console.log(`📞 Call ended by ${socket.userName} for chat ${chatId}`);
+
+            // Notify all participants that call ended
+            socket.to(chatId).emit("call-ended", {
+                chatId,
+                callType,
+                endedBy: {
+                    id: socket.userId,
+                    name: socket.userName,
+                    role: socket.userRole
+                },
+                timestamp: new Date()
+            });
+        });
+
+        // WebRTC Signaling for actual call connection
+        socket.on("offer", (data) => {
+            const { offer, chatId } = data;
+            console.log(`📞 WebRTC offer for chat ${chatId}`);
+            socket.to(chatId).emit("offer", { offer, chatId });
+        });
+
+        socket.on("answer", (data) => {
+            const { answer, chatId } = data;
+            console.log(`📞 WebRTC answer for chat ${chatId}`);
+            socket.to(chatId).emit("answer", { answer, chatId });
+        });
+
+        socket.on("ice-candidate", (data) => {
+            const { candidate, chatId } = data;
+            console.log(`📞 ICE candidate for chat ${chatId}`);
+            socket.to(chatId).emit("ice-candidate", { candidate, chatId });
+        });
+
+        // WebRTC Signaling Handlers (Legacy)
 
         // Handle call offer
         socket.on("webrtc_offer", (data) => {

@@ -123,7 +123,7 @@ const VerificationStatus = ({ user, className = "" }) => {
                 </button>
                 
                 <a 
-                  href="mailto:support@chainverdict.com"
+                  href="mailto: admin@chainverdict.in"
                   className="flex items-center space-x-2 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
                 >
                   <Mail className="h-4 w-4" />

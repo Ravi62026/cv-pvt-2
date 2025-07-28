@@ -51,8 +51,8 @@ const ContactPage = () => {
       icon: Mail,
       title: 'Email Support',
       description: 'Get in touch via email',
-      value: 'support@chainverdict.com',
-      action: 'mailto:support@chainverdict.com',
+      value: 'admin@chainverdict.in',
+      action: 'mailto:admin@chainverdict.com',
       gradient: 'from-gray-500 to-slate-500'
     },
     {
