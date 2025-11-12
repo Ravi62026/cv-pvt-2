@@ -21,7 +21,13 @@ import LoadingSpinner from '../components/common/LoadingSpinner';
 
 const ConnectedLawyers = () => {
   const [connections, setConnections] = useState([]);
+  const [pendingRequests, setPendingRequests] = useState([]);
+  const [activeTab, setActiveTab] = useState('accepted'); // 'accepted' or 'pending'
   const [isLoading, setIsLoading] = useState(true);
+  const [stats, setStats] = useState({
+    totalConnections: 0,
+    totalPending: 0,
+  });
   const [pagination, setPagination] = useState({
     current: 1,
     pages: 1,
@@ -31,11 +37,34 @@ const ConnectedLawyers = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
+  // Fetch stats on mount
   useEffect(() => {
-    fetchConnectedLawyers();
-  }, [pagination.current]);
+    fetchStats();
+  }, []);
 
-  const fetchConnectedLawyers = async () => {
+  // Fetch data when tab or page changes
+  useEffect(() => {
+    fetchConnections();
+  }, [pagination.current, activeTab]);
+
+  const fetchStats = async () => {
+    try {
+      // Fetch both counts for stats
+      const [connectedResponse, pendingResponse] = await Promise.all([
+        citizenAPI.getConnectedLawyers({ page: 1, limit: 1 }),
+        citizenAPI.getPendingConnectionRequests({ page: 1, limit: 1 }),
+      ]);
+
+      setStats({
+        totalConnections: connectedResponse.success ? connectedResponse.data.pagination.total : 0,
+        totalPending: pendingResponse.success ? pendingResponse.data.pagination.total : 0,
+      });
+    } catch (err) {
+      console.error('Failed to fetch stats:', err);
+    }
+  };
+
+  const fetchConnections = async () => {
     setIsLoading(true);
     try {
       const params = {
@@ -43,16 +72,31 @@ const ConnectedLawyers = () => {
         limit: 10,
       };
 
-      const response = await citizenAPI.getConnectedLawyers(params);
-      if (response.success) {
-        setConnections(response.data.connections);
-        setPagination(response.data.pagination);
+      if (activeTab === 'accepted') {
+        const response = await citizenAPI.getConnectedLawyers(params);
+        if (response.success) {
+          setConnections(response.data.connections);
+          setPagination(response.data.pagination);
+          // Update stats
+          setStats(prev => ({ ...prev, totalConnections: response.data.pagination.total }));
+        } else {
+          error('Failed to load connected lawyers');
+        }
       } else {
-        error('Failed to load connected lawyers');
+        // Fetch pending requests
+        const response = await citizenAPI.getPendingConnectionRequests(params);
+        if (response.success) {
+          setPendingRequests(response.data.requests);
+          setPagination(response.data.pagination);
+          // Update stats
+          setStats(prev => ({ ...prev, totalPending: response.data.pagination.total }));
+        } else {
+          error('Failed to load pending requests');
+        }
       }
     } catch (err) {
-      error('Failed to load connected lawyers');
-      console.error('Fetch connected lawyers error:', err);
+      error('Failed to load data');
+      console.error('Fetch error:', err);
     } finally {
       setIsLoading(false);
     }
@@ -81,25 +125,55 @@ const ConnectedLawyers = () => {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">Connected Lawyers</h1>
+          <h1 className="text-3xl font-bold text-white mb-2">My Lawyer Connections</h1>
           <p className="text-gray-300">
-            Lawyers who have accepted your connection requests
+            Manage your lawyer connections and pending requests
           </p>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex space-x-4 mb-8">
+          <button
+            onClick={() => setActiveTab('accepted')}
+            className={`px-6 py-3 rounded-lg font-medium transition-all duration-200 ${
+              activeTab === 'accepted'
+                ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-lg'
+                : 'bg-white/10 text-gray-300 hover:bg-white/20 border border-white/20'
+            }`}
+          >
+            <div className="flex items-center space-x-2">
+              <CheckCircle className="h-5 w-5" />
+              <span>Connected ({stats.totalConnections})</span>
+            </div>
+          </button>
+          <button
+            onClick={() => setActiveTab('pending')}
+            className={`px-6 py-3 rounded-lg font-medium transition-all duration-200 ${
+              activeTab === 'pending'
+                ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-lg'
+                : 'bg-white/10 text-gray-300 hover:bg-white/20 border border-white/20'
+            }`}
+          >
+            <div className="flex items-center space-x-2">
+              <Clock className="h-5 w-5" />
+              <span>Pending ({stats.totalPending})</span>
+            </div>
+          </button>
         </div>
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <StatsCard
             title="Total Connections"
-            value={pagination.total}
+            value={stats.totalConnections}
             icon={Users}
             color="blue"
           />
           <StatsCard
-            title="Active Chats"
-            value={connections.filter(c => c.chatInfo?.status === 'active').length}
-            icon={MessageCircle}
-            color="green"
+            title="Pending Requests"
+            value={stats.totalPending}
+            icon={Clock}
+            color="yellow"
           />
           <StatsCard
             title="Response Rate"
@@ -109,19 +183,36 @@ const ConnectedLawyers = () => {
           />
         </div>
 
-        {/* Connected Lawyers List */}
-        {connections.length > 0 ? (
-          <div className="space-y-6">
-            {connections.map((connection) => (
-              <ConnectedLawyerCard
-                key={connection._id}
-                connection={connection}
-                onStartChat={handleStartChat}
-              />
-            ))}
-          </div>
+        {/* Content based on active tab */}
+        {isLoading ? (
+          <LoadingSpinner />
+        ) : activeTab === 'accepted' ? (
+          connections.length > 0 ? (
+            <div className="space-y-6">
+              {connections.map((connection) => (
+                <ConnectedLawyerCard
+                  key={connection._id}
+                  connection={connection}
+                  onStartChat={handleStartChat}
+                />
+              ))}
+            </div>
+          ) : (
+            <EmptyState type="accepted" />
+          )
         ) : (
-          <EmptyState />
+          pendingRequests.length > 0 ? (
+            <div className="space-y-6">
+              {pendingRequests.map((request) => (
+                <PendingRequestCard
+                  key={request._id}
+                  request={request}
+                />
+              ))}
+            </div>
+          ) : (
+            <EmptyState type="pending" />
+          )
         )}
 
         {/* Pagination */}
@@ -155,6 +246,7 @@ const StatsCard = ({ title, value, icon: Icon, color }) => {
     blue: 'text-blue-400 bg-blue-500/20 border-blue-400/30',
     green: 'text-green-400 bg-green-500/20 border-green-400/30',
     purple: 'text-purple-400 bg-purple-500/20 border-purple-400/30',
+    yellow: 'text-yellow-400 bg-yellow-500/20 border-yellow-400/30',
   };
 
   return (
@@ -286,17 +378,94 @@ const ConnectedLawyerCard = ({ connection, onStartChat }) => {
   );
 };
 
+// Pending Request Card Component
+const PendingRequestCard = ({ request }) => {
+  const lawyer = request.lawyer;
+  const requestedAt = new Date(request.requestedAt).toLocaleString();
+  const requestCount = request.requestCount || 1;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-xl border border-yellow-400/30 p-6"
+    >
+      <div className="flex items-start space-x-4">
+        <div className="w-16 h-16 bg-yellow-500/20 rounded-full flex items-center justify-center backdrop-blur-sm border border-yellow-400/30">
+          <Clock className="h-8 w-8 text-yellow-400" />
+        </div>
+        <div className="flex-1">
+          <div className="flex items-center justify-between mb-2">
+            <div>
+              <h3 className="text-lg font-semibold text-white">{lawyer.name}</h3>
+              <p className="text-sm text-gray-300">{lawyer.email}</p>
+            </div>
+            <div className="text-right">
+              <span className="inline-block px-3 py-1 bg-yellow-500/20 text-yellow-400 text-sm rounded-full border border-yellow-400/30">
+                Pending
+              </span>
+              {requestCount > 1 && (
+                <p className="text-xs text-gray-400 mt-1">{requestCount} requests sent</p>
+              )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-300 mb-3">
+            <div className="flex items-center">
+              <Briefcase className="h-4 w-4 mr-2 text-blue-400" />
+              <span>{lawyer.lawyerDetails?.experience || 'N/A'} years experience</span>
+            </div>
+            <div className="flex items-center">
+              <Award className="h-4 w-4 mr-2 text-purple-400" />
+              <span>{lawyer.lawyerDetails?.specialization?.join(', ') || 'General Practice'}</span>
+            </div>
+            <div className="flex items-center">
+              <Calendar className="h-4 w-4 mr-2 text-cyan-400" />
+              <span>Requested: {requestedAt}</span>
+            </div>
+          </div>
+
+          {request.message && (
+            <div className="mt-3 p-3 bg-white/5 rounded-lg border border-white/10">
+              <p className="text-sm text-gray-300">
+                <span className="font-medium text-white">Your message:</span> {request.message}
+              </p>
+            </div>
+          )}
+
+          <div className="mt-3 flex items-center space-x-2 text-sm text-gray-400">
+            <Clock className="h-4 w-4" />
+            <span>Waiting for lawyer's response...</span>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
 // Empty State Component
-const EmptyState = () => {
+const EmptyState = ({ type }) => {
   const navigate = useNavigate();
 
   return (
     <div className="text-center py-12">
-      <Users className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-      <h3 className="text-lg font-medium text-white mb-2">No connected lawyers yet</h3>
-      <p className="text-gray-400 mb-6">
-        Start by finding and connecting with lawyers who can help with your legal needs
-      </p>
+      {type === 'accepted' ? (
+        <>
+          <Users className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-white mb-2">No connected lawyers yet</h3>
+          <p className="text-gray-400 mb-6">
+            Start by finding and connecting with lawyers who can help with your legal needs
+          </p>
+        </>
+      ) : (
+        <>
+          <Clock className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-white mb-2">No pending requests</h3>
+          <p className="text-gray-400 mb-6">
+            Send connection requests to lawyers to get started
+          </p>
+        </>
+      )}
       <button
         onClick={() => navigate('/citizen/find-lawyers')}
         className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white px-6 py-3 rounded-lg transition-all duration-200 flex items-center space-x-2 mx-auto shadow-lg hover:shadow-blue-500/25"

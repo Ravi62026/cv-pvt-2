@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
+import compression from "compression";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import { createServer } from "http";
@@ -10,6 +11,7 @@ import { initializeSocket } from "./config/socket.js";
 // Import configurations and middleware
 import connectDB from "./config/database.js";
 import { apiLimiter } from "./middleware/rateLimiter.js";
+import { testRedisConnection } from "./utils/redisClientREST.js";
 
 // Import routes
 import authRoutes from "./routes/auth.js";
@@ -36,12 +38,27 @@ const io = initializeSocket(server);
 // Connect to database
 connectDB();
 
+// Test Redis connection (async, non-blocking)
+testRedisConnection();
+
 // Security middleware
 app.use(
     helmet({
         crossOriginResourcePolicy: { policy: "cross-origin" },
     })
 );
+
+// Compression middleware - Reduces response size by 70-90%
+app.use(compression({
+    level: 6,              // Compression level (0-9, 6 is balanced)
+    threshold: 1024,       // Only compress responses > 1KB (1024 bytes)
+    filter: (req, res) => {
+        if (req.headers['x-no-compression']) {
+            return false;  // Don't compress if client requests no compression
+        }
+        return compression.filter(req, res);
+    }
+}));
 
 // CORS configuration - Allow all origins
 app.use(
@@ -63,8 +80,8 @@ if (process.env.NODE_ENV !== "production") {
     app.use(morgan("dev"));
 }
 
-// Rate limiting - Disabled for better user experience
-// app.use("/api", apiLimiter);
+// Rate limiting - Enabled for security and scalability
+app.use("/api", apiLimiter);
 
 // Routes
 app.use("/api/auth", authRoutes);
@@ -122,6 +139,14 @@ server.listen(PORT, () => {
         `Server running in ${process.env.NODE_ENV} mode on port ${PORT}`
     );
     console.log(`Socket.io server ready for connections`);
+    
+    // PM2 Ready Signal
+    // Tell PM2 that the app is ready to receive traffic
+    // This is used with wait_ready: true in ecosystem.config.cjs
+    if (process.send) {
+        process.send('ready');
+        console.log('✅ PM2 ready signal sent');
+    }
 });
 
 // Handle unhandled promise rejections

@@ -18,15 +18,15 @@ const Toast = ({ toast, onRemove }) => {
   const getIcon = () => {
     switch (toast.type) {
       case TOAST_TYPES.SUCCESS:
-        return <CheckCircle className="h-6 w-6 text-emerald-400" />;
+        return <CheckCircle className="h-6 w-6 text-white" />;
       case TOAST_TYPES.ERROR:
-        return <XCircle className="h-6 w-6 text-red-400" />;
+        return <XCircle className="h-6 w-6 text-white" />;
       case TOAST_TYPES.WARNING:
-        return <AlertCircle className="h-6 w-6 text-amber-400" />;
+        return <AlertCircle className="h-6 w-6 text-white" />;
       case TOAST_TYPES.INFO:
-        return <Info className="h-6 w-6 text-cyan-400" />;
+        return <Info className="h-6 w-6 text-white" />;
       default:
-        return <Info className="h-6 w-6 text-cyan-400" />;
+        return <Info className="h-6 w-6 text-white" />;
     }
   };
 
@@ -34,24 +34,24 @@ const Toast = ({ toast, onRemove }) => {
     switch (toast.type) {
       case TOAST_TYPES.SUCCESS:
         return {
-          background: 'bg-gradient-to-r from-emerald-500/20 via-green-500/15 to-emerald-600/20',
-          border: 'border-emerald-400/30',
-          iconBg: 'bg-gradient-to-r from-emerald-500 to-green-500',
-          glow: 'shadow-emerald-500/25'
+          background: 'bg-gradient-to-r from-cyan-500/20 via-blue-500/15 to-cyan-600/20',
+          border: 'border-cyan-400/30',
+          iconBg: 'bg-gradient-to-r from-cyan-500 to-blue-500',
+          glow: 'shadow-cyan-500/25'
         };
       case TOAST_TYPES.ERROR:
         return {
-          background: 'bg-gradient-to-r from-red-500/20 via-rose-500/15 to-red-600/20',
-          border: 'border-red-400/30',
-          iconBg: 'bg-gradient-to-r from-red-500 to-rose-500',
-          glow: 'shadow-red-500/25'
+          background: 'bg-gradient-to-r from-purple-500/20 via-blue-500/15 to-purple-600/20',
+          border: 'border-purple-400/30',
+          iconBg: 'bg-gradient-to-r from-purple-500 to-blue-500',
+          glow: 'shadow-purple-500/25'
         };
       case TOAST_TYPES.WARNING:
         return {
-          background: 'bg-gradient-to-r from-amber-500/20 via-yellow-500/15 to-amber-600/20',
-          border: 'border-amber-400/30',
-          iconBg: 'bg-gradient-to-r from-amber-500 to-yellow-500',
-          glow: 'shadow-amber-500/25'
+          background: 'bg-gradient-to-r from-blue-500/20 via-cyan-500/15 to-blue-600/20',
+          border: 'border-blue-400/30',
+          iconBg: 'bg-gradient-to-r from-blue-500 to-cyan-500',
+          glow: 'shadow-blue-500/25'
         };
       case TOAST_TYPES.INFO:
         return {

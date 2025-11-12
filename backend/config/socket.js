@@ -1,4 +1,6 @@
 import { Server } from "socket.io";
+import { createAdapter } from "@socket.io/redis-adapter";
+import { createClient } from "redis";
 import { verifyAccessToken } from "../utils/jwt.js";
 import User from "../models/User.js";
 import {
@@ -12,13 +14,9 @@ export const initializeSocket = (server) => {
     const io = new Server(server, {
         cors: {
             origin: [
-                process.env.CLIENT_URL || "https://fluent-music-374010.web.app",
-                process.env.FRONTEND_URL || "https://fluent-music-374010.web.app",
-                "https://fluent-music-374010.web.app",
-                "https://cv-pvt-2-frontend.vercel.app",
-                "http://localhost:5173", // for development
-                "http://localhost:517", // alternative dev port
-                "https://localhost:5173", // HTTPS dev
+                process.env.CLIENT_URL,
+                process.env.FRONTEND_URL,
+                "http://localhost:5173", // HTTPS dev
                 "*" // Allow all origins for now (remove in production)
             ],
             methods: ["GET", "POST"],
@@ -35,6 +33,63 @@ export const initializeSocket = (server) => {
         maxHttpBufferSize: 1e6,
         allowUpgrades: process.env.RENDER ? true : false, // Enable WebSocket upgrades on Render
     });
+
+    // ============================================
+    // REDIS ADAPTER SETUP (For PM2 Clustering)
+    // ============================================
+    /**
+     * Why Redis Adapter?
+     * - PM2 creates 12 separate Socket.io instances
+     * - Without Redis: User A (Instance 0) can't message User B (Instance 7)
+     * - With Redis: All instances communicate via Redis Pub/Sub
+     * 
+     * How it works:
+     * 1. User A sends message to Instance 0
+     * 2. Instance 0 publishes to Redis
+     * 3. Redis broadcasts to ALL instances
+     * 4. Instance 7 receives and sends to User B
+     * 5. ✅ Message delivered!
+     */
+    
+    // Setup Redis Adapter (async initialization)
+    (async () => {
+        try {
+            // Create Redis clients for pub/sub
+            // Convert redis:// to rediss:// for TLS
+            const redisUrl = process.env.REDIS_URL.replace('redis://', 'rediss://');
+            
+            const pubClient = createClient({
+                url: redisUrl,
+                socket: {
+                    tls: true,
+                    rejectUnauthorized: false
+                }
+            });
+            
+            const subClient = pubClient.duplicate();
+            
+            // Error handling
+            pubClient.on('error', (err) => console.error('Redis Pub Client Error:', err));
+            subClient.on('error', (err) => console.error('Redis Sub Client Error:', err));
+            
+            // Connect both clients
+            await Promise.all([
+                pubClient.connect(),
+                subClient.connect()
+            ]);
+            
+            // Attach Redis adapter to Socket.io
+            io.adapter(createAdapter(pubClient, subClient));
+            
+            console.log('✅ Socket.io Redis Adapter connected!');
+            console.log('📡 All PM2 instances can now communicate via Redis');
+            
+        } catch (error) {
+            console.error('❌ Redis Adapter Error:', error.message);
+            console.log('⚠️  Socket.io will work in single-instance mode');
+            // Socket.io will continue to work, just without cross-instance communication
+        }
+    })();
 
     // Store active users and chat rooms
     const activeUsers = new Map();

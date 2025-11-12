@@ -15,12 +15,16 @@ import {
     requestLawyerForQuery,
     requestLawyerForDispute,
     sendDirectConnectionRequest,
+    revokeConnectionRequest,
+    revokeCaseRequest,
     getMyConnectedLawyers,
+    getPendingConnectionRequests,
     getMyDirectChats,
     verifyAllLawyers,
 } from "../controllers/citizenController.js";
 import { protect, authorize } from "../middleware/auth.js";
 import { messageLimiter } from "../middleware/rateLimiter.js";
+import { cacheMiddleware } from "../middleware/cache.js";
 
 const router = express.Router();
 
@@ -28,22 +32,22 @@ const router = express.Router();
 router.use(protect);
 router.use(authorize("citizen"));
 
-// Dashboard and stats
-router.get("/dashboard", getCitizenDashboard);
-router.get("/recent-activity", getRecentActivity);
+// Dashboard and stats (with caching)
+router.get("/dashboard", cacheMiddleware(120), getCitizenDashboard); // Cache for 2 minutes
+router.get("/recent-activity", cacheMiddleware(60), getRecentActivity); // Cache for 1 minute
 
-// Lawyer management
-router.get("/my-lawyers", getMyLawyers);
-router.get("/available-lawyers", getAvailableLawyers);
+// Lawyer management (with caching)
+router.get("/my-lawyers", cacheMiddleware(300), getMyLawyers); // Cache for 5 minutes
+router.get("/available-lawyers", cacheMiddleware(600), getAvailableLawyers); // Cache for 10 minutes
 
-// Case management
-router.get("/my-cases", getMyCases);
+// Case management (with caching)
+router.get("/my-cases", cacheMiddleware(120), getMyCases); // Cache for 2 minutes
 
 // Direct messaging (for general consultation) - Rate limiting disabled
 router.post(
     "/message-request/:lawyerId",
     sendDirectMessageRequest
-);
+); // No cache for mutations
 
 
 
@@ -51,25 +55,30 @@ router.post(
 router.post(
     "/request-lawyer-for-query/:queryId/:lawyerId",
     requestLawyerForQuery
-);
+); // No cache for mutations
 router.post(
     "/request-lawyer-for-dispute/:disputeId/:lawyerId",
     requestLawyerForDispute
-);
+); // No cache for mutations
 
-// Request and offer management
-router.get("/pending-requests", getPendingRequests);
-router.get("/received-offers", getReceivedOffers);
+// Request and offer management (with caching)
+router.get("/pending-requests", cacheMiddleware(60), getPendingRequests); // Cache for 1 minute
+router.get("/received-offers", cacheMiddleware(60), getReceivedOffers); // Cache for 1 minute
 
-// Case-specific request and offer management
-router.get("/my-case-requests", getMyCaseRequests);
-router.get("/my-case-offers", getMyCaseOffers);
-router.post("/accept-case-offer/:offerId", acceptCaseOffer);
-router.post("/reject-case-offer/:offerId", rejectCaseOffer);
+// Case-specific request and offer management (with caching for GET requests)
+router.get("/my-case-requests", cacheMiddleware(120), getMyCaseRequests); // Cache for 2 minutes
+router.get("/my-case-offers", cacheMiddleware(120), getMyCaseOffers); // Cache for 2 minutes
+router.post("/accept-case-offer/:offerId", acceptCaseOffer); // No cache for mutations
+router.post("/reject-case-offer/:offerId", rejectCaseOffer); // No cache for mutations
 
-// Direct connection management
-router.post("/direct-connection-request/:lawyerId", messageLimiter, sendDirectConnectionRequest);
-router.get("/connected-lawyers", getMyConnectedLawyers);
-router.get("/direct-chats", getMyDirectChats);
+// Direct connection management (with caching for GET requests)
+router.post("/direct-connection-request/:lawyerId", messageLimiter, sendDirectConnectionRequest); // No cache for mutations
+router.delete("/revoke-connection-request/:connectionId", revokeConnectionRequest); // Revoke direct connection request
+router.get("/connected-lawyers", cacheMiddleware(300), getMyConnectedLawyers); // Cache for 5 minutes
+router.get("/pending-connection-requests", cacheMiddleware(60), getPendingConnectionRequests); // Cache for 1 minute
+router.get("/direct-chats", cacheMiddleware(120), getMyDirectChats); // Cache for 2 minutes
+
+// Case request management
+router.delete("/revoke-case-request/:caseType/:caseId/:lawyerId", revokeCaseRequest); // Revoke case-specific request
 
 export default router;

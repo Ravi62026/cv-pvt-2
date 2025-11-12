@@ -17,7 +17,7 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import { chatAPI } from '../../services/api';
-import { useSocket } from '../../hooks/useSocket';
+import { useSocket } from '../../hooks/useSocket.jsx';
 import LoadingSpinner from '../common/LoadingSpinner';
 import ChatHeader from './ChatHeader';
 import MessageBubble from './MessageBubble';

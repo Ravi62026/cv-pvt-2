@@ -43,46 +43,33 @@ const MyCases = () => {
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      // Fetch real data from the correct API endpoint
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/citizens/my-cases`, {
-        headers: {
-          'Authorization': `Bearer ${getToken()}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      console.log('🔍 Fetching my cases...');
+      
+      // Use citizenAPI service which handles authentication properly
+      const result = await citizenAPI.getMyCases();
+      
+      console.log('📦 My Cases API Response:', result);
 
-      if (response.ok) {
-        const result = await response.json();
-        console.log('My Cases API Response:', result);
+      if (result.success && result.data && Array.isArray(result.data.cases)) {
+        const cases = result.data.cases;
 
-        if (result.success && result.data && Array.isArray(result.data.cases)) {
-          const cases = result.data.cases;
+        // Separate queries and disputes
+        const queriesData = cases.filter(c => c.caseType === 'query');
+        const disputesData = cases.filter(c => c.caseType === 'dispute');
 
-          // Separate queries and disputes
-          const queriesData = cases.filter(c => c.caseType === 'query');
-          const disputesData = cases.filter(c => c.caseType === 'dispute');
+        setQueries(queriesData);
+        setDisputes(disputesData);
 
-          setQueries(queriesData);
-          setDisputes(disputesData);
-
-          console.log('Loaded queries:', queriesData.length);
-          console.log('Loaded disputes:', disputesData.length);
-          console.log('Sample case with requests:', cases[0]?.requestedLawyers, cases[0]?.receivedOffers);
-        } else {
-          console.log('No cases found or invalid response structure');
-          setQueries([]);
-          setDisputes([]);
-        }
+        console.log('✅ Loaded queries:', queriesData.length);
+        console.log('✅ Loaded disputes:', disputesData.length);
       } else {
-        const errorData = await response.json();
-        console.error('API Error:', errorData);
-        error(errorData.message || 'Failed to load cases');
+        console.log('ℹ️ No cases found or invalid response structure');
         setQueries([]);
         setDisputes([]);
       }
     } catch (err) {
-      console.error('Fetch data error:', err);
-      error('Failed to load cases');
+      console.error('❌ Fetch data error:', err);
+      // Don't show error toast for every failed fetch
       setQueries([]);
       setDisputes([]);
     } finally {

@@ -286,6 +286,28 @@ userSchema.methods.addMessageRequest = function (toUserId) {
     );
 };
 
+// ============================================
+// DATABASE INDEXES FOR PERFORMANCE
+// ============================================
+// These indexes make queries 100x faster by creating lookup tables
+
+// Note: email index already exists from unique: true in schema
+
+// Index on role for filtering users by type (admin/lawyer/citizen)
+userSchema.index({ role: 1 });
+
+// Index on isActive for filtering active/inactive users
+userSchema.index({ isActive: 1 });
+
+// Compound index for common query: active lawyers
+userSchema.index({ role: 1, isActive: 1 });
+
+// Index on verification status for lawyers
+userSchema.index({ 'lawyerDetails.verificationStatus': 1 });
+
+// Index on createdAt for sorting by registration date
+userSchema.index({ createdAt: -1 });
+
 const User = mongoose.model("User", userSchema);
 
 export default User;

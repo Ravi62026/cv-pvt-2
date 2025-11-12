@@ -21,7 +21,7 @@ import {
   AccessTime,
   TrendingUp
 } from '@mui/icons-material';
-import { useSocket } from '../../hooks/useSocket';
+import { useSocket } from '../../hooks/useSocket.jsx';
 import { useAuth } from '../../contexts/AuthContext';
 import ChatWindow from '../chat/ChatWindow';
 import { useNavigate } from 'react-router-dom';

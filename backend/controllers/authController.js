@@ -233,9 +233,9 @@ export const login = async (req, res) => {
             "+password +refreshToken"
         );
         if (!user) {
-            return res.status(401).json({
+            return res.status(404).json({
                 success: false,
-                message: "Invalid credentials",
+                message: "No account found with this email. Please sign up.",
             });
         }
 

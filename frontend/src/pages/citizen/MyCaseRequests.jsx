@@ -9,7 +9,8 @@ import {
   User,
   Calendar,
   FileText,
-  AlertCircle
+  AlertCircle,
+  Trash2
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
@@ -25,6 +26,16 @@ const MyCaseRequests = () => {
 
   useEffect(() => {
     fetchCaseRequests();
+    
+    // Set up auto-refresh every 30 seconds to catch updates
+    const refreshInterval = setInterval(() => {
+      console.log('🔄 Auto-refreshing case requests...');
+      fetchCaseRequests();
+    }, 30000); // 30 seconds
+
+    return () => {
+      clearInterval(refreshInterval);
+    };
   }, []);
 
   const fetchCaseRequests = async () => {
@@ -41,6 +52,45 @@ const MyCaseRequests = () => {
       console.error('Case requests fetch error:', err);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleRevokeRequest = async (request) => {
+    if (!window.confirm('Are you sure you want to revoke this request?')) {
+      return;
+    }
+
+    try {
+      console.log('🗑️ Revoking request:', request);
+      
+      const response = await citizenAPI.revokeCaseRequest(
+        request.caseType,
+        request.caseId,
+        request.lawyer._id
+      );
+
+      console.log('📡 Revoke response:', response);
+
+      if (response.success) {
+        success('Request revoked successfully');
+        
+        // Immediately remove from UI
+        setRequests(prev => prev.filter(r => 
+          !(r.caseId === request.caseId && 
+            r.lawyer._id === request.lawyer._id &&
+            r.caseType === request.caseType)
+        ));
+        
+        // Then refresh from server
+        setTimeout(() => {
+          fetchCaseRequests();
+        }, 500);
+      } else {
+        error(response.error || 'Failed to revoke request');
+      }
+    } catch (err) {
+      error('Failed to revoke request');
+      console.error('Revoke error:', err);
     }
   };
 
@@ -148,7 +198,10 @@ const MyCaseRequests = () => {
                             {request.lawyer?.name || 'Unknown Lawyer'}
                           </h3>
                           <p className="text-sm text-gray-300">
-                            {request.lawyer?.specialization || 'General Practice'}
+                            {request.lawyer?.email || 'No email'}
+                          </p>
+                          <p className="text-xs text-gray-400">
+                            {request.lawyer?.specialization?.join(', ') || 'General Practice'}
                           </p>
                         </div>
                       </div>
@@ -167,18 +220,18 @@ const MyCaseRequests = () => {
                         </span>
                       </div>
                       <p className="text-sm text-gray-300 mb-2">
-                        <strong className="text-white">Title:</strong> {request.caseTitle || request.case?.title || 'N/A'}
+                        <strong className="text-white">Title:</strong> {request.caseTitle || 'N/A'}
                       </p>
                       <p className="text-sm text-gray-300">
-                        <strong className="text-white">Description:</strong> {request.caseDescription || request.case?.description || 'N/A'}
+                        <strong className="text-white">Description:</strong> {request.description || 'N/A'}
                       </p>
                     </div>
 
                     {/* Request Message */}
                     {request.message && (
                       <div className="mb-4">
-                        <h4 className="text-sm font-medium text-gray-900 mb-2">Your Message</h4>
-                        <p className="text-sm text-gray-700 bg-blue-50 p-3 rounded-lg">
+                        <h4 className="text-sm font-medium text-white mb-2">Your Message</h4>
+                        <p className="text-sm text-gray-300 bg-white/5 p-3 rounded-lg border border-white/10 backdrop-blur-sm">
                           {request.message}
                         </p>
                       </div>
@@ -187,19 +240,19 @@ const MyCaseRequests = () => {
                     {/* Lawyer Response */}
                     {request.response && (
                       <div className="mb-4">
-                        <h4 className="text-sm font-medium text-gray-900 mb-2">Lawyer's Response</h4>
-                        <p className="text-sm text-gray-700 bg-green-50 p-3 rounded-lg">
+                        <h4 className="text-sm font-medium text-white mb-2">Lawyer's Response</h4>
+                        <p className="text-sm text-gray-300 bg-green-500/10 p-3 rounded-lg border border-green-400/20 backdrop-blur-sm">
                           {request.response}
                         </p>
                       </div>
                     )}
 
                     {/* Timestamps */}
-                    <div className="flex items-center justify-between text-xs text-gray-500">
+                    <div className="flex items-center justify-between text-xs text-gray-400">
                       <div className="flex items-center space-x-4">
                         <div className="flex items-center">
                           <Calendar className="h-3 w-3 mr-1" />
-                          <span>Sent: {new Date(request.createdAt).toLocaleDateString()}</span>
+                          <span>Sent: {request.requestedAt ? new Date(request.requestedAt).toLocaleDateString() : 'Invalid Date'}</span>
                         </div>
                         {request.respondedAt && (
                           <div className="flex items-center">
@@ -213,22 +266,41 @@ const MyCaseRequests = () => {
                 </div>
 
                 {/* Action Buttons */}
-                {request.status === 'accepted' && (
-                  <div className="mt-4 pt-4 border-t border-gray-200">
+                <div className="mt-4 pt-4 border-t border-white/10">
+                  {request.status === 'pending' && (
                     <div className="flex items-center justify-between">
-                      <p className="text-sm text-green-600 font-medium">
+                      <p className="text-sm text-yellow-400 font-medium">
+                        ⏳ Waiting for lawyer's response...
+                      </p>
+                      <button
+                        onClick={() => handleRevokeRequest(request)}
+                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-200"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Revoke Request
+                      </button>
+                    </div>
+                  )}
+                  {request.status === 'accepted' && (
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm text-green-400 font-medium">
                         ✅ Request accepted! You can now chat with the lawyer.
                       </p>
                       <button
                         onClick={() => handleStartChat(request)}
-                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200"
                       >
                         <MessageCircle className="h-4 w-4 mr-2" />
                         Start Chat
                       </button>
                     </div>
-                  </div>
-                )}
+                  )}
+                  {request.status === 'rejected' && (
+                    <p className="text-sm text-red-400 font-medium">
+                      ❌ Request was declined by the lawyer.
+                    </p>
+                  )}
+                </div>
               </div>
             ))}
           </div>

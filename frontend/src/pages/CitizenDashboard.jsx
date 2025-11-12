@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
-import { useSocket, useSocketEvent } from '../hooks/useSocket';
+import { useSocket, useSocketEvent } from '../hooks/useSocket.jsx';
 import { citizenAPI } from '../services/api';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 

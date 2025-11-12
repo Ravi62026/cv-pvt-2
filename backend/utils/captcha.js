@@ -17,6 +17,8 @@ export const verifyCaptcha = async (captchaToken) => {
             throw new Error("CAPTCHA token is required");
         }
 
+        console.log("Verifying CAPTCHA with secret key:", process.env.RECAPTCHA_SECRET_KEY?.substring(0, 10) + "...");
+
         const response = await axios.post(
             "https://www.google.com/recaptcha/api/siteverify",
             null,
@@ -28,21 +30,24 @@ export const verifyCaptcha = async (captchaToken) => {
             }
         );
 
+        console.log("CAPTCHA verification response:", JSON.stringify(response.data, null, 2));
+
         const { success, score, "error-codes": errorCodes } = response.data;
 
         if (!success) {
             console.error("CAPTCHA verification failed:", errorCodes);
-            throw new Error("CAPTCHA verification failed");
+            throw new Error(`CAPTCHA verification failed: ${errorCodes?.join(", ") || "Unknown error"}`);
         }
 
         // For reCAPTCHA v3, check score (optional)
-        if (score !== undefined && score < 0.5) {
+        // v2 doesn't have a score, so only check if it exists
+        if (score !== undefined && score < (process.env.RECAPTCHA_MIN_SCORE || 0.5)) {
             throw new Error("CAPTCHA score too low");
         }
 
         return true;
     } catch (error) {
         console.error("CAPTCHA verification error:", error.message);
-        throw new Error("CAPTCHA verification failed");
+        throw new Error(error.message || "CAPTCHA verification failed");
     }
 };

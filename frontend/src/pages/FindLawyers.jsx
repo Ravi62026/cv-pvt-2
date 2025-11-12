@@ -13,6 +13,7 @@ import {
   Users,
   Award,
   Briefcase,
+  XCircle,
 } from 'lucide-react';
 import { useToast } from '../contexts/ToastContext';
 import { citizenAPI } from '../services/api';
@@ -22,6 +23,7 @@ import LawyerRequestModal from '../components/LawyerRequestModal';
 const FindLawyers = () => {
   const [searchParams] = useSearchParams();
   const [lawyers, setLawyers] = useState([]);
+  const [pendingRequests, setPendingRequests] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filters, setFilters] = useState({
     search: '',
@@ -68,7 +70,68 @@ const FindLawyers = () => {
 
   useEffect(() => {
     fetchLawyers();
-  }, [filters, pagination.current]);
+    fetchPendingRequests();
+    if (queryId || disputeId) {
+      fetchCaseSpecificRequests();
+    }
+  }, [filters, pagination.current, queryId, disputeId]);
+
+  const fetchCaseSpecificRequests = async () => {
+    try {
+      console.log('🔍 Fetching case-specific requests for:', { queryId, disputeId });
+      
+      // Fetch ALL case requests (don't filter by status in API call)
+      const response = await citizenAPI.getMyCaseRequests({ limit: 100 });
+      
+      console.log('📡 Case requests response:', response);
+      
+      if (response.success) {
+        // Filter for current case and pending status
+        const caseRequests = response.data.requests.filter(req => {
+          const caseIdMatch = queryId 
+            ? req.caseId?.toString() === queryId.toString() 
+            : req.caseId?.toString() === disputeId.toString();
+          
+          const caseTypeMatch = queryId 
+            ? req.caseType === 'query' 
+            : req.caseType === 'dispute';
+          
+          const isPending = req.status === 'pending';
+          
+          console.log('Checking request:', {
+            reqCaseId: req.caseId,
+            reqLawyerId: req.lawyer?._id,
+            reqCaseType: req.caseType,
+            reqStatus: req.status,
+            targetId: queryId || disputeId,
+            caseIdMatch,
+            caseTypeMatch,
+            isPending,
+            fullRequest: req
+          });
+          
+          return caseIdMatch && caseTypeMatch && isPending;
+        });
+        
+        console.log('✅ Filtered case requests:', caseRequests);
+        console.log('   Total requests:', response.data.requests.length);
+        console.log('   Filtered count:', caseRequests.length);
+        
+        // Transform to match the expected format with lawyer info
+        const transformedRequests = caseRequests.map(req => ({
+          ...req,
+          lawyer: req.lawyer || { _id: req.lawyerId },
+          requestedAt: req.requestedAt,
+          requestCount: 1,
+        }));
+        
+        console.log('📤 Setting pending requests:', transformedRequests);
+        setPendingRequests(transformedRequests);
+      }
+    } catch (err) {
+      console.error("Error fetching case-specific requests:", err);
+    }
+  };
 
   const fetchLawyers = async () => {
     setIsLoading(true);
@@ -104,6 +167,17 @@ const FindLawyers = () => {
     }
   };
 
+  const fetchPendingRequests = async () => {
+    try {
+      const response = await citizenAPI.getPendingConnectionRequests({ limit: 100 });
+      if (response.success) {
+        setPendingRequests(response.data.requests);
+      }
+    } catch (err) {
+      console.error("Error fetching pending requests:", err);
+    }
+  };
+
   const handleFilterChange = (key, value) => {
     setFilters(prev => ({ ...prev, [key]: value }));
     setPagination(prev => ({ ...prev, current: 1 }));
@@ -112,6 +186,77 @@ const FindLawyers = () => {
   const handleRequestLawyer = (lawyer) => {
     setSelectedLawyer(lawyer);
     setShowRequestModal(true);
+  };
+
+  const handleRevokeRequest = async (lawyer) => {
+    if (!window.confirm('Are you sure you want to revoke this request?')) {
+      return;
+    }
+
+    try {
+      let response;
+      
+      if (queryId) {
+        // Revoke query-specific request
+        console.log('🗑️ Revoking query request for lawyer:', lawyer._id);
+        response = await citizenAPI.revokeCaseRequest('query', queryId, lawyer._id);
+      } else if (disputeId) {
+        // Revoke dispute-specific request
+        console.log('🗑️ Revoking dispute request for lawyer:', lawyer._id);
+        response = await citizenAPI.revokeCaseRequest('dispute', disputeId, lawyer._id);
+      } else {
+        // Revoke direct connection request
+        const request = pendingRequests.find(r => r.lawyer._id === lawyer._id);
+        if (request) {
+          console.log('🗑️ Revoking direct connection request:', request._id);
+          response = await citizenAPI.revokeConnectionRequest(request._id);
+        }
+      }
+
+      if (response && response.success) {
+        success('Request revoked successfully');
+        
+        console.log('✅ Revoke successful, updating UI');
+        console.log('   Current pending requests:', pendingRequests);
+        console.log('   Removing lawyer:', lawyer._id);
+        
+        // Immediately remove from local state for instant UI update
+        setPendingRequests(prev => {
+          const filtered = prev.filter(r => {
+            const reqLawyerId = r.lawyer?._id?.toString() || r.lawyerId?.toString();
+            const targetLawyerId = lawyer._id?.toString();
+            const shouldKeep = reqLawyerId !== targetLawyerId;
+            
+            console.log('   Checking request:', {
+              reqLawyerId,
+              targetLawyerId,
+              shouldKeep,
+              request: r
+            });
+            
+            return shouldKeep;
+          });
+          
+          console.log('   Filtered pending requests:', filtered);
+          return filtered;
+        });
+        
+        // Then refresh from server to ensure consistency
+        setTimeout(() => {
+          console.log('🔄 Refreshing from server...');
+          if (queryId || disputeId) {
+            fetchCaseSpecificRequests();
+          } else {
+            fetchPendingRequests();
+          }
+        }, 500);
+      } else {
+        error(response?.error || 'Failed to revoke request');
+      }
+    } catch (err) {
+      error('Failed to revoke request');
+      console.error('Revoke error:', err);
+    }
   };
 
   const handleRequestSubmit = async (requestData) => {
@@ -134,6 +279,8 @@ const FindLawyers = () => {
         success(`${requestType.charAt(0).toUpperCase() + requestType.slice(1)} request sent successfully!`);
         setShowRequestModal(false);
         setSelectedLawyer(null);
+        // Refresh pending requests
+        fetchPendingRequests();
       } else {
         error(response.error || 'Failed to send request');
       }
@@ -141,6 +288,32 @@ const FindLawyers = () => {
       error('Failed to send request');
       console.error('Request error:', err);
     }
+  };
+
+  const getRequestStatus = (lawyerId) => {
+    // Check for pending requests based on context
+    const request = pendingRequests.find(r => {
+      const requestLawyerId = r.lawyer?._id?.toString() || r.lawyerId?.toString();
+      const targetLawyerId = lawyerId?.toString();
+      const match = requestLawyerId === targetLawyerId;
+      
+      return match;
+    });
+
+    if (!request) {
+      return null;
+    }
+
+    const lastRequestTime = new Date(request.requestedAt);
+    const now = new Date();
+    const hoursSinceRequest = (now - lastRequestTime) / (1000 * 60 * 60);
+
+    return {
+      isPending: true,
+      canRequestAgain: hoursSinceRequest >= 12,
+      requestCount: request.requestCount || 1,
+      hoursRemaining: Math.max(0, 12 - hoursSinceRequest).toFixed(1),
+    };
   };
 
   if (isLoading && lawyers.length === 0) {
@@ -266,6 +439,8 @@ const FindLawyers = () => {
               key={lawyer._id}
               lawyer={lawyer}
               onRequestLawyer={handleRequestLawyer}
+              onRevokeRequest={handleRevokeRequest}
+              requestStatus={getRequestStatus(lawyer._id)}
             />
           ))}
         </div>
@@ -319,7 +494,12 @@ const FindLawyers = () => {
 };
 
 // Lawyer Card Component
-const LawyerCard = ({ lawyer, onRequestLawyer }) => {
+const LawyerCard = ({ lawyer, onRequestLawyer, onRevokeRequest, requestStatus }) => {
+  const isRequested = requestStatus?.isPending;
+  const canRequestAgain = requestStatus?.canRequestAgain;
+  const requestCount = requestStatus?.requestCount || 0;
+  const hoursRemaining = requestStatus?.hoursRemaining || 0;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -332,7 +512,14 @@ const LawyerCard = ({ lawyer, onRequestLawyer }) => {
           <Shield className="h-8 w-8 text-blue-400" />
         </div>
         <div className="flex-1">
-          <h3 className="text-lg font-semibold text-white">{lawyer.name}</h3>
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-white">{lawyer.name}</h3>
+            {isRequested && (
+              <span className="px-2 py-1 bg-yellow-500/20 text-yellow-400 text-xs rounded-full border border-yellow-400/30">
+                {requestCount > 1 ? `${requestCount}x Requested` : 'Requested'}
+              </span>
+            )}
+          </div>
           <p className="text-sm text-gray-300">{lawyer.email}</p>
           <div className="flex items-center mt-1">
             <Star className="h-4 w-4 text-yellow-400 fill-current" />
@@ -356,13 +543,35 @@ const LawyerCard = ({ lawyer, onRequestLawyer }) => {
         </div>
       </div>
 
-      <button
-        onClick={() => onRequestLawyer(lawyer)}
-        className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white py-2 px-4 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg hover:shadow-blue-500/25"
-      >
-        <MessageCircle className="h-4 w-4" />
-        <span>Request Lawyer</span>
-      </button>
+      {isRequested && !canRequestAgain ? (
+        <div className="space-y-2">
+          <button
+            disabled
+            className="w-full bg-gray-600 opacity-50 cursor-not-allowed text-white py-2 px-4 rounded-lg flex items-center justify-center space-x-2"
+          >
+            <Clock className="h-4 w-4" />
+            <span>Request Pending</span>
+          </button>
+          <button
+            onClick={() => onRevokeRequest && onRevokeRequest(lawyer)}
+            className="w-full bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2 text-sm"
+          >
+            <XCircle className="h-4 w-4" />
+            <span>Revoke Request</span>
+          </button>
+          <p className="text-xs text-center text-gray-400">
+            Can send another request in {hoursRemaining} hours
+          </p>
+        </div>
+      ) : (
+        <button
+          onClick={() => onRequestLawyer(lawyer)}
+          className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white py-2 px-4 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg hover:shadow-blue-500/25"
+        >
+          <MessageCircle className="h-4 w-4" />
+          <span>{isRequested ? 'Request Again' : 'Request Lawyer'}</span>
+        </button>
+      )}
     </motion.div>
   );
 };

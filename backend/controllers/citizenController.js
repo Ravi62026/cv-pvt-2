@@ -1057,7 +1057,7 @@ export const requestLawyerForQuery = async (req, res) => {
             _id: lawyerId,
             role: "lawyer",
             isActive: true,
-            "lawyerDetails.verificationStatus": "verified",
+            isVerified: true,
         });
 
         if (!lawyer) {
@@ -1091,14 +1091,14 @@ export const requestLawyerForQuery = async (req, res) => {
                 email: req.user.email,
             },
             message,
-            requestId: query.lawyerRequests[query.lawyerRequests.length - 1]._id,
+            requestId: query.citizenRequests[query.citizenRequests.length - 1]._id,
         });
 
         res.json({
             success: true,
             message: "Request sent to lawyer successfully",
             data: {
-                requestId: query.lawyerRequests[query.lawyerRequests.length - 1]._id,
+                requestId: query.citizenRequests[query.citizenRequests.length - 1]._id,
                 lawyer: {
                     _id: lawyer._id,
                     name: lawyer.name,
@@ -1148,7 +1148,7 @@ export const requestLawyerForDispute = async (req, res) => {
             _id: lawyerId,
             role: "lawyer",
             isActive: true,
-            "lawyerDetails.verificationStatus": "verified",
+            isVerified: true,
         });
 
         if (!lawyer) {
@@ -1182,14 +1182,14 @@ export const requestLawyerForDispute = async (req, res) => {
                 email: req.user.email,
             },
             message,
-            requestId: dispute.lawyerRequests[dispute.lawyerRequests.length - 1]._id,
+            requestId: dispute.citizenRequests[dispute.citizenRequests.length - 1]._id,
         });
 
         res.json({
             success: true,
             message: "Request sent to lawyer successfully",
             data: {
-                requestId: dispute.lawyerRequests[dispute.lawyerRequests.length - 1]._id,
+                requestId: dispute.citizenRequests[dispute.citizenRequests.length - 1]._id,
                 lawyer: {
                     _id: lawyer._id,
                     name: lawyer.name,
@@ -1226,7 +1226,7 @@ export const sendDirectConnectionRequest = async (req, res) => {
             _id: lawyerId,
             role: "lawyer",
             isActive: true,
-            "lawyerDetails.verificationStatus": "verified",
+            isVerified: true,
         });
 
         if (!lawyer) {
@@ -1410,6 +1410,180 @@ export const getMyConnectedLawyers = async (req, res) => {
     }
 };
 
+// Get citizen's pending connection requests
+export const getPendingConnectionRequests = async (req, res) => {
+    try {
+        const { page = 1, limit = 10 } = req.query;
+        const citizenId = req.user._id;
+
+        // Get pending connections sent by this citizen
+        const allPendingConnections = await DirectConnection.find({
+            citizen: citizenId,
+            status: "pending",
+            isActive: true,
+        })
+            .populate("lawyer", "name email phone lawyerDetails createdAt")
+            .sort({ requestedAt: -1 });
+
+        // Group by lawyer to count multiple requests
+        const requestsByLawyer = {};
+        allPendingConnections.forEach(conn => {
+            const lawyerId = conn.lawyer._id.toString();
+            if (!requestsByLawyer[lawyerId]) {
+                requestsByLawyer[lawyerId] = {
+                    ...conn.toObject(),
+                    requestCount: 1,
+                    allRequests: [conn],
+                };
+            } else {
+                requestsByLawyer[lawyerId].requestCount++;
+                requestsByLawyer[lawyerId].allRequests.push(conn);
+            }
+        });
+
+        const requests = Object.values(requestsByLawyer);
+
+        // Paginate
+        const startIndex = (page - 1) * limit;
+        const endIndex = startIndex + parseInt(limit);
+        const paginatedRequests = requests.slice(startIndex, endIndex);
+
+        res.json({
+            success: true,
+            data: {
+                requests: paginatedRequests,
+                pagination: {
+                    current: parseInt(page),
+                    pages: Math.ceil(requests.length / limit),
+                    total: requests.length,
+                },
+            },
+        });
+    } catch (error) {
+        console.error("Get pending connection requests error:", error);
+        res.status(500).json({
+            success: false,
+            message: "Failed to get pending connection requests",
+        });
+    }
+};
+
+// Revoke direct connection request
+export const revokeConnectionRequest = async (req, res) => {
+    try {
+        const { connectionId } = req.params;
+        const citizenId = req.user._id;
+
+        // Find the connection request
+        const connection = await DirectConnection.findOne({
+            _id: connectionId,
+            citizen: citizenId,
+            status: "pending",
+        });
+
+        if (!connection) {
+            return res.status(404).json({
+                success: false,
+                message: "Connection request not found or already processed",
+            });
+        }
+
+        // Delete the connection request
+        await DirectConnection.findByIdAndDelete(connectionId);
+
+        // Send real-time notification to lawyer
+        const io = req.app.get("socketio");
+        if (io) {
+            io.to(`user_${connection.lawyer}`).emit("connection_request_revoked", {
+                connectionId,
+                citizenId,
+                timestamp: new Date(),
+            });
+        }
+
+        res.json({
+            success: true,
+            message: "Connection request revoked successfully",
+        });
+    } catch (error) {
+        console.error("Revoke connection request error:", error);
+        res.status(500).json({
+            success: false,
+            message: "Failed to revoke connection request",
+        });
+    }
+};
+
+// Revoke case-specific request (query or dispute)
+export const revokeCaseRequest = async (req, res) => {
+    try {
+        const { caseType, caseId, lawyerId } = req.params;
+        const citizenId = req.user._id;
+
+        // Validate case type
+        if (!["query", "dispute"].includes(caseType)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid case type. Must be 'query' or 'dispute'",
+            });
+        }
+
+        // Get the appropriate model
+        const Model = caseType === "query" ? Query : Dispute;
+
+        // Find the case
+        const caseDoc = await Model.findOne({
+            _id: caseId,
+            citizen: citizenId,
+        });
+
+        if (!caseDoc) {
+            return res.status(404).json({
+                success: false,
+                message: `${caseType.charAt(0).toUpperCase() + caseType.slice(1)} not found or access denied`,
+            });
+        }
+
+        // Find and remove the citizen request
+        const requestIndex = caseDoc.citizenRequests.findIndex(
+            req => req.lawyerId.toString() === lawyerId && req.status === "pending"
+        );
+
+        if (requestIndex === -1) {
+            return res.status(404).json({
+                success: false,
+                message: "Request not found or already processed",
+            });
+        }
+
+        // Remove the request
+        caseDoc.citizenRequests.splice(requestIndex, 1);
+        await caseDoc.save();
+
+        // Send real-time notification to lawyer
+        const io = req.app.get("socketio");
+        if (io) {
+            io.to(`user_${lawyerId}`).emit("case_request_revoked", {
+                caseType,
+                caseId,
+                citizenId,
+                timestamp: new Date(),
+            });
+        }
+
+        res.json({
+            success: true,
+            message: "Case request revoked successfully",
+        });
+    } catch (error) {
+        console.error("Revoke case request error:", error);
+        res.status(500).json({
+            success: false,
+            message: "Failed to revoke case request",
+        });
+    }
+};
+
 // Get citizen's direct chats (new system)
 export const getMyDirectChats = async (req, res) => {
     try {
@@ -1483,7 +1657,7 @@ export const getMyDirectChats = async (req, res) => {
 // Get citizen's pending requests (requests sent by citizen to lawyers)
 export const getMyCaseRequests = async (req, res) => {
     try {
-        const citizenId = req.user.id;
+        const citizenId = req.user._id;
         const { page = 1, limit = 10, status } = req.query;
 
         // Get all queries and disputes where this citizen has sent requests

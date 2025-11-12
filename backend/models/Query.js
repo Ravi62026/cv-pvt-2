@@ -196,6 +196,31 @@ querySchema.methods.addCitizenRequest = function (lawyerId, message = "") {
     }
 };
 
+// ============================================
+// DATABASE INDEXES FOR PERFORMANCE
+// ============================================
+
+// Index on citizen for finding user's queries
+querySchema.index({ citizen: 1 });
+
+// Index on status for filtering by query status
+querySchema.index({ status: 1 });
+
+// Index on assignedLawyer for lawyer's assigned queries
+querySchema.index({ assignedLawyer: 1 });
+
+// Compound index for common query: citizen's active queries
+querySchema.index({ citizen: 1, status: 1 });
+
+// Compound index for lawyer's queries by status
+querySchema.index({ assignedLawyer: 1, status: 1 });
+
+// Index on createdAt for sorting by date
+querySchema.index({ createdAt: -1 });
+
+// Index on category for filtering by query type
+querySchema.index({ category: 1 });
+
 const Query = mongoose.model("Query", querySchema);
 
 export default Query;

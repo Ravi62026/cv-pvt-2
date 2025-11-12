@@ -1,8 +1,12 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
+import { GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
+import { Provider as ReduxProvider } from 'react-redux';
+import { store } from './store';
 import { AuthProvider } from './contexts/AuthContext';
 import { ToastProvider } from './contexts/ToastContext';
+import { SocketProvider } from './hooks/useSocket.jsx';
 
 import Layout from './components/Layout';
 import LandingPage from './pages/LandingPage';
@@ -59,7 +63,6 @@ import { usePWA } from './hooks/usePWA';
 
 import DemoPage from './pages/DemoPage';
 import PricingPage from './pages/PricingPage';
-import AISection from './pages/AISection';
 
 
 
@@ -86,14 +89,29 @@ function App() {
   // Removed PWA update functionality
   // const { updateAvailable, updateApp } = usePWA();
 
+  // Log Redux usage in development
+  if (import.meta.env.DEV) {
+    console.log('⚛️ App Component Rendered with Redux Provider');
+  }
+
   return (
-    <AuthProvider>
-      <ToastProvider>
-        <ThemeProvider theme={theme}>
-          <CssBaseline />
-          <Router>
-            <ScrollToTop />
-            <PWAInstallPrompt />
+    <ReduxProvider store={store}>
+      <GoogleReCaptchaProvider
+        reCaptchaKey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
+        scriptProps={{
+          async: true,
+          defer: true,
+          appendTo: 'head',
+        }}
+      >
+        <AuthProvider>
+          <SocketProvider>
+            <ToastProvider>
+              <ThemeProvider theme={theme}>
+                <CssBaseline />
+                <Router>
+                  <ScrollToTop />
+                  <PWAInstallPrompt />
 
               <div className="min-h-screen">
               <Routes>
@@ -107,13 +125,6 @@ function App() {
                 <Route path="/contact" element={<Layout><ContactPage /></Layout>} />
                 <Route path="/demo" element={<Layout><DemoPage /></Layout>} />
                 <Route path="/pricing" element={<Layout><PricingPage /></Layout>} />
-
-                {/* AI Section Routes */}
-                <Route path="/ai-tools" element={<Layout showNavbar={true} showFooter={false}><AISection /></Layout>} />
-                <Route path="/ai-tools/bns-advisor" element={<Layout showNavbar={false} showFooter={false}><AISection /></Layout>} />
-                <Route path="/ai-tools/legal-advisor" element={<Layout showNavbar={false} showFooter={false}><AISection /></Layout>} />
-                <Route path="/ai-tools/judgment-analyzer" element={<Layout showNavbar={false} showFooter={false}><AISection /></Layout>} />
-                <Route path="/ai-tools/legal-research" element={<Layout showNavbar={false} showFooter={false}><AISection /></Layout>} />
 
                 {/* Auth Routes */}
                 <Route path="/login" element={<Layout showNavbar={false} showFooter={false}><LoginPage /></Layout>} />
@@ -191,7 +202,10 @@ function App() {
           </Router>
         </ThemeProvider>
       </ToastProvider>
+        </SocketProvider>
     </AuthProvider>
+    </GoogleReCaptchaProvider>
+    </ReduxProvider>
   );
 }
 

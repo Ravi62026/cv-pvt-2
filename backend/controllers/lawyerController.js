@@ -80,6 +80,8 @@ export const getVerifiedLawyers = async (req, res) => {
         console.log("   Verified lawyers:", verifiedLawyers);
         console.log("   Active & Verified lawyers:", activeAndVerifiedLawyers);
 
+        // ⏱️ PERFORMANCE TEST: Measure query time with indexes
+        console.time('⚡ Query Time (with indexes)');
         const lawyers = await User.find(query)
             .select("-password -refreshToken -messageRequests")
             .sort(sortOptions)
@@ -87,6 +89,7 @@ export const getVerifiedLawyers = async (req, res) => {
             .limit(parseInt(limit));
 
         const total = await User.countDocuments(query);
+        console.timeEnd('⚡ Query Time (with indexes)');
 
         console.log("✅ Query executed successfully:");
         console.log("   Found lawyers:", lawyers.length);
@@ -1333,12 +1336,31 @@ export const getReceivedCaseRequests = async (req, res) => {
     }
 };
 
+// Helper function to clear available cases cache
+const clearAvailableCasesCache = async (req) => {
+    const redisClient = req.app.get("redisClient");
+    if (redisClient) {
+        try {
+            const keys = await redisClient.keys('cache:/api/lawyers/available-cases*');
+            if (keys && keys.length > 0) {
+                await Promise.all(keys.map(key => redisClient.del(key)));
+                console.log('🗑️ Cleared available cases cache:', keys.length, 'keys');
+            }
+        } catch (cacheErr) {
+            console.error('Error clearing cache:', cacheErr);
+        }
+    }
+};
+
 // Accept case request
 export const acceptCaseRequest = async (req, res) => {
     try {
         const lawyerId = req.user._id;
         const { requestId } = req.params;
         const { response } = req.body;
+        
+        // Clear cache at the start
+        await clearAvailableCasesCache(req);
 
         // Find the request in queries (citizen requests to lawyer)
         let request = await Query.findOne({

@@ -63,12 +63,12 @@ const LawyerRequestModal = ({ lawyer, onClose, onSubmit }) => {
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
+      <div className="fixed inset-0 bg-gradient-to-br from-black/80 via-blue-900/30 to-purple-900/30 backdrop-blur-sm flex items-center justify-center p-4 z-50">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
-          className="bg-gradient-to-br from-gray-900 to-gray-800 border border-white/20 rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto"
+          className="bg-white border border-gray-200 rounded-lg shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto"
         >
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-gray-200">
@@ -109,10 +109,10 @@ const LawyerRequestModal = ({ lawyer, onClose, onSubmit }) => {
                   name="connectionType"
                   value={formData.connectionType}
                   onChange={handleInputChange}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
                 >
                   {connectionTypes.map((type) => (
-                    <option key={type.value} value={type.value}>
+                    <option key={type.value} value={type.value} className="bg-white text-gray-900">
                       {type.label}
                     </option>
                   ))}
@@ -130,7 +130,7 @@ const LawyerRequestModal = ({ lawyer, onClose, onSubmit }) => {
                   onChange={handleInputChange}
                   placeholder="Introduce yourself and explain why you'd like to connect with this lawyer..."
                   rows={4}
-                  className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none ${
+                  className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none bg-white text-gray-900 placeholder-gray-500 ${
                     errors.message ? 'border-red-300' : 'border-gray-300'
                   }`}
                 />

@@ -30,31 +30,41 @@ const MyQueries = () => {
   const [statusFilter, setStatusFilter] = useState('all');
 
   useEffect(() => {
-    fetchQueries();
-  }, []);
+    // Only fetch if user is logged in
+    if (user) {
+      fetchQueries();
+    }
+  }, [user]);
 
   const fetchQueries = async () => {
     setIsLoading(true);
     try {
       const token = getToken();
+      
+      console.log('🔍 Fetching queries...');
+      console.log('   User:', user);
+      console.log('   Token exists:', !!token);
+
       if (!token) {
-        console.error('No authentication token available');
-        error('Please login again to view your queries');
+        console.error('❌ No authentication token available');
+        // Don't show error immediately, user might just be loading
         setQueries([]);
         setIsLoading(false);
         return;
       }
 
       // Use the same endpoint as My Cases page
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/citizens/my-cases`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/citizens/my-cases?type=queries`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
 
+      console.log('📡 Response status:', response.status);
+
       if (response.status === 401) {
-        console.error('Authentication token expired');
+        console.error('❌ Authentication token expired');
         error('Your session has expired. Please login again.');
         setQueries([]);
         setIsLoading(false);
@@ -62,21 +72,24 @@ const MyQueries = () => {
       }
 
       const result = await response.json();
-      console.log('My Queries API Response:', result);
+      console.log('📦 My Queries API Response:', result);
 
       if (result.success && result.data && Array.isArray(result.data.cases)) {
         // Filter only queries from the cases
         const queriesData = result.data.cases.filter(c => c.caseType === 'query');
-        console.log('Loaded queries:', queriesData.length);
+        console.log('✅ Loaded queries:', queriesData.length);
         setQueries(queriesData);
       } else {
-        console.log('No queries found or invalid response structure');
+        console.log('ℹ️ No queries found or invalid response structure');
         setQueries([]);
       }
     } catch (err) {
-      console.error('Fetch queries error:', err);
+      console.error('❌ Fetch queries error:', err);
       setQueries([]);
-      error('Failed to load queries');
+      // Only show error if it's not a network issue
+      if (err.message !== 'Failed to fetch') {
+        error('Failed to load queries');
+      }
     } finally {
       setIsLoading(false);
     }

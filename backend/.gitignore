@@ -6,4 +6,11 @@ uploads/
 logs/
 *.log
 npm-debug.log*
-.DS_Store 
+.DS_Store
+
+# PM2 files
+.pm2
+pids/
+*.pid
+*.seed
+*.pid.lock 

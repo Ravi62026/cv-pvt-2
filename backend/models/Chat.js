@@ -139,7 +139,6 @@ const chatSchema = new mongoose.Schema({
 });
 
 // Index for faster queries
-chatSchema.index({ "participants.user": 1 });
 chatSchema.index({ "relatedCase.caseId": 1 });
 
 // Update timestamps and last message
@@ -227,6 +226,27 @@ chatSchema.methods.getUnreadCount = function (userId) {
         );
     }).length;
 };
+
+// ============================================
+// DATABASE INDEXES FOR PERFORMANCE
+// ============================================
+
+// Note: chatId unique index already exists from unique: true in schema
+
+// Index on participants for finding user's chats
+chatSchema.index({ 'participants.user': 1 });
+
+// Index on chatType for filtering by chat type
+chatSchema.index({ chatType: 1 });
+
+// Compound index for user's chats by type
+chatSchema.index({ 'participants.user': 1, chatType: 1 });
+
+// Index on lastMessageAt for sorting chats by recent activity
+chatSchema.index({ lastMessageAt: -1 });
+
+// Index on createdAt for sorting by creation date
+chatSchema.index({ createdAt: -1 });
 
 const Chat = mongoose.model("Chat", chatSchema);
 

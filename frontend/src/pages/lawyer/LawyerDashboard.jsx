@@ -41,6 +41,7 @@ const LawyerDashboard = () => {
     pendingRequests: 0,
   });
   const [availableCases, setAvailableCases] = useState([]);
+  const [myRequests, setMyRequests] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -50,10 +51,11 @@ const LawyerDashboard = () => {
   const fetchDashboardData = async () => {
     setIsLoading(true);
     try {
-      // Fetch dashboard stats and available cases
-      const [statsResponse, casesResponse] = await Promise.all([
+      // Fetch dashboard stats, available cases, and my requests
+      const [statsResponse, casesResponse, requestsResponse] = await Promise.all([
         lawyerAPI.getDashboardStats(),
-        lawyerAPI.getAvailableCases({ limit: 6 })
+        lawyerAPI.getAvailableCases({ limit: 6 }),
+        lawyerAPI.getMyCaseRequests({ limit: 100, status: 'pending' })
       ]);
 
       if (statsResponse.success) {
@@ -63,6 +65,10 @@ const LawyerDashboard = () => {
       if (casesResponse.success) {
         setAvailableCases(casesResponse.data.cases);
       }
+
+      if (requestsResponse.success) {
+        setMyRequests(requestsResponse.data.requests || []);
+      }
     } catch (err) {
       console.error('Error fetching dashboard data:', err);
       error('Failed to load dashboard data');
@@ -71,8 +77,18 @@ const LawyerDashboard = () => {
     }
   };
 
+  const hasRequestedCase = (caseItem) => {
+    return myRequests.some(req => 
+      req.caseId?.toString() === caseItem._id?.toString() && 
+      req.caseType === caseItem.caseType &&
+      req.status === 'pending'
+    );
+  };
+
   const handleSendRequest = async (caseItem) => {
     try {
+      console.log('📤 Sending request for case:', caseItem._id);
+      
       const requestData = {
         message: `I would like to handle this ${caseItem.caseType} case. I have experience in ${caseItem.category} law and can provide quality legal assistance.`,
         proposedFee: 1000, // Default fee
@@ -82,10 +98,24 @@ const LawyerDashboard = () => {
       // Use the offer help method which creates lawyerRequests entries
       const response = await lawyerAPI.offerHelpOnCase(caseItem.caseType, caseItem._id, requestData);
 
+      console.log('📡 Offer response:', response);
+
       if (response.success) {
         success('Offer sent successfully!');
-        // Refresh the available cases
-        fetchDashboardData();
+        
+        // Immediately update the UI by adding to myRequests
+        setMyRequests(prev => [...prev, {
+          caseId: caseItem._id,
+          caseType: caseItem.caseType,
+          status: 'pending',
+          requestedAt: new Date()
+        }]);
+        
+        // Then refresh from server
+        setTimeout(() => {
+          console.log('🔄 Refreshing dashboard data...');
+          fetchDashboardData();
+        }, 500);
       } else {
         error(response.error || 'Failed to send offer');
       }
@@ -221,6 +251,7 @@ const LawyerDashboard = () => {
                     caseItem={caseItem}
                     index={index}
                     onSendRequest={handleSendRequest}
+                    hasRequested={hasRequestedCase(caseItem)}
                     getStatusIcon={getStatusIcon}
                     getStatusColor={getStatusColor}
                     getPriorityColor={getPriorityColor}
@@ -333,7 +364,7 @@ const QuickActionCard = ({ title, description, icon, onClick, color }) => {
 };
 
 // Case Card Component (simplified for dashboard)
-const CaseCard = ({ caseItem, index, onSendRequest, getStatusIcon, getStatusColor, getPriorityColor }) => {
+const CaseCard = ({ caseItem, index, onSendRequest, hasRequested, getStatusIcon, getStatusColor, getPriorityColor }) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -395,13 +426,20 @@ const CaseCard = ({ caseItem, index, onSendRequest, getStatusIcon, getStatusColo
             })}
           </span>
         </div>
-        <button
-          onClick={() => onSendRequest(caseItem)}
-          className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-lg text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all"
-        >
-          <Send className="h-3 w-3 mr-1" />
-          Send Request
-        </button>
+        {hasRequested ? (
+          <div className="inline-flex items-center px-3 py-1 border border-yellow-500/30 text-xs font-medium rounded-lg text-yellow-400 bg-yellow-500/20">
+            <CheckCircle className="h-3 w-3 mr-1" />
+            Requested
+          </div>
+        ) : (
+          <button
+            onClick={() => onSendRequest(caseItem)}
+            className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-lg text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all"
+          >
+            <Send className="h-3 w-3 mr-1" />
+            Send Request
+          </button>
+        )}
       </div>
     </motion.div>
   );

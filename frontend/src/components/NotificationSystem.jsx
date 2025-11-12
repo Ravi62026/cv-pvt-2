@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
-import { useSocket } from '../hooks/useSocket';
+import { useSocket } from '../hooks/useSocket.jsx';
 
 const NotificationSystem = () => {
   const [notifications, setNotifications] = useState([]);

@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import ReCAPTCHA from 'react-google-recaptcha';
+import { useState, useEffect, useRef } from 'react';
+import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Eye, EyeOff, Mail, Lock, LogIn, ArrowRight, AlertCircle, Scale, Gavel } from 'lucide-react';
@@ -13,12 +13,12 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const { login, isAuthenticated, isLoading: authLoading } = useAuth();
   const { success, error } = useToast();
+  const { executeRecaptcha } = useGoogleReCaptcha();
 
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    rememberMe: false,
-    captcha: ''
+    rememberMe: false
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -33,6 +33,12 @@ const LoginPage = () => {
       navigate('/dashboard');
     }
   }, [isAuthenticated, authLoading, navigate]);
+
+  // Debug reCAPTCHA v3 on component mount
+  useEffect(() => {
+    console.log('LoginPage mounted with reCAPTCHA v3');
+    console.log('VITE_RECAPTCHA_SITE_KEY:', import.meta.env.VITE_RECAPTCHA_SITE_KEY);
+  }, []);
 
   // Debounce typing indicator
   useEffect(() => {
@@ -55,12 +61,7 @@ const LoginPage = () => {
     }
   };
 
-  const handleCaptchaChange = (value) => {
-    setFormData(prev => ({
-      ...prev,
-      captcha: value
-    }));
-  };
+
 
   const validateForm = () => {
     const newErrors = {};
@@ -86,8 +87,8 @@ const LoginPage = () => {
 
     if (!validateForm()) return;
 
-    if (!formData.captcha) {
-      setApiError('Please complete the CAPTCHA verification');
+    if (!executeRecaptcha) {
+      setApiError('reCAPTCHA not loaded yet. Please try again.');
       return;
     }
 
@@ -95,11 +96,15 @@ const LoginPage = () => {
     setApiError('');
 
     try {
+      // Execute reCAPTCHA v3
+      const captchaToken = await executeRecaptcha('login');
+      console.log('reCAPTCHA v3 token generated:', captchaToken?.substring(0, 20) + '...');
+
       // Call login API
       const response = await authAPI.login({
         email: formData.email,
         password: formData.password,
-        captcha: formData.captcha,
+        captcha: captchaToken,
       });
 
       if (response.success) {
@@ -133,9 +138,25 @@ const LoginPage = () => {
       }
     } catch (err) {
       const errorMessage = err.message || 'An unexpected error occurred. Please try again.';
-      setApiError(errorMessage);
-      error(errorMessage);
-      setIsLoading(false);
+      
+      // Check if user doesn't exist
+      if (errorMessage.toLowerCase().includes('no account found') || 
+          errorMessage.toLowerCase().includes('user not found') ||
+          errorMessage.toLowerCase().includes('no user found') ||
+          errorMessage.toLowerCase().includes('please sign up')) {
+        setApiError('No account found with this email. Redirecting to signup...');
+        error('No account found. Please create an account.');
+        setIsLoading(false);
+        
+        // Redirect to signup after 2 seconds
+        setTimeout(() => {
+          navigate('/signup');
+        }, 2000);
+      } else {
+        setApiError(errorMessage);
+        error(errorMessage);
+        setIsLoading(false);
+      }
     }
   };
 
@@ -439,32 +460,16 @@ const LoginPage = () => {
                   </motion.div>
                 </div>
               </motion.div>
-              {/* reCAPTCHA */}
+              {/* reCAPTCHA v3 Badge Info */}
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5, delay: 0.6 }}
                 className="flex justify-center"
               >
-                {import.meta.env.VITE_RECAPTCHA_SITE_KEY ? (
-                  <div className="transform scale-75 sm:scale-100 origin-center">
-                    <ReCAPTCHA
-                      sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
-                      onChange={handleCaptchaChange}
-                      theme="dark"
-                    />
-                  </div>
-                ) : (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="text-center p-3 sm:p-4 bg-yellow-500/20 border border-yellow-500/30 rounded-lg w-full max-w-xs"
-                  >
-                    <p className="text-yellow-300 text-sm">
-                      I'm not a robot ✓
-                    </p>
-                  </motion.div>
-                )}
+                <div className="text-center text-xs text-gray-400">
+                  Protected by reCAPTCHA v3
+                </div>
               </motion.div>
 
               {/* Submit Button */}

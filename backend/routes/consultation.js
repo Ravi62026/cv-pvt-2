@@ -62,6 +62,8 @@ const validateCancellation = [
         .withMessage("Reason cannot exceed 500 characters"),
 ];
 
+import { cacheMiddleware } from "../middleware/cache.js";
+
 // All routes require authentication
 router.use(protect);
 
@@ -71,13 +73,13 @@ router.post(
     authorize("citizen"),
     validateConsultationRequest,
     createConsultationRequest
-);
+); // No cache for mutations
 
-// Get user's consultations
-router.get("/", getUserConsultations);
+// Get user's consultations (with caching)
+router.get("/", cacheMiddleware(120), getUserConsultations); // Cache for 2 minutes
 
-// Get specific consultation
-router.get("/:consultationId", getConsultationById);
+// Get specific consultation (with caching)
+router.get("/:consultationId", cacheMiddleware(180), getConsultationById); // Cache for 3 minutes
 
 // Update consultation status (lawyers only)
 router.patch(
@@ -85,7 +87,7 @@ router.patch(
     authorize("lawyer"),
     validateStatusUpdate,
     updateConsultationStatus
-);
+); // No cache for mutations
 
 // Cancel consultation
 router.patch(

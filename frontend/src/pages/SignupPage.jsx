@@ -21,7 +21,7 @@ import {
   FileText
 } from 'lucide-react';
 
-import ReCAPTCHA from 'react-google-recaptcha';
+import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { authAPI } from '../services/api';
@@ -32,8 +32,8 @@ const SignupPage = () => {
   const navigate = useNavigate();
   const { login, isAuthenticated, isLoading: authLoading } = useAuth();
   const { success, error } = useToast();
+  const { executeRecaptcha } = useGoogleReCaptcha();
   const [step, setStep] = useState(1);
-  const captchaRef = useRef(null);
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -41,6 +41,12 @@ const SignupPage = () => {
       navigate('/dashboard');
     }
   }, [isAuthenticated, authLoading, navigate]);
+
+  // Debug reCAPTCHA v3 on component mount
+  useEffect(() => {
+    console.log('SignupPage mounted with reCAPTCHA v3');
+    console.log('VITE_RECAPTCHA_SITE_KEY:', import.meta.env.VITE_RECAPTCHA_SITE_KEY);
+  }, []);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -54,8 +60,7 @@ const SignupPage = () => {
     education: '',
     studentId: '',
     aadhaar: '',
-    acceptTerms: false,
-    captcha: ''
+    acceptTerms: false
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -204,37 +209,13 @@ const SignupPage = () => {
     setErrors({});
   };
 
-  const handleCaptchaChange = (value) => {
-    setFormData({
-      ...formData,
-      captcha: value
-    });
-    // Clear any previous captcha errors
-    if (errors.captcha) {
-      setErrors({
-        ...errors,
-        captcha: ''
-      });
-    }
-  };
-
-  const resetCaptcha = () => {
-    if (captchaRef.current) {
-      captchaRef.current.reset();
-    }
-    setFormData({
-      ...formData,
-      captcha: ''
-    });
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!validateStep2()) return;
 
-    if (!formData.captcha) {
-      setApiError('Please complete the CAPTCHA verification');
+    if (!executeRecaptcha) {
+      setApiError('reCAPTCHA not loaded yet. Please try again.');
       return;
     }
 
@@ -242,13 +223,17 @@ const SignupPage = () => {
     setApiError('');
 
     try {
+      // Execute reCAPTCHA v3
+      const captchaToken = await executeRecaptcha('signup');
+      console.log('reCAPTCHA v3 token generated:', captchaToken?.substring(0, 20) + '...');
+
       const userData = {
         name: formData.name,
         email: formData.email,
         phone: formData.phone,
         password: formData.password,
         role: formData.role,
-        captchaToken: formData.captcha,
+        captchaToken: captchaToken,
         address: {
           street: '',
           city: '',
@@ -302,7 +287,6 @@ const SignupPage = () => {
         let errorMessage = response.error || 'Registration failed';
         setApiError(errorMessage);
         error(errorMessage);
-        resetCaptcha();
         return;
       }
     } catch (err) {
@@ -317,12 +301,24 @@ const SignupPage = () => {
         errorMessage = err.message;
       }
 
-      setApiError(errorMessage);
-      error(errorMessage);
-      // Reset CAPTCHA on error
-      resetCaptcha();
-    } finally {
-      setIsLoading(false);
+      // Check if user already exists
+      if (errorMessage.toLowerCase().includes('user with this email already exists') || 
+          errorMessage.toLowerCase().includes('email already exists') ||
+          errorMessage.toLowerCase().includes('user already exists') ||
+          errorMessage.toLowerCase().includes('already registered')) {
+        setApiError('Account already exists with this email. Redirecting to login...');
+        error('Account already exists. Please login.');
+        setIsLoading(false);
+        
+        // Redirect to login after 2 seconds
+        setTimeout(() => {
+          navigate('/login');
+        }, 2000);
+      } else {
+        setApiError(errorMessage);
+        error(errorMessage);
+        setIsLoading(false);
+      }
     }
   };
 
@@ -1164,33 +1160,16 @@ const SignupPage = () => {
                     </div>
                   </div>
 
-                  {/* reCAPTCHA */}
+                  {/* reCAPTCHA v3 Badge Info */}
                   <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.5, delay: 0.6 }}
                     className="flex justify-center relative z-10"
                   >
-                    {import.meta.env.VITE_RECAPTCHA_SITE_KEY ? (
-                      <div className="transform scale-90 sm:scale-100 origin-center">
-                        <ReCAPTCHA
-                          ref={captchaRef}
-                          sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
-                          onChange={handleCaptchaChange}
-                          theme="dark"
-                        />
-                      </div>
-                    ) : (
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="text-center p-4 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 rounded-lg backdrop-blur-sm"
-                      >
-                        <p className="text-yellow-300 text-sm font-medium">
-                          I'm not a robot ✓
-                        </p>
-                      </motion.div>
-                    )}
+                    <div className="text-center text-xs text-gray-400">
+                      Protected by reCAPTCHA v3
+                    </div>
                   </motion.div>
 
                   {/* Action Buttons */}

@@ -214,6 +214,31 @@ disputeSchema.methods.addCitizenRequest = function(lawyerId, message = '') {
   }
 };
 
+// ============================================
+// DATABASE INDEXES FOR PERFORMANCE
+// ============================================
+
+// Index on citizen for finding user's disputes
+disputeSchema.index({ citizen: 1 });
+
+// Index on status for filtering by dispute status
+disputeSchema.index({ status: 1 });
+
+// Index on assignedLawyer for lawyer's assigned disputes
+disputeSchema.index({ assignedLawyer: 1 });
+
+// Compound index for citizen's disputes by status
+disputeSchema.index({ citizen: 1, status: 1 });
+
+// Compound index for lawyer's disputes by status
+disputeSchema.index({ assignedLawyer: 1, status: 1 });
+
+// Index on createdAt for sorting by date
+disputeSchema.index({ createdAt: -1 });
+
+// Index on disputeType for filtering
+disputeSchema.index({ disputeType: 1 });
+
 const Dispute = mongoose.model('Dispute', disputeSchema);
 
 export default Dispute;
