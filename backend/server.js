@@ -1,7 +1,6 @@
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
-import morgan from "morgan";
 import compression from "compression";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
@@ -12,6 +11,8 @@ import { initializeSocket } from "./config/socket.js";
 import connectDB from "./config/database.js";
 import { apiLimiter } from "./middleware/rateLimiter.js";
 import { testRedisConnection } from "./utils/redisClientREST.js";
+import { performHealthCheck, performLightweightHealthCheck } from "./utils/healthMonitor.js";
+import { requestLogger, errorLogger, logger } from "./utils/logger.js";
 
 // Import routes
 import authRoutes from "./routes/auth.js";
@@ -75,10 +76,8 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(cookieParser());
 
-// Logging middleware
-if (process.env.NODE_ENV !== "production") {
-    app.use(morgan("dev"));
-}
+// Request logging middleware (replaces Morgan)
+app.use(requestLogger);
 
 // Rate limiting - Enabled for security and scalability
 app.use("/api", apiLimiter);
@@ -95,13 +94,32 @@ app.use("/api/documents", documentRoutes);
 app.use("/api/consultations", consultationRoutes);
 
 
-// Health check route
-app.get("/api/health", (req, res) => {
-    res.json({
-        success: true,
-        message: "Server is running",
-        timestamp: new Date().toISOString(),
-    });
+// Health check routes
+app.get("/api/health", async (req, res) => {
+    try {
+        const healthData = await performHealthCheck();
+        res.json(healthData);
+    } catch (error) {
+        res.status(500).json({
+            status: 'unhealthy',
+            error: error.message,
+            timestamp: new Date().toISOString()
+        });
+    }
+});
+
+// Lightweight health check for load balancers
+app.get("/api/health/ping", async (req, res) => {
+    try {
+        const healthData = await performLightweightHealthCheck();
+        res.json(healthData);
+    } catch (error) {
+        res.status(500).json({
+            status: 'unhealthy',
+            error: error.message,
+            timestamp: new Date().toISOString()
+        });
+    }
 });
 
 // Socket.io is now configured in config/socket.js for better organization
@@ -109,10 +127,12 @@ app.get("/api/health", (req, res) => {
 // Make io accessible to routes
 app.set("socketio", io);
 
+// Error logging middleware
+app.use(errorLogger);
+
 // Error handling middleware
 app.use((err, req, res, next) => {
-    console.error(err.stack);
-
+    // Error already logged by errorLogger middleware
     res.status(err.status || 500).json({
         success: false,
         message:

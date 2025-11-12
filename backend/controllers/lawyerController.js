@@ -8,8 +8,6 @@ import DirectConnection from "../models/DirectConnection.js";
 export const getVerifiedLawyers = async (req, res) => {
     try {
         const {
-            page = 1,
-            limit = 12,
             specialization,
             experience,
             search,
@@ -82,29 +80,38 @@ export const getVerifiedLawyers = async (req, res) => {
 
         // ⏱️ PERFORMANCE TEST: Measure query time with indexes
         console.time('⚡ Query Time (with indexes)');
-        const lawyers = await User.find(query)
-            .select("-password -refreshToken -messageRequests")
-            .sort(sortOptions)
-            .skip((page - 1) * limit)
-            .limit(parseInt(limit));
 
-        const total = await User.countDocuments(query);
+        // Use optimized query with lean() and selective fields
+        const { optimizeQuery, getQueryOptions } = await import("../utils/pagination.js");
+        const queryOptions = getQueryOptions(req, {
+            useLean: true,
+            defaultFields: "-password -refreshToken -messageRequests",
+            populateFields: []
+        });
+
+        let queryBuilder = User.find(query)
+            .sort(sortOptions)
+            .skip(req.pagination.skip)
+            .limit(req.pagination.limit);
+
+        // Apply optimizations
+        queryBuilder = optimizeQuery(queryBuilder, queryOptions);
+
+        const [lawyers, total] = await Promise.all([
+            queryBuilder,
+            User.countDocuments(query)
+        ]);
+
         console.timeEnd('⚡ Query Time (with indexes)');
 
         console.log("✅ Query executed successfully:");
         console.log("   Found lawyers:", lawyers.length);
         console.log("   Total matching query:", total);
 
+        // Return data - pagination will be handled by middleware
         res.json({
-            success: true,
-            data: {
-                lawyers,
-                pagination: {
-                    current: parseInt(page),
-                    pages: Math.ceil(total / limit),
-                    total,
-                },
-            },
+            data: lawyers,
+            total
         });
     } catch (error) {
         console.error("Get verified lawyers error:", error);
@@ -276,8 +283,6 @@ export const offerHelpOnCase = async (req, res) => {
 export const getAvailableCases = async (req, res) => {
     try {
         const {
-            page = 1,
-            limit = 10,
             caseType = "all", // all, query, dispute
             category,
             priority,
@@ -320,10 +325,18 @@ export const getAvailableCases = async (req, res) => {
 
         // Get queries
         if (caseType === "all" || caseType === "query") {
-            const queries = await Query.find(baseQuery)
-                .populate("citizen", "name email phone")
+            const { optimizeQuery, getQueryOptions } = await import("../utils/pagination.js");
+            const queryOptions = getQueryOptions(req, {
+                useLean: true,
+                populateFields: [{ path: "citizen", select: "name email phone" }]
+            });
+
+            let queryBuilder = Query.find(baseQuery)
                 .sort({ [sortBy]: sortOrder === "desc" ? -1 : 1 });
 
+            queryBuilder = optimizeQuery(queryBuilder, queryOptions);
+
+            const queries = await queryBuilder;
             console.log("🔍 Found queries:", queries.length);
 
             cases.push(...queries.map(query => {
@@ -342,10 +355,18 @@ export const getAvailableCases = async (req, res) => {
 
         // Get disputes
         if (caseType === "all" || caseType === "dispute") {
-            const disputes = await Dispute.find(baseQuery)
-                .populate("citizen", "name email phone")
+            const { optimizeQuery, getQueryOptions } = await import("../utils/pagination.js");
+            const queryOptions = getQueryOptions(req, {
+                useLean: true,
+                populateFields: [{ path: "citizen", select: "name email phone" }]
+            });
+
+            let queryBuilder = Dispute.find(baseQuery)
                 .sort({ [sortBy]: sortOrder === "desc" ? -1 : 1 });
 
+            queryBuilder = optimizeQuery(queryBuilder, queryOptions);
+
+            const disputes = await queryBuilder;
             console.log("🔍 Found disputes:", disputes.length);
 
             cases.push(...disputes.map(dispute => {
@@ -362,8 +383,6 @@ export const getAvailableCases = async (req, res) => {
             }));
         }
 
-
-
         console.log("🔍 Total cases found:", cases.length);
 
         // Sort combined results
@@ -376,23 +395,17 @@ export const getAvailableCases = async (req, res) => {
             return new Date(aValue) - new Date(bValue);
         });
 
-        // Paginate
-        const startIndex = (page - 1) * limit;
-        const endIndex = startIndex + parseInt(limit);
+        // Apply pagination using the utility
+        const startIndex = req.pagination.skip;
+        const endIndex = startIndex + req.pagination.limit;
         const paginatedCases = cases.slice(startIndex, endIndex);
 
         console.log("🔍 Returning paginated cases:", paginatedCases.length);
 
+        // Return data - pagination will be handled by middleware
         res.json({
-            success: true,
-            data: {
-                cases: paginatedCases,
-                pagination: {
-                    current: parseInt(page),
-                    pages: Math.ceil(cases.length / limit),
-                    total: cases.length,
-                },
-            },
+            data: paginatedCases,
+            total: cases.length
         });
     } catch (error) {
         console.error("Get available cases error:", error);
@@ -799,8 +812,6 @@ export const getMyDirectClients = async (req, res) => {
 // Get lawyer's clients (legacy - from connections field)
 export const getMyClients = async (req, res) => {
     try {
-        const { page = 1, limit = 10 } = req.query;
-
         const lawyer = await User.findById(req.user._id).populate({
             path: "connections.userId",
             match: { role: "citizen" },
@@ -814,21 +825,15 @@ export const getMyClients = async (req, res) => {
                 connectedAt: conn.connectedAt,
             }));
 
-        // Paginate results
-        const startIndex = (page - 1) * limit;
-        const endIndex = startIndex + parseInt(limit);
+        // Apply pagination using the utility
+        const startIndex = req.pagination.skip;
+        const endIndex = startIndex + req.pagination.limit;
         const paginatedClients = clients.slice(startIndex, endIndex);
 
+        // Return data - pagination will be handled by middleware
         res.json({
-            success: true,
-            data: {
-                clients: paginatedClients,
-                pagination: {
-                    current: parseInt(page),
-                    pages: Math.ceil(clients.length / limit),
-                    total: clients.length,
-                },
-            },
+            data: paginatedClients,
+            total: clients.length
         });
     } catch (error) {
         console.error("Get my clients error:", error);

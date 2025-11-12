@@ -17,6 +17,7 @@ import {
     requireVerifiedLawyer,
 } from "../middleware/auth.js";
 import { cacheMiddleware } from "../middleware/cache.js";
+import { withPagination } from "../utils/pagination.js";
 
 const router = express.Router();
 
@@ -51,7 +52,13 @@ router.post(
 ); // No cache for mutations
 
 // Common routes (with caching for GET requests)
-router.get("/", cacheMiddleware(180), getDisputes); // Cache for 3 minutes
+router.get("/",
+    withPagination({
+        allowedFields: ['title', 'description', 'category', 'priority', 'status', 'disputeValue', 'createdAt', 'citizen', 'assignedLawyer', 'opposingParty']
+    }),
+    cacheMiddleware(180),
+    getDisputes
+); // Cache for 3 minutes
 router.get("/:disputeId", cacheMiddleware(300), getDisputeById); // Cache for 5 minutes
 router.patch("/:disputeId/status", updateDisputeStatus); // No cache for mutations
 

@@ -95,8 +95,6 @@ export const createQuery = async (req, res) => {
 export const getQueries = async (req, res) => {
     try {
         const {
-            page = 1,
-            limit = 10,
             status,
             category,
             priority,
@@ -169,32 +167,32 @@ export const getQueries = async (req, res) => {
             ];
         }
 
-        const queries = await Query.find(query)
-            .populate("citizen", "name email phone")
-            .populate(
-                "assignedLawyer",
-                "name email lawyerDetails.specialization"
-            )
-            .populate(
-                "lawyerRequests.lawyerId",
-                "name email lawyerDetails.specialization"
-            )
-            .sort({ createdAt: -1 })
-            .skip((page - 1) * limit)
-            .limit(parseInt(limit));
+        // Use optimized query with lean() and selective population
+        const { optimizeQuery, getQueryOptions } = await import("../utils/pagination.js");
+        const queryOptions = getQueryOptions(req, {
+            useLean: true,
+            populateFields: [
+                { path: "citizen", select: "name email phone" },
+                { path: "assignedLawyer", select: "name email lawyerDetails.specialization" },
+                { path: "lawyerRequests.lawyerId", select: "name email lawyerDetails.specialization" }
+            ]
+        });
 
-        const total = await Query.countDocuments(query);
+        let queryBuilder = Query.find(query).sort({ createdAt: -1 });
+        queryBuilder = optimizeQuery(queryBuilder, queryOptions);
 
+        // Apply pagination
+        queryBuilder = queryBuilder.skip(req.pagination.skip).limit(req.pagination.limit);
+
+        const [queries, total] = await Promise.all([
+            queryBuilder,
+            Query.countDocuments(query)
+        ]);
+
+        // Return data - pagination will be handled by middleware
         res.json({
-            success: true,
-            data: {
-                queries,
-                pagination: {
-                    current: parseInt(page),
-                    pages: Math.ceil(total / limit),
-                    total,
-                },
-            },
+            data: queries,
+            total
         });
     } catch (error) {
         console.error("Get queries error:", error);
