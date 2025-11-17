@@ -449,7 +449,7 @@ export const updateProfile = async (req, res) => {
             });
         }
 
-        const { name, phone, address, lawyerDetails } = req.body;
+        const { name, phone, address, lawyerDetails, studentDetails } = req.body;
         const updateData = { name, phone, address };
 
         // Update lawyer details if user is a lawyer
@@ -457,6 +457,14 @@ export const updateProfile = async (req, res) => {
             updateData.lawyerDetails = {
                 ...req.user.lawyerDetails,
                 ...lawyerDetails,
+            };
+        }
+
+        // Update student details if user is a law student
+        if (req.user.role === "law_student" && studentDetails) {
+            updateData.studentDetails = {
+                ...req.user.studentDetails,
+                ...studentDetails,
             };
         }
 

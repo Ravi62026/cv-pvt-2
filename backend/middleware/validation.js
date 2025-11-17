@@ -134,6 +134,31 @@ export const validateProfileUpdate = [
         .optional()
         .isNumeric()
         .withMessage("Consultation fee must be a number"),
+
+    body("studentDetails.universityName")
+        .optional({ nullable: true, checkFalsy: true })
+        .isLength({ min: 1 })
+        .withMessage("University name cannot be empty"),
+
+    body("studentDetails.enrollmentYear")
+        .optional({ nullable: true, checkFalsy: true })
+        .isInt({ min: 2000, max: new Date().getFullYear() + 1 })
+        .withMessage("Enrollment year must be valid"),
+
+    body("studentDetails.semester")
+        .optional({ nullable: true, checkFalsy: true })
+        .isIn(["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th"])
+        .withMessage("Semester must be between 1st and 8th"),
+
+    body("studentDetails.rollNumber")
+        .optional({ nullable: true, checkFalsy: true })
+        .isLength({ min: 1 })
+        .withMessage("Roll number cannot be empty"),
+
+    body("studentDetails.specialization")
+        .optional({ nullable: true, checkFalsy: true })
+        .isLength({ min: 1 })
+        .withMessage("Specialization cannot be empty"),
 ];
 
 // Query validation

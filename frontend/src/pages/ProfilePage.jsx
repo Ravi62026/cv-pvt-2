@@ -158,7 +158,35 @@ const ProfilePage = () => {
       const response = await authAPI.updateProfile(updateData);
       
       if (response.success) {
+        // Update the auth context with new user data
         updateProfile(response.data.user);
+        
+        // Update form data with the fresh data from server
+        setFormData({
+          name: response.data.user.name || '',
+          email: response.data.user.email || '',
+          phone: response.data.user.phone || '',
+          address: {
+            street: response.data.user.address?.street || '',
+            city: response.data.user.address?.city || '',
+            state: response.data.user.address?.state || '',
+            pincode: response.data.user.address?.pincode || '',
+          },
+          lawyerDetails: {
+            barRegistrationNumber: response.data.user.lawyerDetails?.barRegistrationNumber || '',
+            specialization: response.data.user.lawyerDetails?.specialization || [],
+            experience: response.data.user.lawyerDetails?.experience || '',
+            education: response.data.user.lawyerDetails?.education || '',
+          },
+          studentDetails: {
+            universityName: response.data.user.studentDetails?.universityName || '',
+            enrollmentYear: response.data.user.studentDetails?.enrollmentYear || new Date().getFullYear(),
+            semester: response.data.user.studentDetails?.semester || '1st',
+            specialization: response.data.user.studentDetails?.specialization || '',
+            rollNumber: response.data.user.studentDetails?.rollNumber || '',
+          },
+        });
+        
         success('Profile updated successfully');
         setIsEditing(false);
       } else {
