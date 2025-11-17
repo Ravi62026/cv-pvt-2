@@ -18,7 +18,8 @@ import {
   AlertCircle,
   Info,
   Gavel,
-  FileText
+  FileText,
+  BookOpen
 } from 'lucide-react';
 
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
@@ -58,8 +59,12 @@ const SignupPage = () => {
     specialization: [],
     experience: '',
     education: '',
-    studentId: '',
-    aadhaar: '',
+    universityName: '',
+    enrollmentYear: new Date().getFullYear(),
+    semester: '1st',
+    studentSpecialization: '',
+    rollNumber: '',
+
     acceptTerms: false
   });
   const [showPassword, setShowPassword] = useState(false);
@@ -113,14 +118,28 @@ const SignupPage = () => {
       description: 'Providing legal services and consultation',
       icon: Scale,
       color: 'from-purple-500 to-pink-500'
+    },
+    {
+      id: 'law_student',
+      title: 'Law Student',
+      description: 'Learning and exploring legal practice',
+      icon: FileText,
+      color: 'from-green-500 to-emerald-500'
     }
   ];
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
+    let finalValue = type === 'checkbox' ? checked : value;
+    
+    // Strip leading 0 from phone number
+    if (name === 'phone' && finalValue.startsWith('0')) {
+      finalValue = finalValue.substring(1);
+    }
+    
     setFormData(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: finalValue
     }));
     setIsTyping(true);
     if (errors[name]) {
@@ -179,15 +198,8 @@ const SignupPage = () => {
       newErrors.confirmPassword = 'Passwords do not match';
     }
     
-    // Bar ID is optional during registration for lawyers
-    // if (formData.role === 'lawyer' && !formData.barId) {
-    //   newErrors.barId = 'Bar ID is required for lawyers';
-    // }
-
-    if (formData.role === 'citizen' && !formData.aadhaar) {
-      newErrors.aadhaar = 'Aadhaar number is required for citizens';
-    } else if (formData.role === 'citizen' && formData.aadhaar && !/^[0-9]{12}$/.test(formData.aadhaar)) {
-      newErrors.aadhaar = 'Please enter a valid 12-digit Aadhaar number';
+    if (formData.role === 'lawyer' && !formData.barId) {
+      newErrors.barId = 'Bar ID is required for lawyers';
     }
 
     if (!formData.acceptTerms) {
@@ -242,11 +254,6 @@ const SignupPage = () => {
         },
       };
 
-      // Add Aadhaar for citizens
-      if (formData.role === 'citizen') {
-        userData.aadhaar = formData.aadhaar;
-      }
-
       // Add lawyer details (required for lawyers)
       if (formData.role === 'lawyer') {
         userData.lawyerDetails = {
@@ -254,6 +261,17 @@ const SignupPage = () => {
           specialization: formData.specialization.length > 0 ? formData.specialization : ['General Practice'],
           experience: parseInt(formData.experience) || 0,
           education: formData.education || 'Law Graduate',
+        };
+      }
+
+      // Add student details for law students
+      if (formData.role === 'law_student') {
+        userData.studentDetails = {
+          universityName: formData.universityName || '',
+          enrollmentYear: parseInt(formData.enrollmentYear) || new Date().getFullYear(),
+          semester: formData.semester || '1st',
+          specialization: formData.studentSpecialization || '',
+          rollNumber: formData.rollNumber || '',
         };
       }
 
@@ -268,10 +286,19 @@ const SignupPage = () => {
           response.data.tokens.refreshToken
         );
 
-        success('Registration successful! Welcome to CV-PVT.');
+        // Get user role for personalized message
+        const userRole = response.data.user.role;
+        const roleNames = {
+          citizen: 'Citizen',
+          lawyer: 'Lawyer',
+          law_student: 'Law Student',
+          admin: 'Admin'
+        };
+        const roleName = roleNames[userRole] || 'User';
+        
+        success(`Registration successful! Welcome to CV-PVT as ${roleName}.`);
 
         // Redirect based on role and profile completion
-        const userRole = response.data.user.role;
         if (userRole === 'lawyer' && !response.data.user.profileCompletion?.roleSpecificDetails) {
           // Redirect lawyer to complete profile
           navigate('/profile?complete=true');
@@ -279,6 +306,8 @@ const SignupPage = () => {
           navigate('/admin/dashboard');
         } else if (userRole === 'lawyer') {
           navigate('/lawyer/dashboard');
+        } else if (userRole === 'law_student') {
+          navigate('/law-student/dashboard');
         } else {
           navigate('/citizen/dashboard');
         }
@@ -287,6 +316,7 @@ const SignupPage = () => {
         let errorMessage = response.error || 'Registration failed';
         setApiError(errorMessage);
         error(errorMessage);
+        setIsLoading(false);
         return;
       }
     } catch (err) {
@@ -958,42 +988,107 @@ const SignupPage = () => {
                     </AnimatePresence>
                   </motion.div>
 
-                  {/* Aadhaar Field (for citizens) */}
-                  {formData.role === 'citizen' && (
-                    <div>
-                      <label htmlFor="aadhaar" className="block text-sm font-medium text-gray-200 mb-2">
-                        Aadhaar Number
-                      </label>
-                      <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                          <FileText className="h-5 w-5 text-gray-500" />
+                  {/* Law Student Fields */}
+                  {formData.role === 'law_student' && (
+                    <div className="space-y-4">
+                      {/* University Name */}
+                      <div>
+                        <label htmlFor="universityName" className="block text-sm font-medium text-gray-200 mb-2">
+                          University Name
+                        </label>
+                        <div className="relative">
+                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <BookOpen className="h-5 w-5 text-gray-500" />
+                          </div>
+                          <input
+                            id="universityName"
+                            name="universityName"
+                            type="text"
+                            value={formData.universityName}
+                            onChange={handleChange}
+                            className="block w-full pl-10 pr-3 py-3 bg-[#1D1F3B] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300"
+                            placeholder="e.g., Delhi University"
+                          />
                         </div>
-                        <input
-                          id="aadhaar"
-                          name="aadhaar"
-                          type="text"
-                          value={formData.aadhaar}
-                          onChange={handleChange}
-                          className={`block w-full pl-10 pr-3 py-3 bg-[#1D1F3B] border rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300 ${
-                            errors.aadhaar ? 'border-red-500 ring-red-500/20' : 'border-gray-700'
-                          }`}
-                          placeholder="Enter your 12-digit Aadhaar number"
-                          maxLength="12"
-                        />
                       </div>
-                      <AnimatePresence>
-                        {errors.aadhaar && (
-                          <motion.p
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            className="mt-2 text-sm text-red-400 flex items-center gap-1"
-                          >
-                            <AlertCircle className="w-4 h-4" />
-                            {errors.aadhaar}
-                          </motion.p>
-                        )}
-                      </AnimatePresence>
+
+                      {/* Enrollment Year */}
+                      <div>
+                        <label htmlFor="enrollmentYear" className="block text-sm font-medium text-gray-200 mb-2">
+                          Enrollment Year
+                        </label>
+                        <select
+                          id="enrollmentYear"
+                          name="enrollmentYear"
+                          value={formData.enrollmentYear}
+                          onChange={handleChange}
+                          className="block w-full px-3 py-3 bg-[#1D1F3B] border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300"
+                        >
+                          {[2020, 2021, 2022, 2023, 2024, 2025].map(year => (
+                            <option key={year} value={year}>{year}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Semester */}
+                      <div>
+                        <label htmlFor="semester" className="block text-sm font-medium text-gray-200 mb-2">
+                          Current Semester
+                        </label>
+                        <select
+                          id="semester"
+                          name="semester"
+                          value={formData.semester}
+                          onChange={handleChange}
+                          className="block w-full px-3 py-3 bg-[#1D1F3B] border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300"
+                        >
+                          {['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th'].map(sem => (
+                            <option key={sem} value={sem}>{sem}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Specialization */}
+                      <div>
+                        <label htmlFor="studentSpecialization" className="block text-sm font-medium text-gray-200 mb-2">
+                          Specialization (Optional)
+                        </label>
+                        <div className="relative">
+                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <FileText className="h-5 w-5 text-gray-500" />
+                          </div>
+                          <input
+                            id="studentSpecialization"
+                            name="studentSpecialization"
+                            type="text"
+                            value={formData.studentSpecialization}
+                            onChange={handleChange}
+                            className="block w-full pl-10 pr-3 py-3 bg-[#1D1F3B] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300"
+                            placeholder="e.g., Criminal Law, Corporate Law"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Roll Number */}
+                      <div>
+                        <label htmlFor="rollNumber" className="block text-sm font-medium text-gray-200 mb-2">
+                          Roll Number (Optional)
+                        </label>
+                        <div className="relative">
+                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <UserCheck className="h-5 w-5 text-gray-500" />
+                          </div>
+                          <input
+                            id="rollNumber"
+                            name="rollNumber"
+                            type="text"
+                            value={formData.rollNumber}
+                            onChange={handleChange}
+                            className="block w-full pl-10 pr-3 py-3 bg-[#1D1F3B] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300"
+                            placeholder="Enter your roll number"
+                          />
+                        </div>
+                      </div>
                     </div>
                   )}
 
@@ -1013,25 +1108,10 @@ const SignupPage = () => {
                           type="text"
                           value={formData.barId}
                           onChange={handleChange}
-                          className={`block w-full pl-10 pr-3 py-3 bg-[#1D1F3B] border rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300 ${
-                            errors.barId ? 'border-red-500 ring-red-500/20' : 'border-gray-700'
-                          }`}
+                          className="block w-full pl-10 pr-3 py-3 bg-[#1D1F3B] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300"
                           placeholder="Enter your Bar Council ID"
                         />
                       </div>
-                      <AnimatePresence>
-                        {errors.barId && (
-                          <motion.p
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            className="mt-2 text-sm text-red-400 flex items-center gap-1"
-                          >
-                            <AlertCircle className="w-4 h-4" />
-                            {errors.barId}
-                          </motion.p>
-                        )}
-                      </AnimatePresence>
                     </div>
                   )}
 

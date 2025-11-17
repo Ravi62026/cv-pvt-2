@@ -22,8 +22,8 @@ export const validateRegister = [
 
     body("role")
         .optional()
-        .isIn(["citizen", "lawyer"])
-        .withMessage("Role must be either citizen or lawyer"),
+        .isIn(["citizen", "lawyer", "law_student"])
+        .withMessage("Role must be citizen, lawyer, or law_student"),
 
     body("phone")
         .optional()
@@ -34,13 +34,6 @@ export const validateRegister = [
         .if(() => process.env.NODE_ENV !== "development")
         .notEmpty()
         .withMessage("CAPTCHA verification is required"),
-
-    body("aadhaar")
-        .if(body("role").equals("citizen"))
-        .notEmpty()
-        .withMessage("Aadhaar number is required for citizens")
-        .matches(/^[0-9]{12}$/)
-        .withMessage("Aadhaar number must be 12 digits"),
 
     // Lawyer-specific validations (optional during registration)
     body("lawyerDetails.barRegistrationNumber")
@@ -66,6 +59,37 @@ export const validateRegister = [
         .if(body("role").equals("lawyer"))
         .isLength({ min: 1 })
         .withMessage("Education details cannot be empty if provided"),
+
+    // Law student-specific validations (optional during registration)
+    body("studentDetails.universityName")
+        .optional()
+        .if(body("role").equals("law_student"))
+        .isLength({ min: 1 })
+        .withMessage("University name cannot be empty if provided"),
+
+    body("studentDetails.enrollmentYear")
+        .optional()
+        .if(body("role").equals("law_student"))
+        .isInt({ min: 2000, max: new Date().getFullYear() + 1 })
+        .withMessage("Enrollment year must be valid"),
+
+    body("studentDetails.semester")
+        .optional()
+        .if(body("role").equals("law_student"))
+        .isIn(["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th"])
+        .withMessage("Semester must be between 1st and 8th"),
+
+    body("studentDetails.specialization")
+        .optional()
+        .if(body("role").equals("law_student"))
+        .isLength({ min: 1 })
+        .withMessage("Specialization cannot be empty if provided"),
+
+    body("studentDetails.rollNumber")
+        .optional()
+        .if(body("role").equals("law_student"))
+        .isLength({ min: 1 })
+        .withMessage("Roll number cannot be empty if provided"),
 ];
 
 // User login validation

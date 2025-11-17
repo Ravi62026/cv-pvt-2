@@ -49,6 +49,23 @@ const cleanUserData = (user) => {
             userData.isVerified = true;
             break;
 
+        case "law_student":
+            // Law students don't need lawyer details
+            delete userData.lawyerDetails;
+            // Keep student details if provided
+            if (userData.studentDetails) {
+                userData.studentDetails = {
+                    universityName: userData.studentDetails.universityName || '',
+                    enrollmentYear: userData.studentDetails.enrollmentYear || new Date().getFullYear(),
+                    semester: userData.studentDetails.semester || '1st',
+                    specialization: userData.studentDetails.specialization || '',
+                    rollNumber: userData.studentDetails.rollNumber || '',
+                };
+            }
+            // Law students are auto-verified
+            userData.isVerified = true;
+            break;
+
         default:
             // Unknown role, remove lawyer details
             delete userData.lawyerDetails;
@@ -131,7 +148,7 @@ export const register = async (req, res) => {
                 };
             }
         } else {
-            // Citizens have auto-complete profile
+            // Citizens and law students have auto-complete profile
             userData.profileCompletion = {
                 basicInfo: true,
                 roleSpecificDetails: true,

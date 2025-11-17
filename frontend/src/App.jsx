@@ -25,6 +25,7 @@ import CitizenDashboard from './pages/CitizenDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import PendingLawyers from './pages/admin/PendingLawyers';
 import LawyerDashboard from './pages/lawyer/LawyerDashboard';
+import LawStudentDashboard from './pages/law-student/LawStudentDashboard';
 import LawyerPerformance from './pages/lawyer/LawyerPerformance';
 import LawyerDocuments from './pages/lawyer/LawyerDocuments';
 import LawyerClients from './pages/lawyer/LawyerClients';
@@ -169,6 +170,9 @@ function App() {
                 <Route path="/citizen/my-case-requests" element={<Layout><MyCaseRequests /></Layout>} />
                 <Route path="/citizen/my-case-offers" element={<Layout><MyCaseOffers /></Layout>} />
                 <Route path="/citizen/documents" element={<Layout showFooter={false} showNavbar={true}><CitizenDocuments /></Layout>} />
+
+                {/* Law Student Routes */}
+                <Route path="/law-student/dashboard" element={<Layout showFooter={false} showNavbar={true} showNotificationSystem={false}><LawStudentDashboard /></Layout>} />
 
                 {/* Lawyer Routes */}
                 <Route path="/lawyer/dashboard" element={<Layout showFooter={false} showNavbar={true} showNotificationSystem={false} ><LawyerDashboard /></Layout>} />

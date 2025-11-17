@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { User, Mail, Phone, MapPin, Edit3, Save, X, Camera, Shield, Award, Lock, Eye, EyeOff, Clock, RefreshCw } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { User, Mail, Phone, MapPin, Edit3, Save, X, Camera, Shield, Lock, Eye, EyeOff, Clock, RefreshCw, BookOpen, FileText, AlertCircle, Gavel } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { authAPI } from '../services/api';
@@ -36,8 +36,13 @@ const ProfilePage = () => {
       specialization: [],
       experience: '',
       education: '',
-      consultationFee: '',
-      bio: '',
+    },
+    studentDetails: {
+      universityName: '',
+      enrollmentYear: new Date().getFullYear(),
+      semester: '1st',
+      specialization: '',
+      rollNumber: '',
     },
   });
 
@@ -59,8 +64,13 @@ const ProfilePage = () => {
           specialization: user.lawyerDetails?.specialization || [],
           experience: user.lawyerDetails?.experience || '',
           education: user.lawyerDetails?.education || '',
-          consultationFee: user.lawyerDetails?.consultationFee || '',
-          bio: user.lawyerDetails?.bio || '',
+        },
+        studentDetails: {
+          universityName: user.studentDetails?.universityName || '',
+          enrollmentYear: user.studentDetails?.enrollmentYear || new Date().getFullYear(),
+          semester: user.studentDetails?.semester || '1st',
+          specialization: user.studentDetails?.specialization || '',
+          rollNumber: user.studentDetails?.rollNumber || '',
         },
       });
     }
@@ -141,6 +151,8 @@ const ProfilePage = () => {
 
       if (user.role === 'lawyer') {
         updateData.lawyerDetails = formData.lawyerDetails;
+      } else if (user.role === 'law_student') {
+        updateData.studentDetails = formData.studentDetails;
       }
 
       const response = await authAPI.updateProfile(updateData);
@@ -177,8 +189,13 @@ const ProfilePage = () => {
           specialization: user.lawyerDetails?.specialization || [],
           experience: user.lawyerDetails?.experience || '',
           education: user.lawyerDetails?.education || '',
-          consultationFee: user.lawyerDetails?.consultationFee || '',
-          bio: user.lawyerDetails?.bio || '',
+        },
+        studentDetails: {
+          universityName: user.studentDetails?.universityName || '',
+          enrollmentYear: user.studentDetails?.enrollmentYear || new Date().getFullYear(),
+          semester: user.studentDetails?.semester || '1st',
+          specialization: user.studentDetails?.specialization || '',
+          rollNumber: user.studentDetails?.rollNumber || '',
         },
       });
     }
@@ -247,14 +264,21 @@ const ProfilePage = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen bg-[#0A0B1C] flex items-center justify-center">
         <div className="text-white text-xl">Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#0A0B1C] py-12 px-4 sm:px-6 lg:px-8 relative">
+      {/* Animated Glow Background */}
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[520px] h-[340px] bg-cyan-500/10 blur-3xl rounded-full animate-pulse" />
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-800/20 blur-2xl rounded-full animate-pulse delay-1000" />
+        <div className="absolute top-0 left-0 w-72 h-72 bg-purple-600/10 blur-2xl rounded-full animate-pulse delay-500" />
+      </div>
+      <div className="relative z-10">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <motion.div
@@ -496,11 +520,174 @@ const ProfilePage = () => {
           </motion.div>
         </div>
 
+        {/* Role-Specific Fields */}
+        {user.role === 'lawyer' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="mt-8"
+          >
+            <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
+              <h2 className="text-xl font-semibold text-white mb-6 flex items-center">
+                <Gavel className="h-5 w-5 mr-2" />
+                Lawyer Details
+              </h2>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Bar Registration Number</label>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      name="lawyerDetails.barRegistrationNumber"
+                      value={formData.lawyerDetails.barRegistrationNumber}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    />
+                  ) : (
+                    <p className="text-white">{user.lawyerDetails?.barRegistrationNumber || 'Not provided'}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Experience (Years)</label>
+                  {isEditing ? (
+                    <input
+                      type="number"
+                      name="lawyerDetails.experience"
+                      value={formData.lawyerDetails.experience}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    />
+                  ) : (
+                    <p className="text-white">{user.lawyerDetails?.experience || 'Not provided'}</p>
+                  )}
+                </div>
+
+                <div className="lg:col-span-2">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Education</label>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      name="lawyerDetails.education"
+                      value={formData.lawyerDetails.education}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    />
+                  ) : (
+                    <p className="text-white">{user.lawyerDetails?.education || 'Not provided'}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {user.role === 'law_student' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="mt-8"
+          >
+            <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
+              <h2 className="text-xl font-semibold text-white mb-6 flex items-center">
+                <BookOpen className="h-5 w-5 mr-2" />
+                Student Details
+              </h2>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">University Name</label>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      name="studentDetails.universityName"
+                      value={formData.studentDetails.universityName}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
+                    />
+                  ) : (
+                    <p className="text-white">{user.studentDetails?.universityName || 'Not provided'}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Enrollment Year</label>
+                  {isEditing ? (
+                    <select
+                      name="studentDetails.enrollmentYear"
+                      value={formData.studentDetails.enrollmentYear}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                    >
+                      {[2020, 2021, 2022, 2023, 2024, 2025].map(year => (
+                        <option key={year} value={year}>{year}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <p className="text-white">{user.studentDetails?.enrollmentYear || 'Not provided'}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Current Semester</label>
+                  {isEditing ? (
+                    <select
+                      name="studentDetails.semester"
+                      value={formData.studentDetails.semester}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                    >
+                      {['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th'].map(sem => (
+                        <option key={sem} value={sem}>{sem}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <p className="text-white">{user.studentDetails?.semester || 'Not provided'}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Roll Number</label>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      name="studentDetails.rollNumber"
+                      value={formData.studentDetails.rollNumber}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
+                    />
+                  ) : (
+                    <p className="text-white">{user.studentDetails?.rollNumber || 'Not provided'}</p>
+                  )}
+                </div>
+
+                <div className="lg:col-span-2">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Specialization</label>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      name="studentDetails.specialization"
+                      value={formData.studentDetails.specialization}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
+                    />
+                  ) : (
+                    <p className="text-white">{user.studentDetails?.specialization || 'Not provided'}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         {/* Password Change Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
+          transition={{ delay: 0.4 }}
           className="mt-8"
         >
           <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
@@ -615,6 +802,7 @@ const ProfilePage = () => {
             )}
           </div>
         </motion.div>
+      </div>
       </div>
     </div>
   );

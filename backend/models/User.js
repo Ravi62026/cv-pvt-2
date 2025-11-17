@@ -26,18 +26,12 @@ const userSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ["admin", "lawyer", "citizen"],
+        enum: ["admin", "lawyer", "citizen", "law_student"],
         default: "citizen",
     },
     phone: {
         type: String,
         match: [/^[0-9]{10}$/, "Please provide a valid 10-digit phone number"],
-    },
-    // Aadhaar number for citizens (optional)
-    aadhaar: {
-        type: String,
-        match: [/^[0-9]{12}$/, "Please provide a valid 12-digit Aadhaar number"],
-        function() { return this.role === "citizen"; }
     },
     address: {
         street: String,
@@ -53,7 +47,7 @@ const userSchema = new mongoose.Schema({
     isVerified: {
         type: Boolean,
         default: function() {
-            return this.role === "citizen" ? true : false; // Citizens are auto-verified
+            return ["citizen", "law_student"].includes(this.role);
         },
     },
     isActive: {
@@ -82,13 +76,13 @@ const userSchema = new mongoose.Schema({
         roleSpecificDetails: {
             type: Boolean,
             default: function() {
-                return this.role === "citizen"; // Citizens auto-complete, lawyers need to fill details
+                return ["citizen", "law_student"].includes(this.role);
             },
         },
         documentsUploaded: {
             type: Boolean,
             default: function() {
-                return this.role === "citizen"; // Citizens don't need documents
+                return ["citizen", "law_student"].includes(this.role);
             },
         },
     },
@@ -147,6 +141,37 @@ const userSchema = new mongoose.Schema({
         },
         default: undefined // Only create this object for lawyers
     },
+    // Law student specific fields (only populated for law students)
+    studentDetails: {
+        type: {
+            universityName: {
+                type: String,
+                trim: true,
+                maxlength: [100, "University name cannot be more than 100 characters"]
+            },
+            enrollmentYear: {
+                type: Number,
+                min: 2000,
+                max: new Date().getFullYear() + 1
+            },
+            semester: {
+                type: String,
+                enum: ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th"],
+                default: "1st"
+            },
+            specialization: {
+                type: String,
+                trim: true,
+                maxlength: [50, "Specialization cannot be more than 50 characters"]
+            },
+            rollNumber: {
+                type: String,
+                trim: true,
+                maxlength: [30, "Roll number cannot be more than 30 characters"]
+            },
+        },
+        default: undefined // Only create this object for law students
+    },
     // For rate limiting message requests
     messageRequests: [
         {
@@ -164,7 +189,7 @@ const userSchema = new mongoose.Schema({
             },
             userRole: {
                 type: String,
-                enum: ["citizen", "lawyer"],
+                enum: ["citizen", "lawyer", "law_student"],
                 required: true,
             },
             status: {
@@ -233,23 +258,36 @@ userSchema.pre("save", function (next) {
 
     // Handle role-specific fields
     if (this.role === "citizen") {
-        // Citizens don't need lawyer details
+        // Citizens don't need lawyer or student details
         this.lawyerDetails = undefined;
+        this.studentDetails = undefined;
         // Citizens are auto-verified
+        this.isVerified = true;
+    } else if (this.role === "law_student") {
+        // Law students need student details
+        if (!this.studentDetails) {
+            this.studentDetails = {};
+        }
+        // Law students don't need lawyer details
+        this.lawyerDetails = undefined;
+        // Law students are auto-verified
         this.isVerified = true;
     } else if (this.role === "lawyer") {
         // Lawyers need lawyer details
         if (!this.lawyerDetails) {
             this.lawyerDetails = {};
         }
+        // Lawyers don't need student details
+        this.studentDetails = undefined;
 
         // New lawyers start as unverified (unless explicitly set)
         if (this.isNew && this.isVerified === undefined) {
             this.isVerified = false;
         }
     } else if (this.role === "admin") {
-        // Admins don't need lawyer details
+        // Admins don't need lawyer or student details
         this.lawyerDetails = undefined;
+        this.studentDetails = undefined;
         // Admins are auto-verified
         this.isVerified = true;
     }
